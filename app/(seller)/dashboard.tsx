@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
@@ -19,6 +18,7 @@ import {
   QrCode,
   MoreHorizontal,
   ChevronDown,
+  UtensilsCrossed,
 } from "lucide-react-native";
 
 const mockSellerInfo = {
@@ -84,13 +84,26 @@ export default function SellerDashboard() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-100 text-green-700";
+        return "bg-[#E3F2E8]";
       case "preparing":
-        return "bg-amber-100 text-amber-700";
+        return "bg-[#FFF3D6]";
       case "accepted":
-        return "bg-blue-100 text-blue-700";
+        return "bg-[#E8EDFF]";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-[#EDEDF7]";
+    }
+  };
+
+  const getStatusTextColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "#12805C";
+      case "preparing":
+        return "#8A5A00";
+      case "accepted":
+        return "#1B1B8F";
+      default:
+        return "#1B1B8F";
     }
   };
 
@@ -106,197 +119,208 @@ export default function SellerDashboard() {
 
   if (authLoading || loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#f8f6f5]">
-        <ActivityIndicator size="large" color="#000080" />
+      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
+        <ActivityIndicator size="large" color="#1B1B8F" />
       </View>
     );
   }
 
+  const quickActions = [
+    { icon: Plus, label: "Add Item", onPress: () => router.push("/(seller)/menu" as any) },
+    { icon: TrendingUp, label: "Promote", onPress: () => {} },
+    { icon: QrCode, label: "Scan QR", onPress: () => {} },
+    { icon: MoreHorizontal, label: "More", onPress: () => {} },
+  ];
+
   return (
-    <ScrollView className="flex-1 bg-[#f8f6f5] pb-4">
-      {/* Header */}
-      <View className="px-4 pt-6 pb-4">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-3">
-            <View className="relative">
-              <View className="w-14 h-14 rounded-full bg-white overflow-hidden items-center justify-center">
-                <Text className="text-primary font-bold text-xl">
-                  {sellerInfo?.store_name?.charAt(0) || "S"}
+    <ScrollView className="flex-1 bg-[#FAF5EA]" contentContainerStyle={{ paddingBottom: 120 }}>
+      {/* Greeting — white card */}
+      <View className="px-5 pt-14 pb-2">
+        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-3">
+          Seller Overview
+        </Text>
+        <View className="bg-white rounded-[28px] p-5 border border-[#E7E0D2]">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-3">
+              <View>
+                <View className="w-14 h-14 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+                  <Text className="text-[#1B1B8F] font-bold text-xl">
+                    {sellerInfo?.store_name?.charAt(0) || "S"}
+                  </Text>
+                </View>
+                <View
+                  className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${
+                    isOnline ? "bg-[#12805C]" : "bg-[#B9B4C0]"
+                  }`}
+                />
+              </View>
+              <View>
+                <Text className="text-sm text-ink/55">Good Morning,</Text>
+                <Text className="text-xl font-bold text-ink">
+                  Chef {profile?.name?.split(" ")[0] || "Alex"}!
                 </Text>
               </View>
-              <View className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-[#f8f6f5] rounded-full" />
             </View>
-            <View>
-              <Text className="text-sm text-gray-500">Good Morning,</Text>
-              <Text className="text-xl font-bold text-gray-900">
-                Chef {profile?.name?.split(" ")[0] || "Alex"}! 👨‍🍳
+            <TouchableOpacity
+              onPress={() => setIsOnline(!isOnline)}
+              activeOpacity={0.85}
+              className="flex-row items-center gap-2 pl-3 pr-2 py-2 rounded-full bg-white border border-[#E7E0D2]"
+            >
+              <View
+                className={`w-2 h-2 rounded-full ${
+                  isOnline ? "bg-[#12805C]" : "bg-[#B9B4C0]"
+                }`}
+              />
+              <Text className="text-[11px] font-bold tracking-[1px] text-ink">
+                {isOnline ? "ONLINE" : "OFFLINE"}
               </Text>
-            </View>
+              <ChevronDown size={14} color="#6E6A75" />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={() => setIsOnline(!isOnline)}
-            className={`flex-row items-center gap-2 px-3 py-2 rounded-full border ${
-              isOnline
-                ? "border-green-500 text-green-600"
-                : "border-gray-300 text-gray-500"
-            }`}
-          >
-            <View
-              className={`w-2 h-2 rounded-full ${
-                isOnline ? "bg-green-500" : "bg-gray-400"
-              }`}
-            />
-            <Text className="text-sm font-medium">
-              {isOnline ? "ONLINE" : "OFFLINE"}
-            </Text>
-            <ChevronDown size={16} />
-          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Stats Section */}
-      <View className="px-4 gap-4">
-        {/* Earnings Card */}
-        <View className="bg-white rounded-2xl p-5">
+      {/* Earnings ink hero with single white trend pill */}
+      <View className="px-5 mt-3">
+        <View className="bg-ink rounded-[28px] p-6">
           <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-sm text-gray-500">Total Earnings</Text>
-              <Text className="text-3xl font-bold text-gray-900 mt-1">
+            <View className="flex-1">
+              <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-white/60">
+                Total Earnings
+              </Text>
+              <Text className="text-[32px] font-bold text-white mt-2">
                 ₦{stats.totalEarnings.toFixed(2)}
               </Text>
-              <View className="flex-row items-center gap-1 mt-1">
-                <TrendingUp color="#16A34A" size={16} />
-                <Text className="text-sm text-green-600">+12.5% today</Text>
+              <View className="flex-row items-center mt-4">
+                <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-white">
+                  <TrendingUp color="#0A0A0E" size={14} />
+                  <Text className="text-xs font-bold text-ink">+12.5% today</Text>
+                </View>
               </View>
             </View>
-            <View className="w-16 h-16 rounded-2xl bg-blue-50 items-center justify-center">
-              <DollarSign color="#000080" size={32} />
+            <View className="w-16 h-16 rounded-full bg-white/10 items-center justify-center border border-white/10">
+              <DollarSign color="#FFFFFF" size={28} />
             </View>
           </View>
-        </View>
-
-        {/* Orders Stats */}
-        <View className="flex-row gap-3">
-          <View className="flex-1 bg-white rounded-2xl p-4 border-l-4 border-blue-900">
-            <View className="w-10 h-10 rounded-xl bg-blue-50 items-center justify-center mb-3">
-              <ShoppingBag color="#000080" size={20} />
-            </View>
-            <Text className="text-2xl font-bold text-gray-900">
-              {stats.pendingOrders}
-            </Text>
-            <Text className="text-sm text-gray-500">Pending Orders</Text>
-          </View>
-          <View className="flex-1 bg-white rounded-2xl p-4">
-            <View className="w-10 h-10 rounded-xl bg-gray-100 items-center justify-center mb-3">
-              <ShoppingBag color="#1C1B1B" size={20} />
-            </View>
-            <Text className="text-2xl font-bold text-gray-900">
-              {stats.totalOrders}
-            </Text>
-            <Text className="text-sm text-gray-500">Total Orders</Text>
-          </View>
-        </View>
-
-        {/* Rating Card */}
-        <View className="bg-white rounded-2xl p-4 self-start">
-          <View className="w-10 h-10 rounded-xl bg-amber-100 items-center justify-center mb-3">
-            <Star color="#F59E0B" size={20} />
-          </View>
-          <Text className="text-2xl font-bold text-gray-900">
-            4.8
-            <Text className="text-lg text-gray-500 font-normal">/ 5.0</Text>
-          </Text>
-          <Text className="text-sm text-gray-500">Store Rating</Text>
         </View>
       </View>
 
-      {/* Quick Actions */}
-      <View className="px-4 mt-6">
-        <Text className="text-lg font-bold text-gray-900 mb-4">
+      {/* Stats 2-col white cards */}
+      <View className="px-5 mt-4 flex-row gap-3">
+        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-3">
+            <ShoppingBag color="#1B1B8F" size={20} />
+          </View>
+          <Text className="text-2xl font-bold text-ink">{stats.pendingOrders}</Text>
+          <Text className="text-sm text-ink/55 mt-0.5">Pending Orders</Text>
+        </View>
+        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-3">
+            <ShoppingBag color="#0A0A0E" size={20} />
+          </View>
+          <Text className="text-2xl font-bold text-ink">{stats.totalOrders}</Text>
+          <Text className="text-sm text-ink/55 mt-0.5">Total Orders</Text>
+        </View>
+      </View>
+
+      <View className="px-5 mt-3 flex-row gap-3">
+        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2] flex-row items-center gap-3">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+            <Star color="#1B1B8F" size={20} />
+          </View>
+          <View>
+            <Text className="text-xl font-bold text-ink">
+              4.8<Text className="text-sm text-ink/55 font-normal"> / 5.0</Text>
+            </Text>
+            <Text className="text-sm text-ink/55">Store Rating</Text>
+          </View>
+        </View>
+        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2] flex-row items-center gap-3">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+            <Check color="#12805C" size={20} />
+          </View>
+          <View>
+            <Text className="text-xl font-bold text-ink">{stats.completedOrders}</Text>
+            <Text className="text-sm text-ink/55">Completed</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Quick Actions circular white buttons */}
+      <View className="px-5 mt-8">
+        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-4">
           Quick Actions
         </Text>
         <View className="flex-row gap-4">
-          <TouchableOpacity
-            onPress={() => router.push("/(seller)/menu")}
-            className="items-center gap-2"
-          >
-            <View className="w-14 h-14 rounded-2xl bg-white items-center justify-center">
-              <Plus color="#000080" size={24} />
-            </View>
-            <Text className="text-xs font-medium text-gray-900">Add Item</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="items-center gap-2">
-            <View className="w-14 h-14 rounded-2xl bg-white items-center justify-center">
-              <TrendingUp color="#1C1B1B" size={24} />
-            </View>
-            <Text className="text-xs font-medium text-gray-900">Promote</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="items-center gap-2">
-            <View className="w-14 h-14 rounded-2xl bg-white items-center justify-center">
-              <QrCode color="#1C1B1B" size={24} />
-            </View>
-            <Text className="text-xs font-medium text-gray-900">Scan QR</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="items-center gap-2">
-            <View className="w-14 h-14 rounded-2xl bg-white items-center justify-center">
-              <MoreHorizontal color="#1C1B1B" size={24} />
-            </View>
-            <Text className="text-xs font-medium text-gray-900">More</Text>
-          </TouchableOpacity>
+          {quickActions.map((a) => (
+            <TouchableOpacity
+              key={a.label}
+              onPress={a.onPress}
+              activeOpacity={0.85}
+              className="items-center gap-2"
+            >
+              <View className="w-16 h-16 rounded-full bg-white items-center justify-center border border-[#E7E0D2]">
+                <a.icon color="#0A0A0E" size={22} />
+              </View>
+              <Text className="text-xs font-semibold text-ink">{a.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
 
-      {/* Live Orders */}
-      <View className="px-4 mt-6">
+      {/* Live Orders white cards */}
+      <View className="px-5 mt-8">
         <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-lg font-bold text-gray-900">Live Orders</Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(seller)/orders")}
-          >
-            <Text className="text-sm font-semibold text-blue-900">View All</Text>
+          <Text className="text-lg font-bold text-ink">Live Orders</Text>
+          <TouchableOpacity onPress={() => router.push("/(seller)/orders" as any)}>
+            <Text className="text-sm font-bold text-[#1B1B8F]">View All</Text>
           </TouchableOpacity>
         </View>
 
         {recentOrders.length === 0 ? (
-          <View className="bg-white rounded-2xl p-8 items-center">
-            <Text className="text-gray-500">No orders yet</Text>
+          <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
+            <Text className="text-ink/55">No orders yet</Text>
           </View>
         ) : (
           <View className="gap-3">
             {recentOrders.map((order) => (
-              <View key={order.id} className="bg-white rounded-2xl p-4">
+              <View
+                key={order.id}
+                className="bg-white rounded-[26px] p-4 border border-[#E7E0D2]"
+              >
                 <View className="flex-row items-center gap-3">
-                  <View className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden items-center justify-center">
-                    <Text className="text-2xl">🍽️</Text>
+                  <View className="w-14 h-14 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+                    <UtensilsCrossed color="#1B1B8F" size={22} />
                   </View>
                   <View className="flex-1 min-w-0">
-                    <View className="flex-row items-start justify-between">
-                      <View>
-                        <Text className="font-semibold text-gray-900">
-                          {order.items?.[0]?.name || "Order"}
-                        </Text>
-                        <Text className="text-xs text-gray-500 mt-0.5">
-                          {order.notes || "No special instructions"}
-                        </Text>
-                      </View>
-                      <Text className="text-xs text-gray-500">
+                    <View className="flex-row items-start justify-between gap-2">
+                      <Text className="font-bold text-ink flex-1" numberOfLines={1}>
+                        {order.items?.[0]?.name || "Order"}
+                      </Text>
+                      <Text className="text-xs text-ink/55">
                         #{order.id.slice(0, 4)}
                       </Text>
                     </View>
+                    <Text className="text-xs text-ink/55 mt-0.5" numberOfLines={1}>
+                      {order.notes || "No special instructions"}
+                    </Text>
                     <View className="flex-row items-center gap-2 mt-2">
-                      <View className={`px-2 py-1 rounded-full ${getStatusColor(order.status)}`}>
-                        <Text className="text-xs font-semibold uppercase">
+                      <View className={`px-2.5 py-1 rounded-full ${getStatusColor(order.status)}`}>
+                        <Text
+                          className="text-[11px] font-bold uppercase"
+                          style={{ color: getStatusTextColor(order.status) }}
+                        >
                           {order.status}
                         </Text>
                       </View>
-                      <Text className="text-xs text-gray-500">
+                      <Text className="text-xs text-ink/55">
                         • {getTimeAgo(order.created_at)}
                       </Text>
                     </View>
                   </View>
                   {order.status === "preparing" && (
-                    <TouchableOpacity className="w-12 h-12 rounded-full bg-green-500 items-center justify-center">
-                      <Check color="#FFFFFF" size={24} />
+                    <TouchableOpacity className="w-12 h-12 rounded-full bg-ink items-center justify-center">
+                      <Check color="#FFFFFF" size={22} />
                     </TouchableOpacity>
                   )}
                 </View>

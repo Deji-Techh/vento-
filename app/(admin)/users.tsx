@@ -16,6 +16,7 @@ import {
   Search,
   X,
 } from "lucide-react-native";
+import { AppButton } from "../../src/components/ui/AppButton";
 
 const mockAgents = [
   {
@@ -152,62 +153,71 @@ export default function AdminUsers() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#000080" />
+      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
+        <ActivityIndicator size="large" color="#1B1B8F" />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-white p-6 gap-6">
-      <View className="flex-row items-center justify-between">
-        <View>
-          <Text className="text-2xl font-bold text-gray-900">
-            Delivery Agents
+    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14" contentContainerStyle={{ paddingBottom: 120, gap: 16 }}>
+      <View className="flex-row items-center justify-between gap-3">
+        <View className="flex-1">
+          <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
+            Team
           </Text>
-          <Text className="text-gray-500">Manage delivery personnel</Text>
+          <Text className="text-[28px] font-bold text-ink mt-1">
+            Agents
+          </Text>
+          <Text className="text-sm text-ink/55">Manage delivery personnel</Text>
         </View>
         <TouchableOpacity
           onPress={() => setIsAddOpen(true)}
-          className="bg-blue-900 px-4 py-2 rounded-xl flex-row items-center gap-1"
+          className="bg-ink px-5 h-14 rounded-full flex-row items-center gap-1.5"
         >
           <UserPlus color="#FFFFFF" size={16} />
-          <Text className="text-white font-semibold text-sm">Add Agent</Text>
+          <Text className="text-white font-bold text-sm">Add Agent</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Stats */}
+      {/* Stats white cards */}
       <View className="flex-row gap-3">
-        <View className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-1 items-center">
-          <Users color="#000080" size={24} />
-          <Text className="text-2xl font-bold mt-2">{agents.length}</Text>
-          <Text className="text-sm text-gray-500">Total Agents</Text>
+        <View className="bg-white rounded-[26px] p-4 border border-[#E7E0D2] flex-1 items-center">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+            <Users color="#1B1B8F" size={20} />
+          </View>
+          <Text className="text-2xl font-bold text-ink mt-2">{agents.length}</Text>
+          <Text className="text-xs text-ink/55">Total Agents</Text>
         </View>
-        <View className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-1 items-center">
-          <Package color="#16A34A" size={24} />
-          <Text className="text-2xl font-bold mt-2">
+        <View className="bg-white rounded-[26px] p-4 border border-[#E7E0D2] flex-1 items-center">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+            <Package color="#12805C" size={20} />
+          </View>
+          <Text className="text-2xl font-bold text-ink mt-2">
             {agents.filter((a) => a.is_active).length}
           </Text>
-          <Text className="text-sm text-gray-500">Active</Text>
+          <Text className="text-xs text-ink/55">Active</Text>
         </View>
-        <View className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-1 items-center">
-          <Package color="#3B82F6" size={24} />
-          <Text className="text-2xl font-bold mt-2">
+        <View className="bg-white rounded-[26px] p-4 border border-[#E7E0D2] flex-1 items-center">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+            <Package color="#1B1B8F" size={20} />
+          </View>
+          <Text className="text-2xl font-bold text-ink mt-2">
             {agents.filter((a) => a.is_online).length}
           </Text>
-          <Text className="text-sm text-gray-500">Online Now</Text>
+          <Text className="text-xs text-ink/55">Online Now</Text>
         </View>
       </View>
 
       {/* Agent List */}
       <View>
-        <Text className="text-lg font-semibold text-gray-900 mb-3">
+        <Text className="text-lg font-bold text-ink mb-3">
           All Agents
         </Text>
         {agents.length === 0 ? (
-          <View className="bg-gray-50 rounded-xl p-8 items-center border border-gray-200">
-            <Users color="#9CA3AF" size={48} />
-            <Text className="text-gray-500 mt-3">
+          <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
+            <Users color="#6E6A75" size={22} />
+            <Text className="text-ink/55 mt-3 font-semibold text-center">
               No delivery agents yet. Add one to get started.
             </Text>
           </View>
@@ -216,28 +226,36 @@ export default function AdminUsers() {
             {agents.map((agent) => (
               <View
                 key={agent.id}
-                className="bg-gray-50 rounded-xl p-4 border border-gray-200"
+                className="bg-white rounded-[26px] p-5 border border-[#E7E0D2]"
               >
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-1">
-                    <Text className="font-semibold text-gray-900">
-                      {agent.profiles?.name || "Unknown"}
-                    </Text>
-                    <View className="flex-row gap-4 mt-1">
-                      <Text className="text-sm text-gray-500">
-                        ₦{(agent.total_earnings || 0).toLocaleString()}
-                      </Text>
-                      <Text className="text-sm text-gray-500">
-                        {agent.completed_deliveries || 0} deliveries
+                <View className="flex-row items-center justify-between gap-3">
+                  <View className="flex-1 flex-row items-center gap-3">
+                    <View className="w-12 h-12 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+                      <Text className="text-ink font-bold">
+                        {agent.profiles?.name?.charAt(0) || "?"}
                       </Text>
                     </View>
+                    <View className="flex-1">
+                      <Text className="font-bold text-ink">
+                        {agent.profiles?.name || "Unknown"}
+                      </Text>
+                      <View className="flex-row gap-3 mt-1">
+                        <Text className="text-xs text-ink/55 font-semibold">
+                          ₦{(agent.total_earnings || 0).toLocaleString()}
+                        </Text>
+                        <Text className="text-xs text-ink/55">
+                          {agent.completed_deliveries || 0} deliveries
+                        </Text>
+                      </View>
+                    </View>
                   </View>
-                  <View className="items-end gap-1">
+                  <View className="items-end gap-2">
                     <View
-                      className={`px-2 py-0.5 rounded-full ${agent.is_active ? "bg-green-100" : "bg-gray-100"}`}
+                      className={`px-2.5 py-1 rounded-full ${agent.is_active ? "bg-[#E3F2E8]" : "bg-[#FAF5EA] border border-[#E7E0D2]"}`}
                     >
                       <Text
-                        className={`text-xs font-semibold ${agent.is_active ? "text-green-700" : "text-gray-700"}`}
+                        className="text-[11px] font-bold"
+                        style={{ color: agent.is_active ? "#12805C" : "#6E6A75" }}
                       >
                         {agent.is_active ? "Active" : "Inactive"}
                       </Text>
@@ -246,9 +264,9 @@ export default function AdminUsers() {
                       onPress={() =>
                         toggleAgentStatus(agent.id, agent.is_active)
                       }
-                      className="border border-gray-300 px-3 py-1 rounded-full"
+                      className="border border-[#E7E0D2] bg-white px-3.5 h-10 rounded-full items-center justify-center"
                     >
-                      <Text className="text-xs font-medium text-gray-700">
+                      <Text className="text-xs font-bold text-ink">
                         {agent.is_active ? "Deactivate" : "Activate"}
                       </Text>
                     </TouchableOpacity>
@@ -270,32 +288,32 @@ export default function AdminUsers() {
           resetForm();
         }}
       >
-        <View className="flex-1 bg-white">
-          <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
-            <Text className="text-lg font-bold">Add Delivery Agent</Text>
+        <View className="flex-1 bg-[#FAF5EA]">
+          <View className="flex-row items-center justify-between px-5 pt-6 pb-4">
+            <Text className="text-xl font-bold text-ink">Add Delivery Agent</Text>
             <TouchableOpacity
               onPress={() => {
                 setIsAddOpen(false);
                 resetForm();
               }}
-              className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+              className="w-10 h-10 rounded-full bg-white border border-[#E7E0D2] items-center justify-center"
             >
-              <X color="#6B7280" size={16} />
+              <X color="#0A0A0E" size={16} />
             </TouchableOpacity>
           </View>
 
-          <View className="flex-1 p-4">
-            {/* Tab Toggle */}
-            <View className="flex-row gap-2 mb-4">
+          <View className="flex-1 px-5">
+            {/* Tab Toggle pill */}
+            <View className="flex-row gap-2 mb-4 bg-white border border-[#E7E0D2] rounded-full p-1.5">
               <TouchableOpacity
                 onPress={() => setAddTab("existing")}
-                className={`flex-1 py-3 rounded-xl items-center ${
-                  addTab === "existing" ? "bg-blue-900" : "bg-gray-100"
+                className={`flex-1 h-14 rounded-full items-center justify-center ${
+                  addTab === "existing" ? "bg-ink" : "bg-transparent"
                 }`}
               >
                 <Text
-                  className={`font-semibold ${
-                    addTab === "existing" ? "text-white" : "text-gray-900"
+                  className={`font-bold text-sm ${
+                    addTab === "existing" ? "text-white" : "text-ink"
                   }`}
                 >
                   Existing User
@@ -303,13 +321,13 @@ export default function AdminUsers() {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setAddTab("new")}
-                className={`flex-1 py-3 rounded-xl items-center ${
-                  addTab === "new" ? "bg-blue-900" : "bg-gray-100"
+                className={`flex-1 h-14 rounded-full items-center justify-center ${
+                  addTab === "new" ? "bg-ink" : "bg-transparent"
                 }`}
               >
                 <Text
-                  className={`font-semibold ${
-                    addTab === "new" ? "text-white" : "text-gray-900"
+                  className={`font-bold text-sm ${
+                    addTab === "new" ? "text-white" : "text-ink"
                   }`}
                 >
                   New User
@@ -319,121 +337,99 @@ export default function AdminUsers() {
 
             {addTab === "existing" ? (
               <View className="gap-4">
-                <View className="flex-row gap-2">
-                  <TextInput
-                    placeholder="Search by name..."
-                    placeholderTextColor="#9CA3AF"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    onSubmitEditing={searchUsers}
-                    className="flex-1 h-12 px-4 rounded-xl bg-gray-100 text-gray-900"
-                  />
-                  <TouchableOpacity
-                    onPress={searchUsers}
-                    className="w-12 h-12 bg-gray-100 rounded-xl items-center justify-center"
-                  >
-                    {searchingUsers ? (
-                      <ActivityIndicator size="small" color="#000080" />
-                    ) : (
-                      <Search color="#6B7280" size={20} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-
-                {availableUsers.length > 0 && (
-                  <View className="bg-gray-50 rounded-xl border border-gray-200 max-h-48">
-                    {availableUsers.map((user) => (
-                      <TouchableOpacity
-                        key={user.id}
-                        onPress={() => setSelectedUserId(user.id)}
-                        className={`p-3 border-b border-gray-200 last:border-b-0 ${
-                          selectedUserId === user.id ? "bg-blue-50" : ""
-                        }`}
-                      >
-                        <Text className="font-medium">{user.name}</Text>
-                        {user.phone && (
-                          <Text className="text-sm text-gray-500">
-                            {user.phone}
-                          </Text>
-                        )}
-                      </TouchableOpacity>
-                    ))}
+                <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-4">
+                  <View className="flex-row gap-2">
+                    <TextInput
+                      placeholder="Search by name..."
+                      placeholderTextColor="#9CA3AF"
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                      onSubmitEditing={searchUsers}
+                      className="flex-1 h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
+                    />
+                    <TouchableOpacity
+                      onPress={searchUsers}
+                      className="w-14 h-14 bg-ink rounded-full items-center justify-center"
+                    >
+                      {searchingUsers ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                      ) : (
+                        <Search color="#FFFFFF" size={20} />
+                      )}
+                    </TouchableOpacity>
                   </View>
-                )}
 
-                {searchQuery && availableUsers.length === 0 && !searchingUsers && (
-                  <Text className="text-sm text-gray-500 text-center py-4">
-                    No users found
-                  </Text>
-                )}
+                  {availableUsers.length > 0 && (
+                    <View className="bg-[#FAF5EA] border border-[#E7E0D2] rounded-2xl mt-3 overflow-hidden">
+                      {availableUsers.map((u) => (
+                        <TouchableOpacity
+                          key={u.id}
+                          onPress={() => setSelectedUserId(u.id)}
+                          className={`p-3.5 ${selectedUserId === u.id ? "bg-white border border-[#1B1B8F] rounded-2xl" : ""}`}
+                        >
+                          <Text className="font-bold text-ink">{u.name}</Text>
+                          {u.phone && (
+                            <Text className="text-sm text-ink/55">
+                              {u.phone}
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
 
-                <TouchableOpacity
-                  onPress={addExistingUserAsAgent}
-                  disabled={!selectedUserId || submitting}
-                  className="w-full h-12 bg-blue-900 rounded-xl items-center justify-center disabled:opacity-50"
-                >
-                  {submitting ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <Text className="text-white font-semibold">
-                      Add Selected User as Agent
+                  {searchQuery && availableUsers.length === 0 && !searchingUsers && (
+                    <Text className="text-sm text-ink/55 text-center py-4">
+                      No users found
                     </Text>
                   )}
-                </TouchableOpacity>
+                </View>
+
+                <AppButton title={submitting ? "Adding..." : "Add Selected User as Agent"} variant="ink" onPress={addExistingUserAsAgent} disabled={!selectedUserId || submitting} />
               </View>
             ) : (
               <View className="gap-4">
-                <View>
-                  <Text className="text-sm font-semibold text-gray-900">
-                    Full Name *
-                  </Text>
-                  <TextInput
-                    placeholder="Enter full name"
-                    placeholderTextColor="#9CA3AF"
-                    value={newUserName}
-                    onChangeText={setNewUserName}
-                    className="mt-2 w-full h-12 px-4 rounded-xl bg-gray-100 text-gray-900"
-                  />
-                </View>
-                <View>
-                  <Text className="text-sm font-semibold text-gray-900">
-                    Email *
-                  </Text>
-                  <TextInput
-                    placeholder="Enter email address"
-                    placeholderTextColor="#9CA3AF"
-                    keyboardType="email-address"
-                    value={newUserEmail}
-                    onChangeText={setNewUserEmail}
-                    className="mt-2 w-full h-12 px-4 rounded-xl bg-gray-100 text-gray-900"
-                  />
-                </View>
-                <View>
-                  <Text className="text-sm font-semibold text-gray-900">
-                    Phone (optional)
-                  </Text>
-                  <TextInput
-                    placeholder="Enter phone number"
-                    placeholderTextColor="#9CA3AF"
-                    keyboardType="phone-pad"
-                    value={newUserPhone}
-                    onChangeText={setNewUserPhone}
-                    className="mt-2 w-full h-12 px-4 rounded-xl bg-gray-100 text-gray-900"
-                  />
-                </View>
-                <TouchableOpacity
-                  onPress={createNewAgent}
-                  disabled={!newUserName || !newUserEmail || submitting}
-                  className="w-full h-12 bg-blue-900 rounded-xl items-center justify-center disabled:opacity-50"
-                >
-                  {submitting ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <Text className="text-white font-semibold">
-                      Create New Agent
+                <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5 gap-4">
+                  <View>
+                    <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55 mb-2">
+                      Full Name *
                     </Text>
-                  )}
-                </TouchableOpacity>
+                    <TextInput
+                      placeholder="Enter full name"
+                      placeholderTextColor="#9CA3AF"
+                      value={newUserName}
+                      onChangeText={setNewUserName}
+                      className="w-full h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
+                    />
+                  </View>
+                  <View>
+                    <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55 mb-2">
+                      Email *
+                    </Text>
+                    <TextInput
+                      placeholder="Enter email address"
+                      placeholderTextColor="#9CA3AF"
+                      keyboardType="email-address"
+                      value={newUserEmail}
+                      onChangeText={setNewUserEmail}
+                      className="w-full h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
+                    />
+                  </View>
+                  <View>
+                    <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55 mb-2">
+                      Phone (optional)
+                    </Text>
+                    <TextInput
+                      placeholder="Enter phone number"
+                      placeholderTextColor="#9CA3AF"
+                      keyboardType="phone-pad"
+                      value={newUserPhone}
+                      onChangeText={setNewUserPhone}
+                      className="w-full h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
+                    />
+                  </View>
+                </View>
+                <AppButton title={submitting ? "Creating..." : "Create New Agent"} variant="ink" onPress={createNewAgent} disabled={!newUserName || !newUserEmail || submitting} />
               </View>
             )}
           </View>

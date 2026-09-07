@@ -7,7 +7,7 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
-import { Package, X, Eye, ChevronRight } from "lucide-react-native";
+import { Package, X, ChevronRight } from "lucide-react-native";
 
 const mockOrders = [
   {
@@ -54,15 +54,26 @@ const mockOrders = [
   },
 ];
 
-const statusColors: Record<string, string> = {
-  pending: "bg-gray-100 text-gray-700",
-  confirmed: "bg-blue-100 text-blue-700",
-  preparing: "bg-amber-100 text-amber-700",
-  ready_for_pickup: "bg-purple-100 text-purple-700",
-  assigned: "bg-indigo-100 text-indigo-700",
-  on_the_way: "bg-blue-100 text-blue-700",
-  delivered: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
+const statusChip: Record<string, string> = {
+  pending: "bg-[#EDEDF7]",
+  confirmed: "bg-[#E8EDFF]",
+  preparing: "bg-[#FFF3D6]",
+  ready_for_pickup: "bg-[#EDEDF7]",
+  assigned: "bg-[#E8EDFF]",
+  on_the_way: "bg-[#E8EDFF]",
+  delivered: "bg-[#E3F2E8]",
+  cancelled: "bg-[#FDE8E4]",
+};
+
+const statusText: Record<string, string> = {
+  pending: "#1B1B8F",
+  confirmed: "#1B1B8F",
+  preparing: "#8A5A00",
+  ready_for_pickup: "#1B1B8F",
+  assigned: "#1B1B8F",
+  on_the_way: "#1B1B8F",
+  delivered: "#12805C",
+  cancelled: "#C0361F",
 };
 
 const statusLabels: Record<string, string> = {
@@ -100,32 +111,35 @@ export default function AdminOrders() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#000080" />
+      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
+        <ActivityIndicator size="large" color="#1B1B8F" />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-white p-6 gap-6">
+    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14" contentContainerStyle={{ paddingBottom: 120, gap: 16 }}>
       <View>
-        <Text className="text-2xl font-bold text-gray-900">Orders</Text>
-        <Text className="text-gray-500">View and manage all platform orders</Text>
+        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
+          Oversight
+        </Text>
+        <Text className="text-[28px] font-bold text-ink mt-1">Orders</Text>
+        <Text className="text-sm text-ink/55">View and manage all platform orders</Text>
       </View>
 
-      {/* Filter Tabs */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-2">
+      {/* Filter Tabs — pill */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab}
             onPress={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-full ${
-              activeTab === tab ? "bg-blue-900" : "bg-gray-100"
+            className={`px-5 h-12 justify-center rounded-full border ${
+              activeTab === tab ? "bg-ink border-ink" : "bg-white border-[#E7E0D2]"
             }`}
           >
             <Text
-              className={`text-sm font-semibold ${
-                activeTab === tab ? "text-white" : "text-gray-900"
+              className={`text-sm font-bold ${
+                activeTab === tab ? "text-white" : "text-ink"
               }`}
             >
               {tab}
@@ -136,44 +150,48 @@ export default function AdminOrders() {
 
       {/* Order List */}
       {filteredOrders.length === 0 ? (
-        <View className="bg-gray-50 rounded-xl p-8 items-center border border-gray-200">
-          <Package color="#9CA3AF" size={48} />
-          <Text className="text-gray-500 mt-3">No orders found</Text>
+        <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
+          <Package color="#6E6A75" size={22} />
+          <Text className="text-ink/55 mt-3 font-semibold">No orders found</Text>
         </View>
       ) : (
-        <View className="gap-3">
+        <View className="gap-4">
           {filteredOrders.map((order) => (
             <TouchableOpacity
               key={order.id}
               onPress={() => setSelectedOrder(order)}
-              className="bg-gray-50 rounded-xl p-4 border border-gray-200"
+              activeOpacity={0.9}
+              className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]"
             >
-              <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center justify-between gap-2">
                 <View className="flex-1">
-                  <View className="flex-row items-center gap-2 mb-1">
-                    <Text className="font-semibold text-gray-900">
+                  <View className="flex-row items-center gap-2 mb-1.5 flex-wrap">
+                    <Text className="font-bold text-ink">
                       #{order.id.slice(0, 8)}
                     </Text>
                     <View
-                      className={`px-2 py-0.5 rounded-full ${statusColors[order.status] || statusColors.pending}`}
+                      className={`px-2.5 py-1 rounded-full ${statusChip[order.status] || statusChip.pending}`}
                     >
-                      <Text className="text-xs font-semibold capitalize">
+                      <Text
+                        className="text-[11px] font-bold capitalize"
+                        style={{ color: statusText[order.status] || statusText.pending }}
+                      >
                         {statusLabels[order.status] || order.status}
                       </Text>
                     </View>
                   </View>
-                  <Text className="text-sm text-gray-500">
+                  <Text className="text-sm text-ink/55">
                     {order.buyer?.name} → {order.seller?.store_name}
                   </Text>
-                  <Text className="text-xs text-gray-400 mt-1">
+                  <Text className="text-xs text-ink/55 mt-1">
                     {new Date(order.created_at).toLocaleString()}
                   </Text>
                 </View>
                 <View className="items-end gap-1">
-                  <Text className="font-bold text-blue-900">
+                  <Text className="font-bold text-[#1B1B8F]">
                     ₦{order.total_amount.toLocaleString()}
                   </Text>
-                  <ChevronRight color="#9CA3AF" size={16} />
+                  <ChevronRight color="#6E6A75" size={16} />
                 </View>
               </View>
             </TouchableOpacity>
@@ -188,68 +206,71 @@ export default function AdminOrders() {
         presentationStyle="pageSheet"
         onRequestClose={() => setSelectedOrder(null)}
       >
-        <View className="flex-1 bg-white">
-          <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
-            <Text className="text-lg font-bold">Order Details</Text>
+        <View className="flex-1 bg-[#FAF5EA]">
+          <View className="flex-row items-center justify-between px-5 pt-6 pb-4">
+            <Text className="text-xl font-bold text-ink">Order Details</Text>
             <TouchableOpacity
               onPress={() => setSelectedOrder(null)}
-              className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+              className="w-10 h-10 rounded-full bg-white border border-[#E7E0D2] items-center justify-center"
             >
-              <X color="#6B7280" size={16} />
+              <X color="#0A0A0E" size={16} />
             </TouchableOpacity>
           </View>
 
           {selectedOrder && (
-            <ScrollView className="flex-1 p-4 gap-4">
-              <View className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <View className="flex-row items-center gap-2 mb-3">
-                  <Text className="text-lg font-bold">
+            <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40, gap: 16 }}>
+              <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
+                <View className="flex-row items-center gap-2 mb-3 flex-wrap">
+                  <Text className="text-lg font-bold text-ink">
                     #{selectedOrder.id.slice(0, 8)}
                   </Text>
                   <View
-                    className={`px-2 py-0.5 rounded-full ${statusColors[selectedOrder.status] || statusColors.pending}`}
+                    className={`px-2.5 py-1 rounded-full ${statusChip[selectedOrder.status] || statusChip.pending}`}
                   >
-                    <Text className="text-xs font-semibold capitalize">
+                    <Text
+                      className="text-[11px] font-bold capitalize"
+                      style={{ color: statusText[selectedOrder.status] || statusText.pending }}
+                    >
                       {statusLabels[selectedOrder.status] || selectedOrder.status}
                     </Text>
                   </View>
                 </View>
 
-                <View className="gap-2">
+                <View className="bg-[#FAF5EA] border border-[#E7E0D2] rounded-2xl p-4 gap-2.5">
                   <View className="flex-row justify-between">
-                    <Text className="text-sm text-gray-500">Buyer</Text>
-                    <Text className="text-sm font-medium">
+                    <Text className="text-sm text-ink/55">Buyer</Text>
+                    <Text className="text-sm font-bold text-ink">
                       {selectedOrder.buyer?.name}
                     </Text>
                   </View>
                   <View className="flex-row justify-between">
-                    <Text className="text-sm text-gray-500">Seller</Text>
-                    <Text className="text-sm font-medium">
+                    <Text className="text-sm text-ink/55">Seller</Text>
+                    <Text className="text-sm font-bold text-ink">
                       {selectedOrder.seller?.store_name}
                     </Text>
                   </View>
-                  <View className="flex-row justify-between">
-                    <Text className="text-sm text-gray-500">Delivery Address</Text>
-                    <Text className="text-sm font-medium">
+                  <View className="flex-row justify-between gap-3">
+                    <Text className="text-sm text-ink/55">Delivery Address</Text>
+                    <Text className="text-sm font-bold text-ink text-right flex-1">
                       {selectedOrder.delivery_address}
                     </Text>
                   </View>
                   <View className="flex-row justify-between">
-                    <Text className="text-sm text-gray-500">Payment</Text>
-                    <Text className="text-sm font-medium capitalize">
-                      {selectedOrder.payment_method.replace("_", " ")}
+                    <Text className="text-sm text-ink/55">Payment</Text>
+                    <Text className="text-sm font-bold text-ink capitalize">
+                      {selectedOrder.payment_method.replaceAll("_", " ")}
                     </Text>
                   </View>
                   <View className="flex-row justify-between">
-                    <Text className="text-sm text-gray-500">Delivery Fee</Text>
-                    <Text className="text-sm font-medium">
+                    <Text className="text-sm text-ink/55">Delivery Fee</Text>
+                    <Text className="text-sm font-bold text-ink">
                       ₦{selectedOrder.delivery_fee.toLocaleString()}
                     </Text>
                   </View>
-                  <View className="border-t border-gray-200 pt-2 mt-2">
+                  <View className="border-t border-[#E7E0D2] pt-2.5 mt-1">
                     <View className="flex-row justify-between">
-                      <Text className="font-bold">Total</Text>
-                      <Text className="font-bold text-blue-900">
+                      <Text className="font-bold text-ink">Total</Text>
+                      <Text className="font-bold text-[#1B1B8F]">
                         ₦{selectedOrder.total_amount.toLocaleString()}
                       </Text>
                     </View>
@@ -257,9 +278,9 @@ export default function AdminOrders() {
                 </View>
               </View>
 
-              <View className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <Text className="font-semibold text-gray-900 mb-2">Timeline</Text>
-                <Text className="text-sm text-gray-500">
+              <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
+                <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-2">Timeline</Text>
+                <Text className="text-sm text-ink/55">
                   Created: {new Date(selectedOrder.created_at).toLocaleString()}
                 </Text>
               </View>

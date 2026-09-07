@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { Eye, Check, X, Clock, CheckCircle } from "lucide-react-native";
+import { AppButton } from "../../src/components/ui/AppButton";
 
 const mockOrders = [
   {
@@ -50,12 +51,20 @@ const mockOrders = [
   },
 ];
 
-const statusColors: Record<string, string> = {
-  pending: "bg-gray-100 text-gray-700",
-  accepted: "bg-blue-100 text-blue-700",
-  preparing: "bg-amber-100 text-amber-700",
-  completed: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
+const statusChip: Record<string, string> = {
+  pending: "bg-[#EDEDF7]",
+  accepted: "bg-[#E8EDFF]",
+  preparing: "bg-[#FFF3D6]",
+  completed: "bg-[#E3F2E8]",
+  cancelled: "bg-[#FDE8E4]",
+};
+
+const statusText: Record<string, string> = {
+  pending: "#1B1B8F",
+  accepted: "#1B1B8F",
+  preparing: "#8A5A00",
+  completed: "#12805C",
+  cancelled: "#C0361F",
 };
 
 export default function SellerOrders() {
@@ -85,73 +94,80 @@ export default function SellerOrders() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#000080" />
+      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
+        <ActivityIndicator size="large" color="#1B1B8F" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white">
-      <View className="px-4 py-8">
-        <Text className="text-3xl font-bold mb-8">Orders Management</Text>
+    <View className="flex-1 bg-[#FAF5EA]">
+      <View className="px-5 pt-14 pb-4">
+        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
+          Incoming
+        </Text>
+        <Text className="text-[28px] font-bold text-ink mt-1">Orders</Text>
+        <Text className="text-sm text-ink/55 mt-1">Manage incoming orders</Text>
       </View>
 
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 120 }}>
         {orders.length === 0 ? (
-          <View className="p-8 items-center">
-            <Text className="text-gray-500">No orders yet.</Text>
+          <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
+            <Text className="text-ink/55">No orders yet.</Text>
           </View>
         ) : (
           <View className="gap-4">
             {orders.map((order) => (
               <View
                 key={order.id}
-                className="bg-gray-50 rounded-xl p-6 border border-gray-200"
+                className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]"
               >
-                <View className="flex-row justify-between items-start mb-4">
-                  <View>
-                    <Text className="font-semibold text-lg">
+                <View className="flex-row justify-between items-start mb-4 gap-2">
+                  <View className="flex-1">
+                    <Text className="font-bold text-lg text-ink">
                       Order #{order.id.slice(0, 8)}
                     </Text>
-                    <Text className="text-sm text-gray-500">
+                    <Text className="text-sm text-ink/55 mt-0.5">
                       {order.profiles.name}
                     </Text>
-                    <Text className="text-sm text-gray-500">
+                    <Text className="text-xs text-ink/55 mt-0.5">
                       {new Date(order.created_at).toLocaleString()}
                     </Text>
                   </View>
                   <View
-                    className={`px-3 py-1 rounded-full ${statusColors[order.status] || statusColors.pending}`}
+                    className={`px-3 py-1.5 rounded-full ${statusChip[order.status] || statusChip.pending}`}
                   >
-                    <Text className="text-xs font-semibold capitalize">
+                    <Text
+                      className="text-[11px] font-bold uppercase tracking-[0.5px]"
+                      style={{ color: statusText[order.status] || statusText.pending }}
+                    >
                       {order.status}
                     </Text>
                   </View>
                 </View>
 
-                <View className="mb-4">
-                  <Text className="text-sm font-medium mb-1">Items:</Text>
-                  <Text className="text-sm text-gray-500">
+                <View className="mb-4 bg-[#FAF5EA] border border-[#E7E0D2] rounded-2xl p-4">
+                  <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55 mb-1">Items</Text>
+                  <Text className="text-sm text-ink">
                     {order.items
                       .map((item: any) => `${item.name} (x${item.quantity})`)
                       .join(", ")}
                   </Text>
                 </View>
 
-                <View className="flex-row justify-between items-center pt-4 border-t border-gray-200">
-                  <Text className="font-semibold">
-                    Total: ₦{order.total_price.toFixed(2)}
+                <View className="flex-row justify-between items-center pt-4 border-t border-[#E7E0D2]">
+                  <Text className="font-bold text-ink text-lg">
+                    ₦{order.total_price.toFixed(2)}
                   </Text>
                   <TouchableOpacity
                     onPress={() => {
                       setSelectedOrder(order);
                       setDialogOpen(true);
                     }}
-                    className="flex-row items-center gap-1 border border-gray-300 px-3 py-1.5 rounded-lg"
+                    className="flex-row items-center gap-1.5 bg-white border border-[#E7E0D2] px-4 h-11 rounded-full"
                   >
-                    <Eye size={16} />
-                    <Text className="text-sm font-medium">View Details</Text>
+                    <Eye size={16} color="#1B1B8F" />
+                    <Text className="text-sm font-bold text-ink">View Details</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -167,84 +183,87 @@ export default function SellerOrders() {
         presentationStyle="pageSheet"
         onRequestClose={() => setDialogOpen(false)}
       >
-        <View className="flex-1 bg-white">
-          <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
-            <Text className="text-lg font-bold">Order Details</Text>
+        <View className="flex-1 bg-[#FAF5EA]">
+          <View className="flex-row items-center justify-between px-5 pt-6 pb-4">
+            <Text className="text-xl font-bold text-ink">Order Details</Text>
             <TouchableOpacity
               onPress={() => setDialogOpen(false)}
-              className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+              className="w-10 h-10 rounded-full bg-white border border-[#E7E0D2] items-center justify-center"
             >
-              <X color="#1C1B1B" size={16} />
+              <X color="#0A0A0E" size={16} />
             </TouchableOpacity>
           </View>
 
           {selectedOrder && (
-            <ScrollView className="flex-1 p-4" contentContainerStyle={{ paddingBottom: 40 }}>
-              <View className="gap-6">
+            <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }}>
+              <View className="gap-4">
                 {/* Order Info */}
-                <View>
-                  <Text className="font-semibold mb-2">Order Information</Text>
-                  <View className="gap-1">
-                    <Text className="text-sm">
-                      <Text className="font-medium">Order ID: </Text>
+                <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
+                  <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-3">Order Information</Text>
+                  <View className="gap-2">
+                    <Text className="text-sm text-ink">
+                      <Text className="font-bold">Order ID: </Text>
                       {selectedOrder.id}
                     </Text>
-                    <Text className="text-sm">
-                      <Text className="font-medium">Status: </Text>
+                    <View className="flex-row items-center gap-2">
+                      <Text className="text-sm font-bold text-ink">Status: </Text>
                       <View
-                        className={`px-2 py-0.5 rounded-full ${statusColors[selectedOrder.status]}`}
+                        className={`px-2.5 py-1 rounded-full ${statusChip[selectedOrder.status]}`}
                       >
-                        <Text className="text-xs font-semibold capitalize">
+                        <Text
+                          className="text-[11px] font-bold uppercase"
+                          style={{ color: statusText[selectedOrder.status] }}
+                        >
                           {selectedOrder.status}
                         </Text>
                       </View>
-                    </Text>
-                    <Text className="text-sm">
-                      <Text className="font-medium">Date: </Text>
+                    </View>
+                    <Text className="text-sm text-ink">
+                      <Text className="font-bold">Date: </Text>
                       {new Date(selectedOrder.created_at).toLocaleString()}
                     </Text>
                   </View>
                 </View>
 
                 {/* Buyer Info */}
-                <View>
-                  <Text className="font-semibold mb-2">
+                <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
+                  <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-3">
                     Buyer Information
                   </Text>
                   <View className="gap-1">
-                    <Text className="text-sm">
-                      <Text className="font-medium">Name: </Text>
+                    <Text className="text-sm text-ink">
+                      <Text className="font-bold">Name: </Text>
                       {selectedOrder.profiles.name}
                     </Text>
                     {selectedOrder.profiles.phone && (
-                      <Text className="text-sm">
-                        <Text className="font-medium">Phone: </Text>
+                      <Text className="text-sm text-ink">
+                        <Text className="font-bold">Phone: </Text>
                         {selectedOrder.profiles.phone}
                       </Text>
                     )}
-                    <Text className="text-sm">
-                      <Text className="font-medium">Delivery Address: </Text>
+                    <Text className="text-sm text-ink">
+                      <Text className="font-bold">Delivery Address: </Text>
                       {selectedOrder.delivery_address}
                     </Text>
                   </View>
                 </View>
 
                 {/* Order Items */}
-                <View>
-                  <Text className="font-semibold mb-2">Order Items</Text>
+                <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
+                  <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-3">Order Items</Text>
                   <View className="gap-2">
                     {selectedOrder.items.map((item: any, idx: number) => (
                       <View
                         key={idx}
-                        className="flex-row justify-between items-center p-3 bg-gray-100 rounded-lg"
+                        className="flex-row justify-between items-center p-4 bg-[#FAF5EA] border border-[#E7E0D2] rounded-2xl"
                       >
                         <View>
-                          <Text className="font-medium">{item.name}</Text>
-                          <Text className="text-sm text-gray-500">
+                          <Text className="font-bold text-ink">{item.name}</Text>
+                          <Text className="text-sm text-ink/55">
                             Quantity: {item.quantity}
                           </Text>
                         </View>
-                        <Text className="font-medium">
+                        <Text className="font-bold text-ink">
                           ₦{(item.price * item.quantity).toFixed(2)}
                         </Text>
                       </View>
@@ -253,21 +272,21 @@ export default function SellerOrders() {
                 </View>
 
                 {/* Payment Info */}
-                <View>
-                  <Text className="font-semibold mb-2">
+                <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
+                  <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-2">
                     Payment Information
                   </Text>
-                  <Text className="text-sm">
-                    <Text className="font-medium">Total Amount: </Text>
+                  <Text className="text-sm text-ink">
+                    <Text className="font-bold">Total Amount: </Text>
                     ₦{selectedOrder.total_price.toFixed(2)}
                   </Text>
                 </View>
 
                 {/* Notes */}
                 {selectedOrder.notes && (
-                  <View>
-                    <Text className="font-semibold mb-2">Order Notes</Text>
-                    <Text className="text-sm text-gray-500 bg-gray-100 p-3 rounded-lg">
+                  <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
+                    <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-2">Order Notes</Text>
+                    <Text className="text-sm text-ink/55 bg-[#FAF5EA] border border-[#E7E0D2] p-4 rounded-2xl">
                       {selectedOrder.notes}
                     </Text>
                   </View>
@@ -276,62 +295,48 @@ export default function SellerOrders() {
                 {/* Action Buttons */}
                 {selectedOrder.status !== "completed" &&
                   selectedOrder.status !== "cancelled" && (
-                    <View>
-                      <Text className="font-semibold mb-3">
+                    <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
+                      <Text className="font-bold text-ink mb-4">
                         Update Order Status
                       </Text>
-                      <View className="flex-row gap-3">
+                      <View className="gap-3">
                         {selectedOrder.status === "pending" && (
                           <>
-                            <TouchableOpacity
+                            <AppButton
+                              title="Accept Order"
+                              variant="ink"
                               onPress={() =>
                                 updateOrderStatus(selectedOrder.id, "accepted")
                               }
-                              className="flex-1 bg-blue-900 h-12 rounded-lg items-center justify-center flex-row gap-1"
-                            >
-                              <Check color="#FFFFFF" size={16} />
-                              <Text className="text-white font-semibold">
-                                Accept Order
-                              </Text>
-                            </TouchableOpacity>
+                            />
                             <TouchableOpacity
                               onPress={() =>
                                 updateOrderStatus(selectedOrder.id, "cancelled")
                               }
-                              className="flex-1 bg-red-500 h-12 rounded-lg items-center justify-center flex-row gap-1"
+                              className="w-full h-14 rounded-full items-center justify-center flex-row gap-1.5 bg-white border border-[#E7E0D2]"
                             >
-                              <X color="#FFFFFF" size={16} />
-                              <Text className="text-white font-semibold">
-                                Decline Order
-                              </Text>
+                              <X color="#C0361F" size={16} />
+                              <Text className="text-ink font-bold">Decline Order</Text>
                             </TouchableOpacity>
                           </>
                         )}
                         {selectedOrder.status === "accepted" && (
-                          <TouchableOpacity
+                          <AppButton
+                            title="Mark as Preparing"
+                            variant="ink"
                             onPress={() =>
                               updateOrderStatus(selectedOrder.id, "preparing")
                             }
-                            className="flex-1 bg-blue-900 h-12 rounded-lg items-center justify-center flex-row gap-1"
-                          >
-                            <Clock color="#FFFFFF" size={16} />
-                            <Text className="text-white font-semibold">
-                              Mark as Preparing
-                            </Text>
-                          </TouchableOpacity>
+                          />
                         )}
                         {selectedOrder.status === "preparing" && (
-                          <TouchableOpacity
+                          <AppButton
+                            title="Mark as Completed"
+                            variant="ink"
                             onPress={() =>
                               updateOrderStatus(selectedOrder.id, "completed")
                             }
-                            className="flex-1 bg-green-500 h-12 rounded-lg items-center justify-center flex-row gap-1"
-                          >
-                            <CheckCircle color="#FFFFFF" size={16} />
-                            <Text className="text-white font-semibold">
-                              Mark as Completed
-                            </Text>
-                          </TouchableOpacity>
+                          />
                         )}
                       </View>
                     </View>

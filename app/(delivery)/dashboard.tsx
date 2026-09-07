@@ -42,13 +42,22 @@ const mockActiveDeliveries = [
   },
 ];
 
-const statusColors: Record<string, string> = {
-  assigned: "bg-gray-100 text-gray-700",
-  heading_to_seller: "bg-blue-100 text-blue-700",
-  picked_up: "bg-amber-100 text-amber-700",
-  on_the_way: "bg-blue-100 text-blue-700",
-  delivered: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
+const statusChip: Record<string, string> = {
+  assigned: "bg-[#EDEDF7]",
+  heading_to_seller: "bg-[#E8EDFF]",
+  picked_up: "bg-[#FFF3D6]",
+  on_the_way: "bg-[#E8EDFF]",
+  delivered: "bg-[#E3F2E8]",
+  cancelled: "bg-[#FDE8E4]",
+};
+
+const statusText: Record<string, string> = {
+  assigned: "#1B1B8F",
+  heading_to_seller: "#1B1B8F",
+  picked_up: "#8A5A00",
+  on_the_way: "#1B1B8F",
+  delivered: "#12805C",
+  cancelled: "#C0361F",
 };
 
 const getTimeAgo = (date: string) => {
@@ -98,101 +107,102 @@ export default function DeliveryDashboard() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#000080" />
+      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
+        <ActivityIndicator size="large" color="#1B1B8F" />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-white p-6 gap-6">
-      {/* Header with Online Toggle */}
-      <View className="flex-row items-center justify-between">
-        <View>
-          <Text className="text-2xl font-bold text-gray-900">Dashboard</Text>
-          <Text className="text-gray-500">Manage your deliveries</Text>
-        </View>
-        <View className="flex-row items-center gap-3">
-          <Text className="text-sm text-gray-500">
-            {isOnline ? "Online" : "Offline"}
-          </Text>
-          <Switch
-            value={isOnline}
-            onValueChange={toggleOnlineStatus}
-            trackColor={{ true: "#16A34A", false: "#D1D5DB" }}
-          />
-        </View>
-      </View>
-
-      {/* Stats Cards */}
-      <View className="flex-row flex-wrap gap-3">
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center">
-              <Wallet color="#000080" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Total Earnings</Text>
-              <Text className="text-lg font-bold text-gray-900">
-                ₦{(agent?.total_earnings || 0).toLocaleString()}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-green-50 items-center justify-center">
-              <Package color="#16A34A" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Completed</Text>
-              <Text className="text-lg font-bold text-gray-900">
-                {agent?.completed_deliveries || 0}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-yellow-50 items-center justify-center">
-              <Clock color="#EAB308" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Active</Text>
-              <Text className="text-lg font-bold text-gray-900">
-                {activeDeliveries.length}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center">
-              <TrendingUp color="#3B82F6" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Status</Text>
-              <View className={`px-2 py-0.5 rounded-full ${agent?.is_active ? "bg-green-100" : "bg-gray-100"}`}>
-                <Text className={`text-xs font-semibold ${agent?.is_active ? "text-green-700" : "text-gray-700"}`}>
-                  {agent?.is_active ? "Active" : "Inactive"}
-                </Text>
+    <ScrollView className="flex-1 bg-[#FAF5EA]" contentContainerStyle={{ paddingBottom: 120 }}>
+      {/* Status card — white */}
+      <View className="px-5 pt-14">
+        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-3">
+          Rider Dashboard
+        </Text>
+        <View className="bg-white rounded-[28px] p-6 border border-[#E7E0D2]">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">Availability</Text>
+              <Text className="text-2xl font-bold text-ink mt-1">Deliveries</Text>
+              <View className="flex-row items-center mt-3">
+                <View className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border ${isOnline ? "bg-[#E3F2E8] border-[#E3F2E8]" : "bg-[#FAF5EA] border-[#E7E0D2]"}`}>
+                  <View className={`w-2 h-2 rounded-full ${isOnline ? "bg-[#12805C]" : "bg-[#B9B4C0]"}`} />
+                  <Text className="text-[11px] font-bold tracking-[1px] text-ink">
+                    {isOnline ? "ONLINE" : "OFFLINE"}
+                  </Text>
+                </View>
               </View>
             </View>
+            <View className="items-center gap-2">
+              <View className="w-14 h-14 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+                <Navigation color="#1B1B8F" size={22} />
+              </View>
+              <Switch
+                value={isOnline}
+                onValueChange={toggleOnlineStatus}
+                trackColor={{ true: "#1B1B8F", false: "#D8D2C4" }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
           </View>
         </View>
       </View>
 
-      {/* Active Deliveries */}
-      <View>
-        <Text className="text-lg font-semibold mb-4">Active Deliveries</Text>
+      {/* 2x2 stat white cards */}
+      <View className="px-5 mt-4 flex-row gap-3">
+        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
+            <Wallet color="#1B1B8F" size={20} />
+          </View>
+          <Text className="text-xs text-ink/55">Total Earnings</Text>
+          <Text className="text-lg font-bold text-ink mt-0.5">
+            ₦{(agent?.total_earnings || 0).toLocaleString()}
+          </Text>
+        </View>
+        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
+            <Package color="#12805C" size={20} />
+          </View>
+          <Text className="text-xs text-ink/55">Completed</Text>
+          <Text className="text-lg font-bold text-ink mt-0.5">
+            {agent?.completed_deliveries || 0}
+          </Text>
+        </View>
+      </View>
+      <View className="px-5 mt-3 flex-row gap-3">
+        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
+            <Clock color="#1B1B8F" size={20} />
+          </View>
+          <Text className="text-xs text-ink/55">Active</Text>
+          <Text className="text-lg font-bold text-ink mt-0.5">
+            {activeDeliveries.length}
+          </Text>
+        </View>
+        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
+            <TrendingUp color="#1B1B8F" size={20} />
+          </View>
+          <Text className="text-xs text-ink/55">Status</Text>
+          <View className={`self-start mt-1.5 px-2.5 py-1 rounded-full ${agent?.is_active ? "bg-[#E3F2E8]" : "bg-[#FAF5EA] border border-[#E7E0D2]"}`}>
+            <Text className="text-[11px] font-bold" style={{ color: agent?.is_active ? "#12805C" : "#6E6A75" }}>
+              {agent?.is_active ? "Active" : "Inactive"}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Active delivery white cards */}
+      <View className="px-5 mt-8">
+        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-4">Active Deliveries</Text>
         {activeDeliveries.length === 0 ? (
-          <View className="bg-white rounded-xl p-8 items-center border border-gray-200">
-            <Package color="#9CA3AF" size={48} />
-            <Text className="text-gray-500 mt-3">No active deliveries</Text>
-            <Text className="text-sm text-gray-500 mt-1">
+          <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
+            <View className="w-16 h-16 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+              <Package color="#6E6A75" size={22} />
+            </View>
+            <Text className="text-ink font-bold mt-3">No active deliveries</Text>
+            <Text className="text-sm text-ink/55 mt-1 text-center">
               {isOnline
                 ? "New deliveries will appear here when assigned"
                 : "Go online to receive delivery assignments"}
@@ -210,44 +220,45 @@ export default function DeliveryDashboard() {
               return (
                 <View
                   key={delivery.id}
-                  className="bg-white rounded-xl p-4 border border-gray-200"
+                  className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]"
                 >
-                  <View className="flex-row items-start justify-between mb-3">
-                    <View className="flex-1">
-                      <View className="flex-row items-center gap-2 mb-1">
-                        <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center">
-                          <Text className="text-lg">📦</Text>
-                        </View>
-                        <View className="flex-1">
-                          <Text className="font-semibold text-gray-900">
-                            #{delivery.order_id.slice(0, 8)}
-                          </Text>
-                          <Text className="text-xs text-gray-500">
-                            {itemNames.join(", ")}
-                          </Text>
-                        </View>
+                  <View className="flex-row items-start justify-between mb-3 gap-2">
+                    <View className="flex-1 flex-row items-center gap-2.5">
+                      <View className="w-12 h-12 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+                        <Package color="#1B1B8F" size={20} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="font-bold text-ink">
+                          #{delivery.order_id.slice(0, 8)}
+                        </Text>
+                        <Text className="text-xs text-ink/55 mt-0.5" numberOfLines={1}>
+                          {itemNames.join(", ")}
+                        </Text>
                       </View>
                     </View>
                     <View
-                      className={`px-2 py-1 rounded-full ${statusColors[delivery.status] || statusColors.assigned}`}
+                      className={`px-2.5 py-1.5 rounded-full ${statusChip[delivery.status] || statusChip.assigned}`}
                     >
-                      <Text className="text-xs font-semibold capitalize">
-                        {delivery.status.replace("_", " ")}
+                      <Text
+                        className="text-[11px] font-bold capitalize"
+                        style={{ color: statusText[delivery.status] || statusText.assigned }}
+                      >
+                        {delivery.status.replaceAll("_", " ")}
                       </Text>
                     </View>
                   </View>
 
-                  <View className="flex-row items-center justify-between mb-3">
-                    <Text className="text-sm text-gray-500">
+                  <View className="flex-row items-center justify-between bg-[#FAF5EA] border border-[#E7E0D2] rounded-2xl px-4 py-3 mb-3">
+                    <Text className="text-sm text-ink/55 flex-1" numberOfLines={1}>
                       {order?.delivery_address}
                     </Text>
-                    <Text className="text-sm font-bold text-blue-900">
+                    <Text className="text-base font-bold text-[#1B1B8F] ml-2">
                       ₦{delivery.delivery_fee}
                     </Text>
                   </View>
 
                   <View className="flex-row items-center justify-between">
-                    <Text className="text-xs text-gray-500">
+                    <Text className="text-xs text-ink/55">
                       {getTimeAgo(delivery.created_at)}
                     </Text>
                     <View className="flex-row gap-2">
@@ -256,10 +267,10 @@ export default function DeliveryDashboard() {
                           onPress={() =>
                             updateDeliveryStatus(delivery.id, "picked_up")
                           }
-                          className="bg-blue-900 px-3 py-1.5 rounded-full flex-row items-center gap-1"
+                          className="bg-ink px-4 h-11 rounded-full flex-row items-center gap-1.5"
                         >
                           <CheckCircle color="#FFFFFF" size={14} />
-                          <Text className="text-white text-xs font-semibold">
+                          <Text className="text-white text-xs font-bold">
                             Picked Up
                           </Text>
                         </TouchableOpacity>
@@ -269,10 +280,10 @@ export default function DeliveryDashboard() {
                           onPress={() =>
                             updateDeliveryStatus(delivery.id, "delivered")
                           }
-                          className="bg-green-500 px-3 py-1.5 rounded-full flex-row items-center gap-1"
+                          className="bg-ink px-4 h-11 rounded-full flex-row items-center gap-1.5"
                         >
                           <CheckCircle color="#FFFFFF" size={14} />
-                          <Text className="text-white text-xs font-semibold">
+                          <Text className="text-white text-xs font-bold">
                             Delivered
                           </Text>
                         </TouchableOpacity>

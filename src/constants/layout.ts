@@ -15,10 +15,15 @@ export const Layout = {
     xl: 32,
   },
   borderRadius: {
-    sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
+    sm: 12,
+    md: 18,
+    lg: 24,
+    xl: 32,
     full: 9999,
+  },
+  card: {
+    heroRadius: 28,
+    snapWidth: 220,
+    heroHeight: 300,
   },
 } as const;

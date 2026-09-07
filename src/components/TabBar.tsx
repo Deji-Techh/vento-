@@ -1,5 +1,6 @@
 import { View, Text, Pressable } from "react-native";
 import { usePathname, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface TabItem {
   icon: (props: { color: string; size: number }) => React.ReactNode;
@@ -8,44 +9,64 @@ interface TabItem {
   badge?: number;
 }
 
-export default function TabBar({ tabs }: { tabs: TabItem[] }) {
+export default function TabBar({ tabs, dark = true }: { tabs: TabItem[]; dark?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View className="flex-row justify-around items-center py-2 pb-4 bg-white/95 backdrop-blur-md border-t border-gray-200">
+    <View
+      className="absolute left-6 right-6 flex-row items-center px-3 rounded-full border"
+      style={{
+        bottom: Math.max(insets.bottom, 14),
+        height: 76,
+        backgroundColor: dark ? "rgba(19,19,24,0.96)" : "rgba(255,255,255,0.97)",
+        borderColor: dark ? "rgba(255,255,255,0.10)" : "#E7E0D2",
+        shadowColor: "#000",
+        shadowOpacity: 0.3,
+        shadowRadius: 24,
+        shadowOffset: { width: 0, height: 12 },
+        elevation: 12,
+      }}
+    >
       {tabs.map((tab) => {
         const isActive = pathname === tab.href || pathname.startsWith(tab.href + "/");
         const Icon = tab.icon;
         return (
           <Pressable
             key={tab.label}
-            onPress={() => router.push(tab.href)}
-            className="items-center relative"
+            onPress={() => router.push(tab.href as any)}
+            className="flex-1 items-center justify-center"
+            style={{ minHeight: 56, minWidth: 56 }}
           >
-            {isActive ? (
-              <View className="bg-blue-50 px-4 py-1 rounded-full items-center justify-center">
-                <Icon color="#000080" size={24} />
-              </View>
-            ) : (
-              <View className="px-4 py-1 items-center justify-center">
-                <Icon color="#9CA3AF" size={24} />
-              </View>
-            )}
+            <View
+              className="items-center justify-center rounded-full"
+              style={{
+                width: 46,
+                height: 32,
+                backgroundColor: isActive ? (dark ? "#FFFFFF" : "#0A0A0E") : "transparent",
+              }}
+            >
+              <Icon
+                color={isActive ? (dark ? "#0A0A0E" : "#FFFFFF") : dark ? "rgba(255,255,255,0.5)" : "#6E6A75"}
+                size={21}
+              />
+              {tab.badge != null && tab.badge > 0 && (
+                <View className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-ember rounded-full items-center justify-center">
+                  <Text className="text-white text-[10px] font-bold">{tab.badge > 99 ? "99+" : tab.badge}</Text>
+                </View>
+              )}
+            </View>
             <Text
-              className={`text-[10px] mt-0.5 ${
-                isActive ? "text-blue-900 font-bold" : "text-gray-500 font-semibold"
-              }`}
+              style={{
+                fontSize: 10,
+                fontWeight: isActive ? "700" : "500",
+                color: isActive ? (dark ? "#fff" : "#0A0A0E") : dark ? "rgba(255,255,255,0.45)" : "#6E6A75",
+                marginTop: 2,
+              }}
             >
               {tab.label}
             </Text>
-            {tab.badge != null && tab.badge > 0 && (
-              <View className="absolute -top-0.5 right-0 w-5 h-5 bg-blue-900 rounded-full items-center justify-center">
-                <Text className="text-white text-[10px] font-bold">
-                  {tab.badge > 99 ? "99+" : tab.badge}
-                </Text>
-              </View>
-            )}
           </Pressable>
         );
       })}

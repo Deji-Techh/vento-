@@ -8,7 +8,8 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { CheckCircle, Upload } from "lucide-react-native";
+import { Check, Upload } from "lucide-react-native";
+import { AppButton } from "../../src/components/ui/AppButton";
 
 const steps = [
   { id: 1, title: "Personal Information", completed: true },
@@ -35,31 +36,34 @@ export default function SellerVerification() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-white px-5 pt-8 pb-6">
-      <Text className="text-2xl font-bold mb-2">Verify Your Account</Text>
-      <Text className="text-gray-500 mb-8">
+    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14 pb-10">
+      <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
+        Compliance
+      </Text>
+      <Text className="text-[28px] font-bold text-ink mt-1 mb-1">Verify Account</Text>
+      <Text className="text-ink/55 mb-7">
         Complete verification to start receiving orders.
       </Text>
 
       {/* Steps */}
-      <View className="gap-4 mb-8">
+      <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-6 mb-4 gap-4">
         {steps.map((step) => (
           <View key={step.id} className="flex-row items-center gap-3">
             <View
-              className={`w-8 h-8 rounded-full items-center justify-center ${
+              className={`w-9 h-9 rounded-full items-center justify-center border ${
                 step.completed
-                  ? "bg-green-500"
+                  ? "bg-[#12805C] border-[#12805C]"
                   : currentStep === step.id
-                  ? "bg-blue-900"
-                  : "bg-gray-200"
+                  ? "bg-ink border-ink"
+                  : "bg-[#FAF5EA] border-[#E7E0D2]"
               }`}
             >
               {step.completed ? (
-                <CheckCircle color="#FFFFFF" size={18} />
+                <Check color="#FFFFFF" size={18} />
               ) : (
                 <Text
                   className={`text-sm font-bold ${
-                    currentStep === step.id ? "text-white" : "text-gray-500"
+                    currentStep === step.id ? "text-white" : "text-ink/55"
                   }`}
                 >
                   {step.id}
@@ -67,9 +71,8 @@ export default function SellerVerification() {
               )}
             </View>
             <Text
-              className={`text-sm font-medium ${
-                step.completed ? "text-green-600" : "text-gray-900"
-              }`}
+              className="text-sm font-bold"
+              style={{ color: step.completed ? "#12805C" : "#0A0A0E" }}
             >
               {step.title}
             </Text>
@@ -80,9 +83,9 @@ export default function SellerVerification() {
       {/* Step 3: ID Verification */}
       {currentStep === 3 && (
         <View className="gap-4">
-          <Text className="text-lg font-bold">ID Verification</Text>
-          <View>
-            <Text className="text-sm font-medium text-gray-700 mb-1">
+          <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-6">
+            <Text className="text-lg font-bold text-ink mb-3">ID Verification</Text>
+            <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55 mb-2">
               ID Type
             </Text>
             <View className="flex-row gap-2">
@@ -90,25 +93,24 @@ export default function SellerVerification() {
                 <TouchableOpacity
                   key={type}
                   onPress={() => setFormData({ ...formData, idType: type })}
-                  className={`flex-1 py-3 rounded-xl items-center ${
+                  className={`flex-1 h-14 rounded-full items-center justify-center px-1 border ${
                     formData.idType === type
-                      ? "bg-blue-900"
-                      : "bg-gray-100 border border-gray-200"
+                      ? "bg-ink border-ink"
+                      : "bg-white border-[#E7E0D2]"
                   }`}
                 >
                   <Text
-                    className={`text-sm font-medium capitalize ${
-                      formData.idType === type ? "text-white" : "text-gray-900"
+                    className={`text-xs font-bold capitalize ${
+                      formData.idType === type ? "text-white" : "text-ink"
                     }`}
+                    numberOfLines={1}
                   >
                     {type.replace("_", " ")}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
-          <View>
-            <Text className="text-sm font-medium text-gray-700 mb-1">
+            <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55 mt-4 mb-2">
               ID Number
             </Text>
             <TextInput
@@ -118,81 +120,75 @@ export default function SellerVerification() {
               }
               placeholder="Enter your ID number"
               placeholderTextColor="#9CA3AF"
-              className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white"
+              className="w-full h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
             />
           </View>
-          <TouchableOpacity className="border-2 border-dashed border-gray-300 rounded-2xl p-8 items-center">
-            <Upload color="#000080" size={32} />
-            <Text className="font-semibold text-gray-900 mt-2">
-              Upload ID Document
-            </Text>
-            <Text className="text-sm text-gray-500">JPG, PNG or PDF</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setCurrentStep(4)}
-            className="w-full h-12 bg-blue-900 rounded-xl items-center justify-center mt-4"
-          >
-            <Text className="text-white font-semibold">Continue</Text>
-          </TouchableOpacity>
+          <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-6">
+            <TouchableOpacity className="border-2 border-dashed border-[#E7E0D2] rounded-[20px] p-8 items-center bg-[#FAF5EA]">
+              <View className="w-12 h-12 rounded-full bg-white border border-[#E7E0D2] items-center justify-center">
+                <Upload color="#1B1B8F" size={22} />
+              </View>
+              <Text className="font-bold text-ink mt-3">
+                Upload ID Document
+              </Text>
+              <Text className="text-sm text-ink/55">JPG, PNG or PDF</Text>
+            </TouchableOpacity>
+          </View>
+          <AppButton title="Continue" variant="ink" onPress={() => setCurrentStep(4)} />
         </View>
       )}
 
       {/* Step 4: Bank Account */}
       {currentStep === 4 && (
         <View className="gap-4">
-          <Text className="text-lg font-bold">Bank Account</Text>
-          <View>
-            <Text className="text-sm font-medium text-gray-700 mb-1">
-              Bank Name
-            </Text>
-            <TextInput
-              value={formData.bankName}
-              onChangeText={(val) =>
-                setFormData({ ...formData, bankName: val })
-              }
-              placeholder="e.g. GTBank, Access Bank"
-              placeholderTextColor="#9CA3AF"
-              className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white"
-            />
+          <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-6 gap-4">
+            <Text className="text-lg font-bold text-ink">Bank Account</Text>
+            <View>
+              <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55 mb-2">
+                Bank Name
+              </Text>
+              <TextInput
+                value={formData.bankName}
+                onChangeText={(val) =>
+                  setFormData({ ...formData, bankName: val })
+                }
+                placeholder="e.g. GTBank, Access Bank"
+                placeholderTextColor="#9CA3AF"
+                className="w-full h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
+              />
+            </View>
+            <View>
+              <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55 mb-2">
+                Account Number
+              </Text>
+              <TextInput
+                value={formData.accountNumber}
+                onChangeText={(val) =>
+                  setFormData({ ...formData, accountNumber: val })
+                }
+                placeholder="10-digit account number"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                maxLength={10}
+                className="w-full h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
+              />
+            </View>
+            <View>
+              <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55 mb-2">
+                Account Name
+              </Text>
+              <TextInput
+                value={formData.accountName}
+                onChangeText={(val) =>
+                  setFormData({ ...formData, accountName: val })
+                }
+                placeholder="Name on bank account"
+                placeholderTextColor="#9CA3AF"
+                className="w-full h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
+              />
+            </View>
           </View>
-          <View>
-            <Text className="text-sm font-medium text-gray-700 mb-1">
-              Account Number
-            </Text>
-            <TextInput
-              value={formData.accountNumber}
-              onChangeText={(val) =>
-                setFormData({ ...formData, accountNumber: val })
-              }
-              placeholder="10-digit account number"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="numeric"
-              maxLength={10}
-              className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white"
-            />
-          </View>
-          <View>
-            <Text className="text-sm font-medium text-gray-700 mb-1">
-              Account Name
-            </Text>
-            <TextInput
-              value={formData.accountName}
-              onChangeText={(val) =>
-                setFormData({ ...formData, accountName: val })
-              }
-              placeholder="Name on bank account"
-              placeholderTextColor="#9CA3AF"
-              className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white"
-            />
-          </View>
-          <TouchableOpacity
-            onPress={handleSubmit}
-            className="w-full h-12 bg-blue-900 rounded-xl items-center justify-center mt-4"
-          >
-            <Text className="text-white font-semibold">
-              Submit for Verification
-            </Text>
-          </TouchableOpacity>
+          <AppButton title="Submit for Verification" variant="ink" onPress={handleSubmit} />
         </View>
       )}
     </ScrollView>

@@ -6,14 +6,17 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import {
   HelpCircle,
   Download,
   ChevronRight,
-  CheckCircle,
+  CheckCircle2,
   Wallet,
 } from "lucide-react-native";
+import { EmptyState } from "../../src/components/ui/Cards";
+import { Eyebrow } from "../../src/components/ui/SectionHeader";
 
 const tabs = ["History", "Ongoing", "Scheduled", "Draft"];
 const filters = ["All", "Food", "Grocery", "Status"];
@@ -82,134 +85,195 @@ export default function Orders() {
   const displayOrders = activeTab === "Ongoing" ? ongoingOrders : orders;
 
   return (
-    <View className="flex-1 bg-white">
-      {/* TopAppBar */}
-      <View className="bg-white px-5 pt-4">
-        <View className="flex-row items-center justify-between h-14">
-          <Text className="text-2xl font-bold text-blue-900">Orders</Text>
-          <View className="flex-row items-center gap-4">
-            <TouchableOpacity>
-              <HelpCircle color="#9CA3AF" size={24} />
+    <SafeAreaView className="flex-1 bg-ink" edges={["top", "left", "right"]}>
+      {/* Header */}
+      <View className="px-6 pt-2 pb-2">
+        <View className="flex-row items-center justify-between min-h-[56px]">
+          <View>
+            <Eyebrow dark>Order history</Eyebrow>
+            <Text className="text-[28px] font-bold text-white tracking-tight mt-1">
+              Orders
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-2">
+            <TouchableOpacity
+              accessibilityRole="button"
+              className="w-11 h-11 rounded-full bg-white/10 border border-white/10 items-center justify-center"
+            >
+              <HelpCircle color="rgba(255,255,255,0.7)" size={20} />
             </TouchableOpacity>
-            <TouchableOpacity>
-              <Download color="#9CA3AF" size={24} />
+            <TouchableOpacity
+              accessibilityRole="button"
+              className="w-11 h-11 rounded-full bg-white/10 border border-white/10 items-center justify-center"
+            >
+              <Download color="rgba(255,255,255,0.7)" size={20} />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Tabs */}
+        {/* Tabs — white active pill / white/10 inactive */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="border-b border-gray-200 mt-2"
+          contentContainerStyle={{ gap: 8, paddingVertical: 12 }}
         >
-          {tabs.map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              onPress={() => setActiveTab(tab)}
-              className="mr-6 pb-3"
-            >
-              <Text
-                className={`text-sm font-semibold ${
-                  activeTab === tab
-                    ? "text-blue-900 border-b-2 border-blue-900"
-                    : "text-gray-500"
+          {tabs.map((tab) => {
+            const active = activeTab === tab;
+            return (
+              <TouchableOpacity
+                key={tab}
+                onPress={() => setActiveTab(tab)}
+                activeOpacity={0.85}
+                className={`px-5 py-2.5 rounded-full border ${
+                  active
+                    ? "bg-white border-white"
+                    : "bg-white/10 border-white/10"
                 }`}
               >
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  className={`text-sm font-bold ${
+                    active ? "text-ink" : "text-white/60"
+                  }`}
+                >
+                  {tab}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
-      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Filters */}
-        <View className="flex-row items-center gap-2 mt-4 mb-6">
-          {filters.map((filter) => (
-            <TouchableOpacity
-              key={filter}
-              onPress={() => setActiveFilter(filter)}
-              className={`px-4 py-2 rounded-full border ${
-                activeFilter === filter
-                  ? "border-blue-900 bg-blue-50"
-                  : "border-gray-200 bg-white"
-              }`}
-            >
-              <Text
-                className={`text-sm font-semibold ${
-                  activeFilter === filter
-                    ? "text-blue-900"
-                    : "text-gray-900"
+      <ScrollView
+        className="flex-1 px-6"
+        contentContainerStyle={{ paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Filters row */}
+        <View className="flex-row items-center gap-2 mt-1 mb-2">
+          {filters.map((filter) => {
+            const active = activeFilter === filter;
+            return (
+              <TouchableOpacity
+                key={filter}
+                onPress={() => setActiveFilter(filter)}
+                activeOpacity={0.85}
+                className={`px-4 py-2 rounded-full border ${
+                  active
+                    ? "bg-white border-white"
+                    : "border-white/15 bg-transparent"
                 }`}
               >
-                {filter}
-                {filter === "Status" && " ▾"}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  className={`text-[13px] font-bold ${
+                    active ? "text-ink" : "text-white/55"
+                  }`}
+                >
+                  {filter}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
-        {/* Vento Pay Card */}
-        <TouchableOpacity className="bg-gray-100 rounded-xl p-4 flex-row items-center justify-between mb-6">
+        {/* Vento Pay — transparent bordered row */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          className="border border-white/10 rounded-[24px] px-4 py-4 flex-row items-center justify-between mb-2 mt-3"
+        >
           <View className="flex-row items-center gap-3">
-            <View className="w-8 h-8 rounded-full bg-blue-900 items-center justify-center">
-              <Wallet color="#FFFFFF" size={16} />
+            <View className="w-11 h-11 rounded-2xl bg-white/10 border border-white/10 items-center justify-center">
+              <Wallet color="#FFFFFF" size={20} />
             </View>
-            <Text className="text-base">Vento Pay transactions</Text>
+            <View>
+              <Text className="text-white text-[15px] font-bold">
+                Vento Pay transactions
+              </Text>
+              <Text className="text-white/55 text-xs mt-0.5">
+                Receipts, refunds and wallet
+              </Text>
+            </View>
           </View>
-          <ChevronRight color="#9CA3AF" size={20} />
+          <ChevronRight color="rgba(255,255,255,0.45)" size={20} />
         </TouchableOpacity>
 
-        {/* Order List */}
+        {/* Order list — transparent rows */}
         {displayOrders.length === 0 ? (
-          <View className="py-16 items-center">
-            <Text className="text-gray-500">No orders in this tab</Text>
+          <View className="mt-6">
+            <EmptyState
+              dark
+              title="No orders here yet"
+              subtitle="Orders in this tab will show up here."
+            />
           </View>
         ) : (
-          displayOrders.map((order) => (
-            <View
-              key={order.id}
-              className="flex-col gap-4 border-b border-gray-200 pb-6 mb-4"
-            >
-              <Text className="text-sm text-gray-500">{order.time}</Text>
-              <View className="flex-row items-start justify-between">
-                <View className="flex-row items-start gap-4">
-                  <Image
-                    source={{ uri: order.image }}
-                    className="w-16 h-16 rounded-lg bg-gray-100"
-                    resizeMode="cover"
-                  />
-                  <View className="gap-1 mt-1">
-                    <Text className="text-sm font-bold truncate w-32">
-                      {order.name}
-                    </Text>
-                    <View className="flex-row items-center gap-1">
-                      <CheckCircle color="#000080" size={16} />
-                      <Text className="text-sm text-gray-500">
-                        {order.status}
+          <View>
+            {displayOrders.map((order, index) => (
+              <View
+                key={order.id}
+                className={`py-5 ${
+                  index < displayOrders.length - 1
+                    ? "border-b border-white/10"
+                    : ""
+                }`}
+              >
+                <Text className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-3">
+                  {order.time}
+                </Text>
+                <View className="flex-row items-start justify-between">
+                  <View className="flex-row items-start gap-4 flex-1">
+                    <Image
+                      source={{ uri: order.image }}
+                      className="w-[76px] h-[76px] rounded-2xl bg-white/10"
+                      resizeMode="cover"
+                    />
+                    <View className="flex-1 pr-2">
+                      <Text
+                        className="text-white text-[16px] font-bold tracking-tight"
+                        numberOfLines={1}
+                      >
+                        {order.name}
+                      </Text>
+                      <View className="flex-row items-center gap-1.5 mt-1.5">
+                        <CheckCircle2
+                          color="rgba(255,255,255,0.45)"
+                          size={14}
+                        />
+                        <Text className="text-white/45 text-[12px] font-medium">
+                          {order.status}
+                        </Text>
+                      </View>
+                      <Text
+                        className="text-white/55 text-[13px] mt-1"
+                        numberOfLines={1}
+                      >
+                        {order.item}
                       </Text>
                     </View>
-                    <Text className="text-[13px] leading-tight text-gray-500 truncate mt-1">
-                      {order.item}
+                  </View>
+                  <View className="items-end gap-2.5 ml-2">
+                    <Text className="text-white text-[15px] font-bold">
+                      ₦{order.price.toLocaleString()}
                     </Text>
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      onPress={() => {
+                        if (order.action === "Track") {
+                          router.push("/(buyer)/track-delivery");
+                        }
+                      }}
+                      className="bg-white px-5 py-2 rounded-full"
+                    >
+                      <Text className="text-ink text-[13px] font-bold">
+                        {order.action}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
-                <View className="items-end gap-2 mt-1">
-                  <Text className="text-sm font-bold">
-                    ₦{order.price.toLocaleString()}
-                  </Text>
-                  <TouchableOpacity className="bg-blue-900 px-4 py-1.5 rounded-full">
-                    <Text className="text-white text-sm font-semibold">
-                      {order.action}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
               </View>
-            </View>
-          ))
+            ))}
+          </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

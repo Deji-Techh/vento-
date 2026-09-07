@@ -1,6 +1,15 @@
 import { View, Text, TouchableOpacity, Dimensions } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Heart, MessageCircle, Phone, ShoppingBag, Navigation } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Heart,
+  MessageCircle,
+  Phone,
+  ShoppingBag,
+  Navigation,
+} from "lucide-react-native";
+import { AppButton } from "../../src/components/ui/AppButton";
 
 const { width, height } = Dimensions.get("window");
 
@@ -8,133 +17,167 @@ export default function LiveMap() {
   const router = useRouter();
 
   return (
-    <View className="flex-1 bg-gray-50">
-      {/* Map Background - Grid Pattern */}
-      <View
-        className="absolute inset-0"
-        style={{
-          backgroundColor: "#f8f9fa",
-        }}
-      >
-        {/* Route SVG placeholder - using a View with border */}
+    <View className="flex-1 bg-ink">
+      {/* Map background — dark with route line */}
+      <View className="absolute inset-0" style={{ backgroundColor: "#0A0A0E" }}>
+        {/* Route — white line */}
         <View
-          className="absolute border-l-4 border-blue-900 rounded-full"
+          className="absolute rounded-full bg-white/40"
           style={{
             top: 200,
-            left: 100,
-            width: 4,
+            left: 120,
+            width: 3,
             height: 200,
             transform: [{ rotate: "15deg" }],
+            opacity: 0.9,
           }}
         />
 
-        {/* Origin Marker (Restaurant) */}
+        {/* Origin marker (restaurant) */}
         <View
           className="absolute flex-col items-center"
-          style={{ top: 180, left: 100 }}
+          style={{ top: 180, left: 105 }}
         >
-          <View className="w-10 h-10 bg-blue-900 rounded-full items-center justify-center shadow-lg">
+          <View className="w-11 h-11 bg-white/10 border border-white/15 rounded-full items-center justify-center">
             <Text className="text-white text-sm font-bold">R</Text>
           </View>
+          <View className="mt-1.5 bg-[#16161C] border border-white/10 px-3 py-1 rounded-full">
+            <Text className="text-[11px] font-bold uppercase tracking-[2px] text-white/50">
+              Restaurant
+            </Text>
+          </View>
         </View>
 
-        {/* Current Location Marker (Rider) */}
+        {/* Current location marker (rider) */}
         <View
           className="absolute flex-row items-center"
-          style={{ top: 300, left: 130 }}
+          style={{ top: 300, left: 140 }}
         >
-          <View className="w-12 h-12 bg-blue-900 rounded-full items-center justify-center shadow-lg">
-            <Navigation color="#FFFFFF" size={20} />
+          <View className="w-14 h-14 bg-white rounded-full items-center justify-center">
+            <Navigation color="#0A0A0E" size={22} />
           </View>
-          <View className="ml-2 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-200 flex-row items-center gap-1">
-            <Navigation color="#000080" size={12} />
-            <Text className="text-blue-900 text-xs font-semibold">1 KM</Text>
+          <View className="ml-2 bg-[#16161C] px-3 py-1.5 rounded-full border border-white/10 flex-row items-center gap-1.5">
+            <Navigation color="#FFFFFF" size={12} />
+            <Text className="text-white text-xs font-bold">1 KM</Text>
           </View>
         </View>
 
-        {/* Destination Marker (Home) */}
+        {/* Destination marker (home) */}
         <View
           className="absolute flex-col items-center"
-          style={{ top: 380, left: 230 }}
+          style={{ top: 390, left: 240 }}
         >
-          <View className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-lg border border-gray-200">
-            <Text className="text-blue-900 text-sm font-bold">D</Text>
+          <View className="w-11 h-11 bg-white rounded-full items-center justify-center">
+            <Text className="text-ink text-sm font-bold">D</Text>
+          </View>
+          <View className="mt-1.5 bg-[#16161C] border border-white/10 px-3 py-1 rounded-full">
+            <Text className="text-[11px] font-bold uppercase tracking-[2px] text-white/50">
+              Home
+            </Text>
           </View>
         </View>
       </View>
 
-      {/* Top App Bar */}
-      <View className="w-full flex-row justify-between items-center px-5 h-14 z-50 bg-transparent mt-4">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white shadow-sm items-center justify-center"
-        >
-          <ArrowLeft color="#1C1B1B" size={20} />
-        </TouchableOpacity>
-        <Text className="text-base font-bold bg-white/80 px-4 py-1 rounded-full backdrop-blur-sm">
-          Food
-        </Text>
-        <TouchableOpacity className="w-10 h-10 rounded-full bg-white shadow-sm items-center justify-center">
-          <Heart color="#000080" size={20} />
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView edges={["top", "left", "right"]} className="z-50">
+        {/* Top bar */}
+        <View className="w-full flex-row justify-between items-center px-6 h-14 mt-2">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.85}
+            className="w-11 h-11 rounded-full bg-[#16161C] border border-white/10 items-center justify-center"
+          >
+            <ArrowLeft color="#FFFFFF" size={20} />
+          </TouchableOpacity>
+          <View className="bg-[#16161C] border border-white/10 px-5 py-2 rounded-full">
+            <Text className="text-[13px] font-bold text-white">Food</Text>
+          </View>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            className="w-11 h-11 rounded-full bg-[#16161C] border border-white/10 items-center justify-center"
+          >
+            <Heart color="#FFFFFF" size={20} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Floating ETA card — dark */}
+        <View className="mx-6 mt-3 bg-[#16161C] border border-white/10 rounded-[24px] p-4 flex-row items-center justify-between">
+          <View className="flex-row items-center gap-3">
+            <View className="w-11 h-11 rounded-2xl bg-white items-center justify-center">
+              <ShoppingBag color="#0A0A0E" size={20} />
+            </View>
+            <View>
+              <Text className="text-white text-[15px] font-bold tracking-tight">
+                Arriving in 10:32
+              </Text>
+              <Text className="text-white/55 text-xs mt-0.5">
+                Invoice 12A394 · Rider nearby
+              </Text>
+            </View>
+          </View>
+          <View className="bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
+            <Text className="text-white text-[11px] font-bold tracking-[1px]">
+              LIVE
+            </Text>
+          </View>
+        </View>
+      </SafeAreaView>
 
       {/* Spacer */}
       <View className="flex-1" />
 
-      {/* Bottom Sheet */}
-      <View className="w-full bg-white rounded-t-[32px] shadow-[0_-8px_24px_rgba(0,0,128,0.08)] pb-8 z-50">
-        {/* Drag Handle */}
+      {/* Bottom sheet */}
+      <View className="w-full bg-[#16161C] rounded-t-[32px] border-t border-x border-white/10 pb-8 z-50">
+        {/* Drag handle */}
         <View className="w-full items-center pt-4 pb-2">
-          <View className="w-12 h-1.5 bg-gray-200 rounded-full" />
+          <View className="w-12 h-1.5 bg-white/15 rounded-full" />
         </View>
 
-        <View className="px-5 pb-6 pt-2 items-center">
-          {/* Top Icon */}
-          <View className="w-14 h-14 bg-blue-900 rounded-2xl items-center justify-center shadow-sm mb-4">
-            <ShoppingBag color="#FFFFFF" size={28} />
-          </View>
-
-          {/* Header Info */}
-          <Text className="text-2xl font-bold mb-1 text-center">
-            Tracking Order
+        <View className="px-6 pb-2 pt-2 items-center">
+          {/* Header info */}
+          <Text className="text-[11px] text-white/50 uppercase tracking-[2px] font-bold mb-2">
+            Invoice 12A394
           </Text>
-          <Text className="text-xs text-blue-900 uppercase tracking-[0.15em] font-semibold mb-6">
-            INVOICE : 12A394
+          <Text className="text-white text-[22px] font-bold mb-1 text-center tracking-tight">
+            Tracking order
           </Text>
 
           {/* ETA */}
-          <View className="flex-row items-baseline gap-2 mb-8">
-            <Text className="text-base text-gray-500">Arrived in</Text>
-            <Text className="text-3xl font-bold">10 : 32</Text>
-            <Text className="text-base text-gray-500">min</Text>
+          <View className="flex-row items-baseline gap-2 mb-7 mt-2">
+            <Text className="text-[15px] text-white/55">Arrived in</Text>
+            <Text className="text-white text-3xl font-bold">10 : 32</Text>
+            <Text className="text-[15px] text-white/55">min</Text>
           </View>
 
-          {/* Action Buttons */}
-          <View className="flex-row justify-center gap-12 mb-8 w-full">
-            <TouchableOpacity className="items-center gap-3">
-              <View className="w-14 h-14 rounded-full bg-blue-900 items-center justify-center shadow-sm">
-                <MessageCircle color="#FFFFFF" size={24} />
+          {/* Action buttons */}
+          <View className="flex-row justify-center gap-10 mb-7 w-full">
+            <TouchableOpacity
+              activeOpacity={0.85}
+              className="items-center gap-2"
+              onPress={() => router.push("/(buyer)/chat")}
+            >
+              <View className="w-14 h-14 rounded-full bg-white/10 border border-white/10 items-center justify-center">
+                <MessageCircle color="#FFFFFF" size={22} />
               </View>
-              <Text className="text-xs text-gray-500">Message</Text>
+              <Text className="text-xs text-white/55 font-semibold">
+                Message
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity className="items-center gap-3">
-              <View className="w-14 h-14 rounded-full bg-blue-900 items-center justify-center shadow-sm">
-                <Phone color="#FFFFFF" size={24} />
+            <TouchableOpacity activeOpacity={0.85} className="items-center gap-2">
+              <View className="w-14 h-14 rounded-full bg-white/10 border border-white/10 items-center justify-center">
+                <Phone color="#FFFFFF" size={22} />
               </View>
-              <Text className="text-xs text-gray-500">Call Driver</Text>
+              <Text className="text-xs text-white/55 font-semibold">
+                Call driver
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Primary Action */}
-          <TouchableOpacity
+          {/* Primary CTA — white */}
+          <AppButton
+            title="Order Details"
+            variant="white"
             onPress={() => router.back()}
-            className="w-full h-14 bg-blue-900 rounded-full items-center justify-center shadow-sm"
-          >
-            <Text className="text-white font-bold text-sm uppercase tracking-widest">
-              Order Details
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </View>
     </View>

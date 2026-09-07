@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   Switch,
@@ -42,65 +41,69 @@ export default function SellerSettings() {
         style: "destructive",
         onPress: async () => {
           await signOut();
-          router.replace("/onboarding");
+          router.replace("/onboarding" as any);
         },
       },
     ]);
   };
 
   return (
-    <ScrollView className="flex-1 bg-[#f8f6f5] px-4 pt-8 pb-6">
-      <Text className="text-2xl font-bold mb-6">Settings</Text>
+    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14 pb-10" contentContainerStyle={{ paddingBottom: 120 }}>
+      <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
+        Preferences
+      </Text>
+      <Text className="text-[28px] font-bold text-ink mt-1 mb-1">Settings</Text>
+      <Text className="text-sm text-ink/55 mb-6">Store preferences</Text>
 
       {/* Toggle Settings */}
-      <View className="bg-white rounded-2xl p-4 mb-4">
-        <View className="flex-row items-center justify-between py-3 border-b border-gray-100">
-          <View>
-            <Text className="font-semibold text-gray-900">
+      <View className="bg-white rounded-[26px] p-6 mb-4 border border-[#E7E0D2]">
+        <View className="flex-row items-center justify-between py-3 border-b border-[#E7E0D2]">
+          <View className="flex-1 pr-3">
+            <Text className="font-bold text-ink">
               Push Notifications
             </Text>
-            <Text className="text-sm text-gray-500">Order alerts & updates</Text>
+            <Text className="text-sm text-ink/55">Order alerts and updates</Text>
           </View>
           <Switch
             value={notifications}
             onValueChange={setNotifications}
-            trackColor={{ true: "#000080", false: "#D1D5DB" }}
+            trackColor={{ true: "#1B1B8F", false: "#D8D2C4" }}
           />
         </View>
         <View className="flex-row items-center justify-between py-3">
-          <View>
-            <Text className="font-semibold text-gray-900">
+          <View className="flex-1 pr-3">
+            <Text className="font-bold text-ink">
               Auto-Accept Orders
             </Text>
-            <Text className="text-sm text-gray-500">
+            <Text className="text-sm text-ink/55">
               Automatically accept incoming orders
             </Text>
           </View>
           <Switch
             value={autoAccept}
             onValueChange={setAutoAccept}
-            trackColor={{ true: "#000080", false: "#D1D5DB" }}
+            trackColor={{ true: "#1B1B8F", false: "#D8D2C4" }}
           />
         </View>
       </View>
 
       {/* Settings Items */}
-      <View className="bg-white rounded-2xl overflow-hidden mb-4">
+      <View className="bg-white rounded-[26px] overflow-hidden mb-4 border border-[#E7E0D2]">
         {settingsItems.map((item, index) => (
           <TouchableOpacity
             key={item.label}
             className={`flex-row items-center p-4 ${
-              index < settingsItems.length - 1 ? "border-b border-gray-100" : ""
+              index < settingsItems.length - 1 ? "border-b border-[#E7E0D2]" : ""
             }`}
           >
-            <View className="w-10 h-10 rounded-xl bg-gray-100 items-center justify-center mr-3">
-              <item.icon color="#000080" size={20} />
+            <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mr-3">
+              <item.icon color="#1B1B8F" size={20} />
             </View>
             <View className="flex-1">
-              <Text className="font-semibold text-gray-900">{item.label}</Text>
-              <Text className="text-sm text-gray-500">{item.subtitle}</Text>
+              <Text className="font-bold text-ink">{item.label}</Text>
+              <Text className="text-sm text-ink/55">{item.subtitle}</Text>
             </View>
-            <ChevronRight color="#9CA3AF" size={20} />
+            <ChevronRight color="#6E6A75" size={20} />
           </TouchableOpacity>
         ))}
       </View>
@@ -108,10 +111,12 @@ export default function SellerSettings() {
       {/* Sign Out */}
       <TouchableOpacity
         onPress={handleSignOut}
-        className="bg-white rounded-2xl p-4 flex-row items-center gap-3"
+        className="bg-white rounded-[26px] p-5 flex-row items-center gap-3 border border-[#E7E0D2]"
       >
-        <LogOut color="#EF4444" size={20} />
-        <Text className="text-red-500 font-semibold">Sign Out</Text>
+        <View className="w-11 h-11 rounded-full bg-[#FDE8E4] items-center justify-center">
+          <LogOut color="#C0361F" size={20} />
+        </View>
+        <Text className="text-[#C0361F] font-bold">Sign Out</Text>
       </TouchableOpacity>
     </ScrollView>
   );

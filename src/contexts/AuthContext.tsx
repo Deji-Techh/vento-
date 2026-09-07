@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+// DEV-BYPASS: remove this import with the bypass (see src/lib/devAuthBypass.ts)
+import { DEV_AUTH_BYPASS, makeDevSession } from "../lib/devAuthBypass";
 
 interface MockUser {
   id: string;
@@ -104,6 +106,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, _password: string) => {
+    // DEV-BYPASS: accept ANY credentials locally — delete block to remove
+    if (DEV_AUTH_BYPASS) {
+      const { userData, role: devRole, profile: devProfile } = makeDevSession(email);
+      await AsyncStorage.setItem("mock_user", JSON.stringify(userData));
+      setUser(userData);
+      setProfile(devProfile);
+      setRole(devRole);
+      return;
+    }
     await new Promise((r) => setTimeout(r, 1000));
     const mockUser = MOCK_USERS[email.toLowerCase()];
     const id = mockUser?.id || `mock-user-${Date.now()}`;
@@ -116,6 +127,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (data: any) => {
+    // DEV-BYPASS: accept ANY signup data locally — delete block to remove
+    if (DEV_AUTH_BYPASS) {
+      const { userData, role: devRole, profile: devProfile } = makeDevSession(
+        data.email,
+        data.firstName ? `${data.firstName} ${data.lastName || ""}`.trim() : undefined
+      );
+      await AsyncStorage.setItem("mock_user", JSON.stringify(userData));
+      setUser(userData);
+      // New signups go through choose-role; keep a buyer-leaning local profile
+      setProfile({ ...devProfile, name: `${data.firstName} ${data.lastName}`.trim() || devProfile.name });
+      setRole(devRole === "buyer" ? "buyer" : devRole);
+      return;
+    }
     await new Promise((r) => setTimeout(r, 1000));
     const id = `mock-user-${Date.now()}`;
     const userData = { id, email: data.email };

@@ -12,7 +12,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useAuth } from "../../src/contexts/AuthContext";
-import { Plus, Edit, Trash2, X, Camera, ArrowRight } from "lucide-react-native";
+import { Plus, Edit, Trash2, X, Camera, UtensilsCrossed } from "lucide-react-native";
+import { AppButton } from "../../src/components/ui/AppButton";
 
 const categories = [
   { key: "lunch", label: "Meals" },
@@ -179,54 +180,56 @@ export default function MenuManagement() {
 
   if (loading && foodItems.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#f8f6f5]">
-        <ActivityIndicator size="large" color="#000080" />
+      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
+        <ActivityIndicator size="large" color="#1B1B8F" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-[#f8f6f5]">
+    <View className="flex-1 bg-[#FAF5EA]">
       {/* Header */}
-      <View className="px-4 pt-6 pb-4 flex-row items-center justify-between">
-        <Text className="text-xl font-bold text-gray-900">My Menu</Text>
+      <View className="px-5 pt-14 pb-4 flex-row items-center justify-between">
+        <View>
+          <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
+            Catalogue
+          </Text>
+          <Text className="text-[28px] font-bold text-ink mt-1">My Menu</Text>
+          <Text className="text-sm text-ink/55">{foodItems.length} items</Text>
+        </View>
         <TouchableOpacity
           onPress={openAddDialog}
-          className="flex-row items-center gap-2 px-4 py-2 bg-blue-900 rounded-full"
+          activeOpacity={0.85}
+          className="flex-row items-center gap-2 px-5 h-14 rounded-full bg-ink"
         >
-          <Plus color="#FFFFFF" size={16} />
-          <Text className="text-white font-semibold text-sm">Add Item</Text>
+          <Plus color="#FFFFFF" size={18} />
+          <Text className="text-white font-bold text-sm">Add Item</Text>
         </TouchableOpacity>
       </View>
 
       {/* Menu Items Grid */}
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 120 }}>
         {foodItems.length === 0 ? (
-          <View className="bg-white rounded-2xl p-8 items-center">
-            <View className="w-16 h-16 mb-4 rounded-full bg-blue-50 items-center justify-center">
-              <Text className="text-2xl">🍽️</Text>
+          <View className="bg-white rounded-[28px] p-8 items-center border border-[#E7E0D2]">
+            <View className="w-16 h-16 mb-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
+              <UtensilsCrossed color="#1B1B8F" size={22} />
             </View>
-            <Text className="font-bold text-gray-900 mb-2">
+            <Text className="font-bold text-ink mb-2">
               No menu items yet
             </Text>
-            <Text className="text-gray-500 mb-4">
+            <Text className="text-ink/55 mb-4">
               Add your first item to start selling
             </Text>
-            <TouchableOpacity
-              onPress={openAddDialog}
-              className="px-6 py-3 bg-blue-900 rounded-2xl"
-            >
-              <Text className="text-white font-semibold">Add First Item</Text>
-            </TouchableOpacity>
+            <AppButton title="Add First Item" variant="ink" onPress={openAddDialog} />
           </View>
         ) : (
           <View className="flex-row flex-wrap gap-3">
             {foodItems.map((item) => (
               <View
                 key={item.id}
-                className="w-[48%] bg-white rounded-2xl overflow-hidden"
+                className="w-[48%] bg-white rounded-[26px] overflow-hidden border border-[#E7E0D2]"
               >
-                <View className="aspect-square bg-gray-100 relative">
+                <View className="aspect-square bg-[#FAF5EA] relative">
                   {item.image_url ? (
                     <Image
                       source={{ uri: item.image_url }}
@@ -235,46 +238,50 @@ export default function MenuManagement() {
                     />
                   ) : (
                     <View className="w-full h-full items-center justify-center">
-                      <Text className="text-3xl">🍽️</Text>
+                      <UtensilsCrossed color="#1B1B8F" size={22} />
                     </View>
                   )}
-                  <View className="absolute top-2 right-2 flex-row gap-1">
+                  <View className="absolute top-2 right-2 flex-row gap-1.5">
                     <TouchableOpacity
                       onPress={() => openEditDialog(item)}
-                      className="w-8 h-8 bg-white rounded-full items-center justify-center shadow-sm"
+                      className="w-9 h-9 bg-white rounded-full items-center justify-center border border-[#E7E0D2]"
                     >
-                      <Edit color="#1C1B1B" size={16} />
+                      <Edit color="#0A0A0E" size={15} />
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => handleDelete(item.id)}
-                      className="w-8 h-8 bg-white rounded-full items-center justify-center shadow-sm"
+                      className="w-9 h-9 bg-white rounded-full items-center justify-center border border-[#E7E0D2]"
                     >
-                      <Trash2 color="#EF4444" size={16} />
+                      <Trash2 color="#C0361F" size={15} />
                     </TouchableOpacity>
                   </View>
                   {!item.available && (
-                    <View className="absolute inset-0 bg-black/50 items-center justify-center">
-                      <Text className="text-white font-semibold">
-                        Unavailable
-                      </Text>
+                    <View className="absolute inset-0 bg-black/40 items-center justify-center">
+                      <View className="px-3 py-1.5 rounded-full bg-white">
+                        <Text className="text-ink text-xs font-bold">
+                          Unavailable
+                        </Text>
+                      </View>
                     </View>
                   )}
                 </View>
-                <View className="p-3">
-                  <Text className="font-semibold text-gray-900 text-sm truncate">
+                <View className="p-3.5">
+                  <Text className="font-bold text-ink text-sm" numberOfLines={1}>
                     {item.name}
                   </Text>
-                  <Text className="text-blue-900 font-bold mt-1">
+                  <Text className="text-[#1B1B8F] font-bold mt-1">
                     ₦{item.price.toFixed(2)}
                   </Text>
                   <View className="flex-row items-center justify-between mt-2">
-                    <Text className="text-xs text-gray-500 capitalize">
-                      {item.category}
-                    </Text>
+                    <View className="px-2.5 py-1 rounded-full bg-[#FAF5EA] border border-[#E7E0D2]">
+                      <Text className="text-[11px] font-bold text-ink capitalize">
+                        {item.category}
+                      </Text>
+                    </View>
                     <Switch
                       value={item.available}
                       onValueChange={() => toggleAvailability(item)}
-                      trackColor={{ true: "#000080", false: "#D1D5DB" }}
+                      trackColor={{ true: "#1B1B8F", false: "#D8D2C4" }}
                     />
                   </View>
                 </View>
@@ -294,10 +301,10 @@ export default function MenuManagement() {
           resetForm();
         }}
       >
-        <View className="flex-1 bg-white">
+        <View className="flex-1 bg-[#FAF5EA]">
           {/* Modal Header */}
-          <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
-            <Text className="text-lg font-bold">
+          <View className="flex-row items-center justify-between px-5 pt-6 pb-4">
+            <Text className="text-xl font-bold text-ink">
               {editingItem ? "Edit Item" : "Add New Item"}
             </Text>
             <TouchableOpacity
@@ -305,32 +312,32 @@ export default function MenuManagement() {
                 setDialogOpen(false);
                 resetForm();
               }}
-              className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+              className="w-10 h-10 rounded-full bg-white border border-[#E7E0D2] items-center justify-center"
             >
-              <X color="#1C1B1B" size={16} />
+              <X color="#0A0A0E" size={16} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView className="flex-1 p-4" contentContainerStyle={{ paddingBottom: 40 }}>
-            <View className="gap-5">
+          <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }}>
+            <View className="gap-4">
               {/* Image Upload */}
-              <View>
-                <TouchableOpacity className="border-2 border-dashed rounded-2xl p-6 items-center border-gray-300">
-                  <View className="w-12 h-12 mb-3 rounded-full bg-blue-50 items-center justify-center">
-                    <Camera color="#000080" size={24} />
+              <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-4">
+                <TouchableOpacity className="border-2 border-dashed rounded-[20px] p-6 items-center border-[#E7E0D2] bg-[#FAF5EA]">
+                  <View className="w-12 h-12 mb-3 rounded-full bg-white items-center justify-center border border-[#E7E0D2]">
+                    <Camera color="#1B1B8F" size={22} />
                   </View>
-                  <Text className="font-semibold text-gray-900">
+                  <Text className="font-bold text-ink">
                     Upload Photo
                   </Text>
-                  <Text className="text-sm text-gray-500">
+                  <Text className="text-sm text-ink/55">
                     Tap to select from gallery
                   </Text>
                 </TouchableOpacity>
               </View>
 
               {/* Food Name */}
-              <View>
-                <Text className="text-sm font-semibold text-gray-900">
+              <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5">
+                <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
                   Food Name
                 </Text>
                 <TextInput
@@ -340,33 +347,33 @@ export default function MenuManagement() {
                   }
                   placeholder="e.g. Spicy Ramen Bowl"
                   placeholderTextColor="#9CA3AF"
-                  className="mt-2 w-full h-12 px-4 rounded-2xl bg-gray-100 text-gray-900"
+                  className="mt-2 w-full h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
                 />
               </View>
 
               {/* Category */}
-              <View>
-                <Text className="text-sm font-semibold text-gray-900">
+              <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5">
+                <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
                   Category
                 </Text>
-                <View className="flex-row flex-wrap gap-2 mt-2">
+                <View className="flex-row flex-wrap gap-2 mt-3">
                   {categories.map((cat) => (
                     <TouchableOpacity
                       key={cat.key}
                       onPress={() =>
                         setFormData({ ...formData, category: cat.key })
                       }
-                      className={`px-4 py-2 rounded-full ${
+                      className={`px-4 h-11 justify-center rounded-full border ${
                         formData.category === cat.key
-                          ? "bg-blue-900"
-                          : "bg-white border border-gray-200"
+                          ? "bg-ink border-ink"
+                          : "bg-white border-[#E7E0D2]"
                       }`}
                     >
                       <Text
-                        className={`text-sm font-medium ${
+                        className={`text-sm font-bold ${
                           formData.category === cat.key
                             ? "text-white"
-                            : "text-gray-900"
+                            : "text-ink"
                         }`}
                       >
                         {cat.label}
@@ -377,14 +384,12 @@ export default function MenuManagement() {
               </View>
 
               {/* Price */}
-              <View>
-                <Text className="text-sm font-semibold text-gray-900">
+              <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5">
+                <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
                   Price
                 </Text>
-                <View className="relative mt-2">
-                  <Text className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                    ₦
-                  </Text>
+                <View className="mt-2 flex-row items-center bg-[#FAF5EA] border border-[#E7E0D2] rounded-full h-14 px-4 gap-1">
+                  <Text className="text-ink/55 font-bold">₦</Text>
                   <TextInput
                     value={formData.price}
                     onChangeText={(val) =>
@@ -393,14 +398,14 @@ export default function MenuManagement() {
                     placeholder="0.00"
                     placeholderTextColor="#9CA3AF"
                     keyboardType="numeric"
-                    className="w-full h-12 pl-8 pr-4 rounded-2xl bg-gray-100 text-gray-900"
+                    className="flex-1 text-ink"
                   />
                 </View>
               </View>
 
               {/* Description */}
-              <View>
-                <Text className="text-sm font-semibold text-gray-900">
+              <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5">
+                <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
                   Description
                 </Text>
                 <TextInput
@@ -413,17 +418,17 @@ export default function MenuManagement() {
                   multiline
                   numberOfLines={3}
                   textAlignVertical="top"
-                  className="mt-2 w-full p-4 rounded-2xl bg-gray-100 text-gray-900"
+                  className="mt-2 w-full p-4 rounded-[20px] bg-[#FAF5EA] border border-[#E7E0D2] text-ink min-h-[96px]"
                 />
               </View>
 
               {/* Available Now Toggle */}
-              <View className="flex-row items-center justify-between p-4 bg-gray-50 rounded-2xl">
+              <View className="flex-row items-center justify-between p-5 bg-white rounded-[26px] border border-[#E7E0D2]">
                 <View>
-                  <Text className="font-semibold text-gray-900">
+                  <Text className="font-bold text-ink">
                     Available Now
                   </Text>
-                  <Text className="text-sm text-gray-500">
+                  <Text className="text-sm text-ink/55">
                     Show on menu immediately
                   </Text>
                 </View>
@@ -432,20 +437,16 @@ export default function MenuManagement() {
                   onValueChange={(val) =>
                     setFormData({ ...formData, available: val })
                   }
-                  trackColor={{ true: "#000080", false: "#D1D5DB" }}
+                  trackColor={{ true: "#1B1B8F", false: "#D8D2C4" }}
                 />
               </View>
 
               {/* Submit Button */}
-              <TouchableOpacity
+              <AppButton
+                title={editingItem ? "Update Item" : "Add to Menu"}
+                variant="ink"
                 onPress={handleSubmit}
-                className="w-full h-14 bg-blue-900 rounded-2xl flex-row items-center justify-center gap-2 shadow-lg"
-              >
-                <Text className="text-white font-bold">
-                  {editingItem ? "Update Item" : "Add to Menu"}
-                </Text>
-                <ArrowRight color="#FFFFFF" size={20} />
-              </TouchableOpacity>
+              />
             </View>
           </ScrollView>
         </View>

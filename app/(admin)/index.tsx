@@ -15,7 +15,10 @@ import {
   ShoppingBag,
   DollarSign,
   Truck,
+  Check,
+  X,
 } from "lucide-react-native";
+import { AppButton } from "../../src/components/ui/AppButton";
 
 const mockStats = {
   totalUsers: 156,
@@ -56,6 +59,13 @@ const mockActivities = [
   },
 ];
 
+const activityLabels: Record<string, string> = {
+  seller_approved: "Seller Approved",
+  seller_rejected: "Seller Rejected",
+  document_approved: "Document Approved",
+  document_rejected: "Document Rejected",
+};
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { user } = useAuth();
@@ -82,165 +92,118 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#000080" />
+      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
+        <ActivityIndicator size="large" color="#1B1B8F" />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-white p-6 gap-6">
+    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14" contentContainerStyle={{ paddingBottom: 120, gap: 16 }}>
       <View>
-        <Text className="text-2xl font-bold text-gray-900">Admin Dashboard</Text>
-        <Text className="text-gray-500">Manage your Vento platform</Text>
-      </View>
-
-      {/* Stats Grid */}
-      <View className="flex-row flex-wrap gap-3">
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center">
-              <Users color="#000080" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Total Users</Text>
-              <Text className="text-lg font-bold text-gray-900">
-                {stats.totalUsers}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-green-50 items-center justify-center">
-              <Store color="#16A34A" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Total Sellers</Text>
-              <Text className="text-lg font-bold text-gray-900">
-                {stats.totalSellers}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-amber-50 items-center justify-center">
-              <DollarSign color="#EAB308" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Pending</Text>
-              <Text className="text-lg font-bold text-gray-900">
-                {stats.pendingSellers}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-purple-50 items-center justify-center">
-              <ShoppingBag color="#7C3AED" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Total Orders</Text>
-              <Text className="text-lg font-bold text-gray-900">
-                {stats.totalOrders}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
-      {/* Quick Actions */}
-      <View className="gap-3">
-        <Text className="text-lg font-semibold text-gray-900">Quick Actions</Text>
-        <TouchableOpacity
-          onPress={() => router.push("/(admin)/users")}
-          className="bg-blue-900 h-14 rounded-xl items-center justify-center flex-row gap-2"
-        >
-          <Truck color="#FFFFFF" size={20} />
-          <Text className="text-white font-semibold text-lg">
-            Manage Delivery Agents
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Activity Log */}
-      <View>
-        <Text className="text-lg font-semibold text-gray-900 mb-3">
-          Recent Activity
+        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
+          Platform
         </Text>
-        {activities.length === 0 ? (
-          <View className="bg-gray-50 rounded-xl p-8 items-center border border-gray-200">
-            <Text className="text-gray-500">No recent activity</Text>
+        <Text className="text-[28px] font-bold text-ink mt-1">Admin</Text>
+        <Text className="text-sm text-ink/55">Manage your Vento platform</Text>
+      </View>
+
+      {/* Summary hero — white */}
+      <View className="bg-white rounded-[28px] p-6 border border-[#E7E0D2]">
+        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">Platform at a glance</Text>
+        <Text className="text-2xl font-bold text-ink mt-2">
+          {stats.totalOrders} orders • {stats.totalUsers} users
+        </Text>
+        <View className="flex-row gap-2 mt-4">
+          <View className="px-3 py-1.5 rounded-full bg-[#FFF3D6]">
+            <Text className="text-xs font-bold text-[#8A5A00]">{stats.pendingSellers} pending</Text>
           </View>
-        ) : (
-          <View className="gap-3">
-            {activities.map((activity) => (
-              <View
-                key={activity.id}
-                className="bg-gray-50 rounded-xl p-4 border border-gray-200"
-              >
-                <View className="flex-row items-center gap-2 mb-1">
-                  <Text className="text-sm font-medium">
-                    {activity.action_type === "seller_approved" &&
-                      "✓ Seller Approved"}
-                    {activity.action_type === "seller_rejected" &&
-                      "✗ Seller Rejected"}
-                    {activity.action_type === "document_approved" &&
-                      "✓ Document Approved"}
-                    {activity.action_type === "document_rejected" &&
-                      "✗ Document Rejected"}
-                  </Text>
-                  <View className="bg-gray-200 px-2 py-0.5 rounded-full">
-                    <Text className="text-xs text-gray-700">
-                      {activity.profiles?.name || "Admin"}
-                    </Text>
-                  </View>
-                </View>
-                <Text className="text-xs text-gray-500">
-                  {new Date(activity.created_at).toLocaleString()}
-                </Text>
-              </View>
-            ))}
+          <View className="px-3 py-1.5 rounded-full bg-[#EDEDF7]">
+            <Text className="text-xs font-bold text-[#1B1B8F]">{stats.totalSellers} sellers</Text>
           </View>
-        )}
+        </View>
+      </View>
+
+      {/* Stats Grid white cards */}
+      <View className="flex-row flex-wrap gap-3">
+        <View className="bg-white rounded-[26px] p-5 border border-[#E7E0D2] flex-1 min-w-[45%]">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
+            <Users color="#1B1B8F" size={20} />
+          </View>
+          <Text className="text-xs text-ink/55">Total Users</Text>
+          <Text className="text-xl font-bold text-ink mt-0.5">
+            {stats.totalUsers}
+          </Text>
+        </View>
+
+        <View className="bg-white rounded-[26px] p-5 border border-[#E7E0D2] flex-1 min-w-[45%]">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
+            <Store color="#12805C" size={20} />
+          </View>
+          <Text className="text-xs text-ink/55">Total Sellers</Text>
+          <Text className="text-xl font-bold text-ink mt-0.5">
+            {stats.totalSellers}
+          </Text>
+        </View>
+
+        <View className="bg-white rounded-[26px] p-5 border border-[#E7E0D2] flex-1 min-w-[45%]">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
+            <DollarSign color="#1B1B8F" size={20} />
+          </View>
+          <Text className="text-xs text-ink/55">Pending</Text>
+          <Text className="text-xl font-bold text-ink mt-0.5">
+            {stats.pendingSellers}
+          </Text>
+        </View>
+
+        <View className="bg-white rounded-[26px] p-5 border border-[#E7E0D2] flex-1 min-w-[45%]">
+          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
+            <ShoppingBag color="#1B1B8F" size={20} />
+          </View>
+          <Text className="text-xs text-ink/55">Total Orders</Text>
+          <Text className="text-xl font-bold text-ink mt-0.5">
+            {stats.totalOrders}
+          </Text>
+        </View>
+      </View>
+
+      {/* Quick Actions pill */}
+      <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-6">
+        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-4">Quick Actions</Text>
+        <AppButton title="Manage Delivery Agents" variant="ink" onPress={() => router.push("/(admin)/users" as any)} />
       </View>
 
       {/* Pending Sellers */}
       {pendingSellers.length > 0 && (
         <View>
-          <Text className="text-lg font-semibold text-gray-900 mb-3">
+          <Text className="text-lg font-bold text-ink mb-3">
             Pending Seller Approvals
           </Text>
-          <View className="gap-3">
+          <View className="gap-4">
             {pendingSellers.map((seller) => (
               <View
                 key={seller.id}
-                className="bg-gray-50 rounded-xl p-4 border border-gray-200"
+                className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]"
               >
-                <View className="flex-row items-start justify-between mb-3">
+                <View className="flex-row items-start justify-between mb-4 gap-2">
                   <View className="flex-1">
-                    <View className="flex-row items-center gap-2 mb-1">
-                      <Text className="font-semibold text-gray-900">
+                    <View className="flex-row items-center gap-2 mb-1 flex-wrap">
+                      <Text className="font-bold text-ink">
                         {seller.store_name}
                       </Text>
-                      <View className="bg-amber-100 px-2 py-0.5 rounded-full">
-                        <Text className="text-xs font-semibold text-amber-700 capitalize">
+                      <View className="bg-[#FFF3D6] px-2.5 py-1 rounded-full">
+                        <Text className="text-[11px] font-bold text-[#8A5A00] capitalize">
                           {seller.verification_status || "pending"}
                         </Text>
                       </View>
                     </View>
-                    <Text className="text-sm text-gray-500">
+                    <Text className="text-sm text-ink/55">
                       {seller.profiles?.name}{" "}
                       {seller.profiles?.phone &&
                         `• ${seller.profiles.phone}`}
                     </Text>
                     {seller.description && (
-                      <Text className="text-sm text-gray-500 mt-1">
+                      <Text className="text-sm text-ink/55 mt-1">
                         {seller.description}
                       </Text>
                     )}
@@ -248,26 +211,28 @@ export default function AdminDashboard() {
                 </View>
                 <View className="flex-row gap-2">
                   <TouchableOpacity
-                    onPress={() => router.push("/(admin)/users")}
-                    className="flex-1 border border-gray-300 h-10 rounded-xl items-center justify-center"
+                    onPress={() => router.push("/(admin)/users" as any)}
+                    className="flex-1 border border-[#E7E0D2] h-14 rounded-full items-center justify-center bg-white"
                   >
-                    <Text className="text-gray-700 font-semibold text-sm">
+                    <Text className="text-ink font-bold text-sm">
                       View
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => handleApproval(seller.id, true)}
-                    className="flex-1 bg-green-500 h-10 rounded-xl items-center justify-center"
+                    className="flex-1 bg-ink h-14 rounded-full items-center justify-center flex-row gap-1"
                   >
-                    <Text className="text-white font-semibold text-sm">
+                    <Check color="#FFFFFF" size={14} />
+                    <Text className="text-white font-bold text-sm">
                       Approve
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => handleApproval(seller.id, false)}
-                    className="flex-1 bg-red-500 h-10 rounded-xl items-center justify-center"
+                    className="flex-1 bg-white border border-[#E7E0D2] h-14 rounded-full items-center justify-center flex-row gap-1"
                   >
-                    <Text className="text-white font-semibold text-sm">
+                    <X color="#C0361F" size={14} />
+                    <Text className="text-ink font-bold text-sm">
                       Reject
                     </Text>
                   </TouchableOpacity>
@@ -277,6 +242,45 @@ export default function AdminDashboard() {
           </View>
         </View>
       )}
+
+      {/* Activity Log */}
+      <View>
+        <Text className="text-lg font-bold text-ink mb-3">
+          Recent Activity
+        </Text>
+        {activities.length === 0 ? (
+          <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
+            <Text className="text-ink/55">No recent activity</Text>
+          </View>
+        ) : (
+          <View className="gap-3">
+            {activities.map((activity) => (
+              <View
+                key={activity.id}
+                className="bg-white rounded-[26px] p-5 border border-[#E7E0D2]"
+              >
+                <View className="flex-row items-center gap-2 mb-1 flex-wrap">
+                  <Text className="text-sm font-bold text-ink">
+                    {activityLabels[activity.action_type] || activity.action_type}
+                  </Text>
+                  <View className="bg-[#FAF5EA] border border-[#E7E0D2] px-2.5 py-1 rounded-full">
+                    <Text className="text-[11px] font-bold text-ink">
+                      {activity.profiles?.name || "Admin"}
+                    </Text>
+                  </View>
+                </View>
+                <Text className="text-xs text-ink/55">
+                  {new Date(activity.created_at).toLocaleString()}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+        <View className="mt-3 flex-row items-center gap-2 opacity-60">
+          <Truck size={14} color="#6E6A75" />
+          <Text className="text-xs text-ink/55">Ops monitored in real-time</Text>
+        </View>
+      </View>
     </ScrollView>
   );
 }

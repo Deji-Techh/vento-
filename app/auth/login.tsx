@@ -1,17 +1,12 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert } from "react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { AppButton } from "../../src/components/ui/AppButton";
+import { Reveal } from "../../src/components/ui/Reveal";
+// DEV-BYPASS: remove this import with the bypass (see src/lib/devAuthBypass.ts)
+import { DEV_AUTH_BYPASS, inferDevRole } from "../../src/lib/devAuthBypass";
 
 const mockUsers: Record<string, { id: string; role: string }> = {
   "admin@campus.edu": { id: "mock-admin-001", role: "admin" },
@@ -35,7 +30,7 @@ export default function Login() {
       return false;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      setEmailError("Please enter a valid email address");
+      setEmailError("Enter a valid email address");
       return false;
     }
     setEmailError("");
@@ -47,17 +42,12 @@ export default function Login() {
     setLoading(true);
     try {
       await signIn(email, password);
-      const mockUser = mockUsers[email.toLowerCase()];
-      const role = mockUser?.role || "buyer";
-      if (role === "admin") {
-        router.replace("/(admin)");
-      } else if (role === "seller") {
-        router.replace("/(seller)");
-      } else if (role === "delivery_agent") {
-        router.replace("/(delivery)");
-      } else {
-        router.replace("/(buyer)");
-      }
+      // DEV-BYPASS: any email works — delete line to remove (falls back to map)
+      const role = DEV_AUTH_BYPASS ? inferDevRole(email) : mockUsers[email.toLowerCase()]?.role || "buyer";
+      if (role === "admin") router.replace("/(admin)" as any);
+      else if (role === "seller") router.replace("/(seller)/dashboard" as any);
+      else if (role === "delivery_agent") router.replace("/(delivery)/dashboard" as any);
+      else router.replace("/(buyer)/browse" as any);
     } catch (error: any) {
       Alert.alert("Login failed", error.message);
     } finally {
@@ -65,135 +55,95 @@ export default function Login() {
     }
   };
 
-  const navigateToSignup = () => {
-    router.push("/auth/signup");
-  };
-
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-white"
-    >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View className="flex-1 items-center justify-center px-5 py-12">
-          <View className="w-full max-w-md">
-            <Text className="text-2xl font-bold mb-2 text-gray-900">
-              Welcome Back
-            </Text>
-            <Text className="text-sm text-gray-500 mb-8">
-              Sign in to your account to continue.
-            </Text>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1 bg-ink">
+      <SafeAreaView edges={["top"]} className="flex-1">
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+          <View className="flex-1 px-6 pt-10 pb-8">
+            <Reveal>
+              <View className="w-11 h-11 rounded-full bg-white items-center justify-center mb-8">
+                <Text className="text-ink text-lg font-bold">V</Text>
+              </View>
+            </Reveal>
+            <Reveal delay={60}>
+              <Text className="text-white text-[34px] font-bold tracking-tight leading-[36px]">Welcome back</Text>
+              <Text className="text-white/55 text-[16px] mt-2 mb-8">Dinner is 30 minutes away.</Text>
+            </Reveal>
 
-            <View className="space-y-4">
+            <Reveal delay={120}>
               <View>
-                <Text className="text-sm font-medium mb-2 text-gray-700">
-                  Email
-                </Text>
+                <Text className="text-white text-[13px] font-bold mb-2">Email</Text>
                 <TextInput
-                  className={`w-full h-10 rounded-lg border px-3 py-2 text-sm bg-white text-gray-900 ${
-                    emailError ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="Enter your email"
-                  placeholderTextColor="#9CA3AF"
+                  className={`w-full h-[56px] rounded-2xl border px-4 text-[16px] bg-white/[0.06] text-white ${emailError ? "border-[#FF8A80]" : "border-white/10"}`}
+                  placeholder="you@campus.edu"
+                  placeholderTextColor="rgba(255,255,255,0.35)"
                   value={email}
-                  onChangeText={(val) => {
-                    setEmail(val);
-                    if (emailError) validateEmail(val);
+                  onChangeText={(v) => {
+                    setEmail(v);
+                    if (emailError) validateEmail(v);
                   }}
                   onBlur={() => validateEmail(email)}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
                 />
-                {emailError ? (
-                  <Text className="text-red-500 text-xs mt-1">{emailError}</Text>
-                ) : null}
+                {emailError ? <Text className="text-[#FF8A80] text-xs mt-1.5">{emailError}</Text> : null}
               </View>
+            </Reveal>
 
-              <View>
-                <Text className="text-sm font-medium mb-2 text-gray-700">
-                  Password
-                </Text>
+            <Reveal delay={180}>
+              <View className="mt-4">
+                <Text className="text-white text-[13px] font-bold mb-2">Password</Text>
                 <View className="relative">
                   <TextInput
-                    className="w-full h-10 rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm bg-white text-gray-900"
-                    placeholder="Enter your password"
-                    placeholderTextColor="#9CA3AF"
+                    className="w-full h-[56px] rounded-2xl border border-white/10 px-4 pr-16 text-[16px] bg-white/[0.06] text-white"
+                    placeholder="••••••••"
+                    placeholderTextColor="rgba(255,255,255,0.35)"
                     secureTextEntry={!showPassword}
                     value={password}
                     onChangeText={setPassword}
                     autoComplete="current-password"
                   />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
-                    <Text className="text-gray-500 text-sm">
-                      {showPassword ? "Hide" : "Show"}
-                    </Text>
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="absolute right-0 top-0 bottom-0 w-16 items-center justify-center">
+                    <Text className="text-white/45 text-[13px] font-bold">{showPassword ? "Hide" : "Show"}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
+            </Reveal>
 
-              <View className="flex-row justify-end">
-                <TouchableOpacity>
-                  <Text className="text-sm text-blue-700">
-                    Forgot password?
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity
-                onPress={handleLogin}
-                disabled={loading}
-                className="w-full h-10 rounded-lg bg-blue-900 items-center justify-center flex-row"
-              >
-                {loading ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text className="text-white text-sm font-semibold">
-                    Sign in
-                  </Text>
-                )}
+            <View className="flex-row justify-end mt-3 mb-7">
+              <TouchableOpacity className="active:opacity-60">
+                <Text className="text-[14px] text-white font-semibold">Forgot password?</Text>
               </TouchableOpacity>
             </View>
 
-            <View className="flex-row items-center my-6">
-              <View className="flex-1 h-px bg-gray-200" />
-              <Text className="px-3 text-xs text-gray-500 uppercase">
-                Or continue with
-              </Text>
-              <View className="flex-1 h-px bg-gray-200" />
+            <Reveal delay={240}>
+              <AppButton title="Sign in" variant="white" loading={loading} onPress={handleLogin} />
+            </Reveal>
+
+            <View className="flex-row items-center my-7">
+              <View className="flex-1 h-px bg-white/10" />
+              <Text className="px-3 text-[11px] text-white/40 font-bold tracking-[1px]">OR</Text>
+              <View className="flex-1 h-px bg-white/10" />
             </View>
 
-            <View className="space-y-3">
-              <TouchableOpacity className="w-full h-10 rounded-lg border border-gray-300 bg-white items-center justify-center flex-row">
-                <Text className="text-sm font-medium text-gray-700">
-                  Google
-                </Text>
+            <View className="flex-row gap-3">
+              <TouchableOpacity className="flex-1 h-[52px] rounded-full bg-white/10 border border-white/15 items-center justify-center active:opacity-70">
+                <Text className="text-[14px] font-bold text-white">Google</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="w-full h-10 rounded-lg border border-gray-300 bg-white items-center justify-center flex-row">
-                <Text className="text-sm font-medium text-gray-700">
-                  Apple
-                </Text>
+              <TouchableOpacity className="flex-1 h-[52px] rounded-full bg-white/10 border border-white/15 items-center justify-center active:opacity-70">
+                <Text className="text-[14px] font-bold text-white">Apple</Text>
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              onPress={navigateToSignup}
-              className="w-full items-center mt-6"
-            >
-              <Text className="text-sm text-gray-500">
-                Need an account?{" "}
-                <Text className="font-semibold underline">Create one</Text>
+            <TouchableOpacity onPress={() => router.push("/auth/signup")} className="items-center mt-8 active:opacity-60">
+              <Text className="text-[14px] text-white/55">
+                Need an account? <Text className="font-bold text-white">Create one</Text>
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 }

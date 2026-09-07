@@ -14,7 +14,7 @@ export default function DeliveryLayout() {
   return (
     <Tabs
       screenOptions={{ headerShown: false }}
-      tabBar={(props) => <TabBar tabs={tabs} />}
+      tabBar={(props) => <TabBar tabs={tabs} dark={false} />}
     >
       <Tabs.Screen name="dashboard" />
       <Tabs.Screen name="tasks" />

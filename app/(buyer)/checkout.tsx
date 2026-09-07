@@ -1,45 +1,36 @@
 import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useCart } from "../../src/stores/cartStore";
-import { useAuth } from "../../src/contexts/AuthContext";
+import { ChevronLeft } from "lucide-react-native";
+import { AppButton } from "../../src/components/ui/AppButton";
 
 export default function Checkout() {
   const router = useRouter();
   const { items, getTotal, clearCart } = useCart();
-  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "pay_on_delivery">("pay_on_delivery");
-  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [pay, setPay] = useState<"paystack" | "pod">("pod");
+  const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
-    if (items.length === 0) {
-      router.replace("/(buyer)/cart");
-    }
+    if (items.length === 0) router.replace("/(buyer)/cart" as any);
   }, [items.length]);
 
-  const handlePlaceOrder = async () => {
-    if (!deliveryAddress.trim()) {
-      Alert.alert("Error", "Please enter a delivery address");
+  const place = async () => {
+    if (!address.trim()) {
+      Alert.alert("Add an address", "Where should your rider go?");
       return;
     }
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((r) => setTimeout(r, 1000));
       clearCart();
-      Alert.alert("Order placed successfully!", "Your order has been sent to the seller(s)");
-      router.replace("/(buyer)/orders");
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to place order");
+      Alert.alert("Order placed", "The kitchen has your order.");
+      router.replace("/(buyer)/orders" as any);
+    } catch (e: any) {
+      Alert.alert("Failed", e.message);
     } finally {
       setLoading(false);
     }
@@ -48,102 +39,63 @@ export default function Checkout() {
   if (items.length === 0) return null;
 
   return (
-    <ScrollView className="flex-1 bg-white px-4 py-8">
-      <Text className="text-3xl font-bold mb-8">Checkout</Text>
+    <SafeAreaView className="flex-1 bg-ink" edges={["top"]}>
+      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        <View className="flex-row items-center pt-1 mb-6">
+          <TouchableOpacity onPress={() => router.back()} className="w-11 h-11 rounded-full bg-white/10 items-center justify-center">
+            <ChevronLeft color="#fff" size={22} />
+          </TouchableOpacity>
+          <Text className="text-white text-[20px] font-bold tracking-tight ml-3">Checkout</Text>
+        </View>
 
-      <View className="gap-8">
-        {/* Delivery Information */}
-        <View className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-          <Text className="text-xl font-semibold mb-4">Delivery Information</Text>
-          <View className="gap-4">
-            <View>
-              <Text className="text-sm font-medium mb-1">Delivery Address *</Text>
-              <TextInput
-                placeholder="Enter your delivery address"
-                placeholderTextColor="#9CA3AF"
-                value={deliveryAddress}
-                onChangeText={setDeliveryAddress}
-                multiline
-                numberOfLines={3}
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                textAlignVertical="top"
-              />
+        <Text className="text-white/50 text-[11px] font-bold tracking-[2px] uppercase mb-2.5">Dropoff</Text>
+        <TextInput
+          placeholder="Street, hostel, landmark…"
+          placeholderTextColor="rgba(255,255,255,0.35)"
+          value={address}
+          onChangeText={setAddress}
+          multiline
+          className="bg-white/[0.06] border border-white/10 rounded-[20px] px-5 py-4 text-[15px] text-white min-h-[88px]"
+          textAlignVertical="top"
+        />
+        <TextInput
+          placeholder="Note for the kitchen (optional)"
+          placeholderTextColor="rgba(255,255,255,0.35)"
+          value={notes}
+          onChangeText={setNotes}
+          className="bg-white/[0.06] border border-white/10 rounded-[20px] px-5 py-4 text-[15px] text-white mt-3"
+        />
+
+        <Text className="text-white/50 text-[11px] font-bold tracking-[2px] uppercase mt-7 mb-2.5">Payment</Text>
+        {(["pod", "paystack"] as const).map((m) => (
+          <TouchableOpacity key={m} onPress={() => setPay(m)} activeOpacity={0.9} className={`flex-row items-center px-5 py-[18px] rounded-[20px] mb-2 ${pay === m ? "bg-white" : "bg-white/[0.06]"}`}>
+            <Text className={`text-[15px] font-bold flex-1 ${pay === m ? "text-ink" : "text-white"}`}>
+              {m === "pod" ? "Pay on delivery" : "Pay now with Paystack"}
+            </Text>
+            <View className={`w-5 h-5 rounded-full items-center justify-center ${pay === m ? "bg-ink" : "border-2 border-white/25"}`}>
+              {pay === m && <Text className="text-white text-[10px] font-bold">✓</Text>}
             </View>
-            <View>
-              <Text className="text-sm font-medium mb-1">Order Notes (Optional)</Text>
-              <TextInput
-                placeholder="Any special instructions?"
-                placeholderTextColor="#9CA3AF"
-                value={notes}
-                onChangeText={setNotes}
-                multiline
-                numberOfLines={2}
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                textAlignVertical="top"
-              />
+          </TouchableOpacity>
+        ))}
+
+        <Text className="text-white/50 text-[11px] font-bold tracking-[2px] uppercase mt-7 mb-2.5">Summary</Text>
+        <View className="gap-2">
+          {items.map((i) => (
+            <View key={i.id} className="flex-row justify-between">
+              <Text className="text-white/60 text-[14px]">{i.name} × {i.quantity}</Text>
+              <Text className="text-white text-[14px] font-semibold">₦{(i.price * i.quantity).toLocaleString()}</Text>
             </View>
+          ))}
+          <View className="flex-row justify-between mt-2 pt-3 border-t border-white/10">
+            <Text className="text-white text-[17px] font-bold">Total</Text>
+            <Text className="text-white text-[17px] font-bold">₦{getTotal().toLocaleString()}</Text>
           </View>
         </View>
 
-        {/* Payment Method */}
-        <View className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-          <Text className="text-xl font-semibold mb-4">Payment Method</Text>
-          <TouchableOpacity
-            onPress={() => setPaymentMethod("pay_on_delivery")}
-            className="flex-row items-center gap-2 mb-3"
-          >
-            <View className={`w-5 h-5 rounded-full border-2 items-center justify-center ${paymentMethod === "pay_on_delivery" ? "border-blue-900" : "border-gray-300"}`}>
-              {paymentMethod === "pay_on_delivery" && <View className="w-2.5 h-2.5 rounded-full bg-blue-900" />}
-            </View>
-            <Text className="text-sm">Pay on Delivery</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setPaymentMethod("paystack")}
-            className="flex-row items-center gap-2"
-          >
-            <View className={`w-5 h-5 rounded-full border-2 items-center justify-center ${paymentMethod === "paystack" ? "border-blue-900" : "border-gray-300"}`}>
-              {paymentMethod === "paystack" && <View className="w-2.5 h-2.5 rounded-full bg-blue-900" />}
-            </View>
-            <Text className="text-sm">Pay with Paystack (Online Payment)</Text>
-          </TouchableOpacity>
+        <View className="mt-6">
+          <AppButton title={pay === "paystack" ? "Pay now" : "Place order"} variant="white" loading={loading} onPress={place} />
         </View>
-
-        {/* Order Summary */}
-        <View className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-          <Text className="text-xl font-semibold mb-4">Order Summary</Text>
-          <View className="gap-3 mb-6">
-            {items.map((item) => (
-              <View key={item.id} className="flex-row justify-between text-sm">
-                <Text>
-                  {item.name} x{item.quantity}
-                </Text>
-                <Text>₦{(item.price * item.quantity).toFixed(2)}</Text>
-              </View>
-            ))}
-          </View>
-          <View className="border-t border-gray-300 pt-4 mb-6">
-            <View className="flex-row justify-between font-semibold text-lg">
-              <Text className="text-lg font-semibold">Total:</Text>
-              <Text className="text-lg font-semibold text-blue-900">
-                ₦{getTotal().toFixed(2)}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            onPress={handlePlaceOrder}
-            disabled={loading}
-            className="w-full bg-blue-900 h-12 rounded-lg items-center justify-center flex-row"
-          >
-            {loading ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <Text className="text-white font-semibold">
-                {paymentMethod === "paystack" ? "Pay with Paystack" : "Place Order"}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
