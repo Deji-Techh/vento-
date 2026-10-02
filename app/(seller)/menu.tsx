@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Modal, Switch, ActivityIndicator, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
@@ -62,6 +63,7 @@ const mockFoodItems = [
 
 export default function MenuManagement() {
   const { profile } = useAuth();
+  const { dark } = useTheme();
   const [foodItems, setFoodItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -173,45 +175,45 @@ export default function MenuManagement() {
 
   if (loading && foodItems.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-cream items-center justify-center" edges={["top"]}>
-        <ActivityIndicator size="large" color="#0A0A0E" />
+      <SafeAreaView className={`flex-1 items-center justify-center ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
+        <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <View className="px-5 pt-4 pb-4 flex-row items-center justify-between">
         <View>
           <Eyebrow>Catalogue</Eyebrow>
-          <Text className="text-[28px] font-inter-bold text-ink mt-1 tracking-tight">My Menu</Text>
-          <Text className="text-[13px] font-inter text-ink/55">{foodItems.length} items</Text>
+          <Text className={`text-[28px] font-inter-bold mt-1 tracking-tight ${dark ? "text-white" : "text-ink"}`}>My Menu</Text>
+          <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>{foodItems.length} items</Text>
         </View>
         <TouchableOpacity
           onPress={openAddDialog}
           activeOpacity={0.85}
-          className="flex-row items-center gap-2 px-5 h-14 rounded-full bg-ink"
+          className={`flex-row items-center gap-2 px-5 h-14 rounded-full ${dark ? "bg-white" : "bg-ink"}`}
         >
-          <Icon icon={PlusSignIcon} size={18} color="#fff" />
-          <Text className="text-white font-inter-bold text-[13px]">Add item</Text>
+          <Icon icon={PlusSignIcon} size={18} color={dark ? "#0A0A0E" : "#fff"} />
+          <Text className={`font-inter-bold text-[13px] ${dark ? "text-ink" : "text-white"}`}>Add item</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         {foodItems.length === 0 ? (
-          <View className="bg-white rounded-[28px] p-8 items-center border border-border">
-            <View className="w-16 h-16 mb-4 rounded-full bg-cream border border-border items-center justify-center">
+          <View className={`rounded-[28px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+            <View className={`w-16 h-16 mb-4 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
               <Icon icon={Package01Icon} size={22} color="#1B1B8F" />
             </View>
-            <Text className="font-inter-bold text-ink mb-2">No menu items yet</Text>
-            <Text className="font-inter text-ink/55 mb-4 text-[13px]">Add your first item to start selling</Text>
-            <AppButton title="Add First Item" variant="ink" onPress={openAddDialog} />
+            <Text className={`font-inter-bold mb-2 ${dark ? "text-white" : "text-ink"}`}>No menu items yet</Text>
+            <Text className={`font-inter mb-4 text-[13px] ${dark ? "text-white/55" : "text-ink/55"}`}>Add your first item to start selling</Text>
+            <AppButton title="Add First Item" variant={dark ? "white" : "ink"} onPress={openAddDialog} />
           </View>
         ) : (
           <View className="flex-row flex-wrap gap-3">
             {foodItems.map((item) => (
-              <View key={item.id} className="w-[48%] bg-white rounded-[24px] overflow-hidden border border-border">
-                <View className="bg-cream relative" style={{ aspectRatio: 1 }}>
+              <View key={item.id} className={`w-[48%] rounded-[24px] overflow-hidden border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                <View className={`relative ${dark ? "bg-white/10" : "bg-cream"}`} style={{ aspectRatio: 1 }}>
                   {item.image_url ? (
                     <Image source={{ uri: item.image_url }} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={200} />
                   ) : (
@@ -244,7 +246,7 @@ export default function MenuManagement() {
                   )}
                 </View>
                 <View className="p-3.5">
-                  <Text className="font-inter-bold text-ink text-[13px]" numberOfLines={1}>
+                  <Text className={`font-inter-bold text-[13px] ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>
                     {item.name}
                   </Text>
                   <Text className="text-primary font-inter-bold mt-1">₦{item.price.toFixed(2)}</Text>
@@ -253,7 +255,7 @@ export default function MenuManagement() {
                     <Switch
                       value={item.available}
                       onValueChange={() => toggleAvailability(item)}
-                      trackColor={{ true: "#0A0A0E", false: "#D8D2C4" }}
+                      trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D8D2C4" }}
                     />
                   </View>
                 </View>
@@ -272,9 +274,9 @@ export default function MenuManagement() {
           resetForm();
         }}
       >
-        <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+        <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-4">
-            <Text className="text-xl font-inter-bold text-ink tracking-tight">
+            <Text className={`text-xl font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>
               {editingItem ? "Edit item" : "Add new item"}
             </Text>
             <TouchableOpacity
@@ -283,34 +285,34 @@ export default function MenuManagement() {
                 resetForm();
               }}
               activeOpacity={0.85}
-              className="w-10 h-10 rounded-full bg-white border border-border items-center justify-center"
+              className={`w-10 h-10 rounded-full border items-center justify-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
             >
-              <Icon icon={ArrowLeft01Icon} size={16} color="#0A0A0E" />
+              <Icon icon={ArrowLeft01Icon} size={16} color={dark ? "#fff" : "#0A0A0E"} />
             </TouchableOpacity>
           </View>
 
           <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
             <View className="gap-4">
-              <View className="bg-white rounded-[24px] border border-border p-4">
+              <View className={`rounded-[24px] border p-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                 <TouchableOpacity
                   activeOpacity={0.85}
                   onPress={() => toast.success("Photo picker coming soon")}
-                  className="border-2 border-dashed rounded-[20px] p-6 items-center border-border bg-cream"
+                  className={`border-2 border-dashed rounded-[20px] p-6 items-center ${dark ? "border-white/10 bg-white/10" : "border-border bg-cream"}`}
                 >
-                  <View className="w-12 h-12 mb-3 rounded-full bg-white items-center justify-center border border-border">
+                  <View className={`w-12 h-12 mb-3 rounded-full items-center justify-center border ${dark ? "bg-white/10 border-white/10" : "bg-white border-border"}`}>
                     <Icon icon={Camera01Icon} size={22} color="#1B1B8F" />
                   </View>
-                  <Text className="font-inter-bold text-ink">Upload photo</Text>
-                  <Text className="text-[13px] font-inter text-ink/55">Tap to select from gallery</Text>
+                  <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Upload photo</Text>
+                  <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Tap to select from gallery</Text>
                 </TouchableOpacity>
               </View>
 
-              <View className="bg-white rounded-[24px] border border-border p-5">
-                <TextField label="Food name" value={formData.name} onChangeText={(v) => setFormData({ ...formData, name: v })} placeholder="e.g. Spicy Ramen Bowl" dark={false} />
+              <View className={`rounded-[24px] border p-5 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                <TextField label="Food name" value={formData.name} onChangeText={(v) => setFormData({ ...formData, name: v })} placeholder="e.g. Spicy Ramen Bowl" />
               </View>
 
-              <View className="bg-white rounded-[24px] border border-border p-5">
-                <Text className="text-ink text-[13px] font-inter-bold mb-2">Category</Text>
+              <View className={`rounded-[24px] border p-5 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                <Text className={`text-[13px] font-inter-bold mb-2 ${dark ? "text-white" : "text-ink"}`}>Category</Text>
                 <View className="flex-row flex-wrap gap-2 mt-1">
                   {categories.map((cat) => (
                     <TouchableOpacity
@@ -318,10 +320,12 @@ export default function MenuManagement() {
                       onPress={() => setFormData({ ...formData, category: cat.key })}
                       activeOpacity={0.85}
                       className={`px-4 h-11 justify-center rounded-full border ${
-                        formData.category === cat.key ? "bg-ink border-ink" : "bg-white border-border"
+                        formData.category === cat.key
+                          ? dark ? "bg-white border-white" : "bg-ink border-ink"
+                          : dark ? "bg-white/10 border-white/10" : "bg-white border-border"
                       }`}
                     >
-                      <Text className={`text-[13px] font-inter-bold ${formData.category === cat.key ? "text-white" : "text-ink"}`}>
+                      <Text className={`text-[13px] font-inter-bold ${formData.category === cat.key ? (dark ? "text-ink" : "text-white") : (dark ? "text-white" : "text-ink")}`}>
                         {cat.label}
                       </Text>
                     </TouchableOpacity>
@@ -329,27 +333,27 @@ export default function MenuManagement() {
                 </View>
               </View>
 
-              <View className="bg-white rounded-[24px] border border-border p-5">
-                <TextField label="Price (₦)" value={formData.price} onChangeText={(v) => setFormData({ ...formData, price: v })} placeholder="0.00" keyboardType="numeric" dark={false} />
+              <View className={`rounded-[24px] border p-5 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                <TextField label="Price (₦)" value={formData.price} onChangeText={(v) => setFormData({ ...formData, price: v })} placeholder="0.00" keyboardType="numeric" />
               </View>
 
-              <View className="bg-white rounded-[24px] border border-border p-5">
-                <TextField label="Description" value={formData.description} onChangeText={(v) => setFormData({ ...formData, description: v })} placeholder="Ingredients, portion size, allergens..." dark={false} multiline numberOfLines={3} />
+              <View className={`rounded-[24px] border p-5 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                <TextField label="Description" value={formData.description} onChangeText={(v) => setFormData({ ...formData, description: v })} placeholder="Ingredients, portion size, allergens..." multiline numberOfLines={3} />
               </View>
 
-              <View className="flex-row items-center justify-between p-5 bg-white rounded-[24px] border border-border">
+              <View className={`flex-row items-center justify-between p-5 rounded-[24px] border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                 <View>
-                  <Text className="font-inter-bold text-ink">Available now</Text>
-                  <Text className="text-[13px] font-inter text-ink/55">Show on menu immediately</Text>
+                  <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Available now</Text>
+                  <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Show on menu immediately</Text>
                 </View>
                 <Switch
                   value={formData.available}
                   onValueChange={(v) => setFormData({ ...formData, available: v })}
-                  trackColor={{ true: "#0A0A0E", false: "#D8D2C4" }}
+                  trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D8D2C4" }}
                 />
               </View>
 
-              <AppButton title={editingItem ? "Update Item" : "Add to Menu"} variant="ink" onPress={handleSubmit} />
+              <AppButton title={editingItem ? "Update Item" : "Add to Menu"} variant={dark ? "white" : "ink"} onPress={handleSubmit} />
             </View>
           </ScrollView>
         </SafeAreaView>

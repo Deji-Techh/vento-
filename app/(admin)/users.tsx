@@ -15,6 +15,7 @@ import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
 import { Eyebrow, SectionHeader, StatusChip } from "../../src/components/ui/SectionHeader";
 import { Icon } from "../../src/components/ui/Icon";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import {
   UsersIcon,
   Package01Icon,
@@ -64,6 +65,7 @@ function notifyError(message: string) {
 }
 
 export default function AdminUsers() {
+  const { dark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [agents, setAgents] = useState<any[]>([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -170,16 +172,16 @@ export default function AdminUsers() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+      <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#1B1B8F" />
+          <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#1B1B8F"} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingBottom: 120, paddingTop: 12, gap: 16 }}
@@ -188,49 +190,49 @@ export default function AdminUsers() {
         <View className="flex-row items-center justify-between gap-3">
           <View className="flex-1">
             <Eyebrow>Team</Eyebrow>
-            <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">
+            <Text className={`text-[28px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>
               Agents
             </Text>
-            <Text className="text-[13px] font-inter text-ink/55 mt-1">
+            <Text className={`text-[13px] font-inter mt-1 ${dark ? "text-white/55" : "text-ink/55"}`}>
               Manage delivery personnel
             </Text>
           </View>
           <TouchableOpacity
             onPress={() => setIsAddOpen(true)}
             activeOpacity={0.85}
-            className="bg-ink px-5 h-14 rounded-full flex-row items-center gap-1.5"
+            className={`px-5 h-14 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
           >
-            <Icon icon={PlusSignIcon} size={16} color="#fff" />
-            <Text className="text-white font-inter-bold text-[14px]">Add Agent</Text>
+            <Icon icon={PlusSignIcon} size={16} color={dark ? "#0A0A0E" : "#fff"} />
+            <Text className={`font-inter-bold text-[14px] ${dark ? "text-ink" : "text-white"}`}>Add Agent</Text>
           </TouchableOpacity>
         </View>
 
         {/* Stats */}
         <View className="flex-row gap-3">
-          <View className="bg-white rounded-[24px] p-4 border border-border flex-1 items-center">
-            <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center">
+          <View className={`rounded-[24px] p-4 border flex-1 items-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+            <View className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
               <Icon icon={UsersIcon} size={20} color="#1B1B8F" />
             </View>
-            <Text className="text-[22px] font-inter-bold text-ink mt-2">{agents.length}</Text>
-            <Text className="text-[12px] font-inter text-ink/55">Total Agents</Text>
+            <Text className={`text-[22px] font-inter-bold mt-2 ${dark ? "text-white" : "text-ink"}`}>{agents.length}</Text>
+            <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Total Agents</Text>
           </View>
-          <View className="bg-white rounded-[24px] p-4 border border-border flex-1 items-center">
-            <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center">
+          <View className={`rounded-[24px] p-4 border flex-1 items-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+            <View className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
               <Icon icon={Package01Icon} size={20} color="#12805C" />
             </View>
-            <Text className="text-[22px] font-inter-bold text-ink mt-2">
+            <Text className={`text-[22px] font-inter-bold mt-2 ${dark ? "text-white" : "text-ink"}`}>
               {agents.filter((a) => a.is_active).length}
             </Text>
-            <Text className="text-[12px] font-inter text-ink/55">Active</Text>
+            <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Active</Text>
           </View>
-          <View className="bg-white rounded-[24px] p-4 border border-border flex-1 items-center">
-            <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center">
+          <View className={`rounded-[24px] p-4 border flex-1 items-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+            <View className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
               <Icon icon={CheckmarkCircle01Icon} size={20} color="#1B1B8F" />
             </View>
-            <Text className="text-[22px] font-inter-bold text-ink mt-2">
+            <Text className={`text-[22px] font-inter-bold mt-2 ${dark ? "text-white" : "text-ink"}`}>
               {agents.filter((a) => a.is_online).length}
             </Text>
-            <Text className="text-[12px] font-inter text-ink/55">Online Now</Text>
+            <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Online Now</Text>
           </View>
         </View>
 
@@ -238,9 +240,9 @@ export default function AdminUsers() {
         <View>
           <SectionHeader title="All agents" action={`${agents.length}`} />
           {agents.length === 0 ? (
-            <View className="bg-white rounded-[24px] p-8 items-center border border-border">
-              <Icon icon={UsersIcon} size={22} color="#6E6A75" />
-              <Text className="text-ink/55 mt-3 font-inter-medium text-[14px] text-center">
+            <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+              <Icon icon={UsersIcon} size={22} color={dark ? "rgba(255,255,255,0.6)" : "#6E6A75"} />
+              <Text className={`mt-3 font-inter-medium text-[14px] text-center ${dark ? "text-white/55" : "text-ink/55"}`}>
                 No delivery agents yet. Add one to get started.
               </Text>
             </View>
@@ -249,24 +251,24 @@ export default function AdminUsers() {
               {agents.map((agent) => (
                 <View
                   key={agent.id}
-                  className="bg-white rounded-[24px] p-5 border border-border"
+                  className={`rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
                 >
                   <View className="flex-row items-center justify-between gap-3">
                     <View className="flex-1 flex-row items-center gap-3">
-                      <View className="w-12 h-12 rounded-full bg-cream border border-border items-center justify-center">
-                        <Text className="text-ink font-inter-bold text-[16px]">
+                      <View className={`w-12 h-12 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                        <Text className={`font-inter-bold text-[16px] ${dark ? "text-white" : "text-ink"}`}>
                           {agent.profiles?.name?.charAt(0) || "?"}
                         </Text>
                       </View>
                       <View className="flex-1">
-                        <Text className="font-inter-bold text-[15px] text-ink">
+                        <Text className={`font-inter-bold text-[15px] ${dark ? "text-white" : "text-ink"}`}>
                           {agent.profiles?.name || "Unknown"}
                         </Text>
                         <View className="flex-row gap-3 mt-1">
-                          <Text className="text-[12px] text-ink/55 font-inter-semibold">
+                          <Text className={`text-[12px] font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>
                             ₦{(agent.total_earnings || 0).toLocaleString()}
                           </Text>
-                          <Text className="text-[12px] font-inter text-ink/55">
+                          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
                             {agent.completed_deliveries || 0} deliveries
                           </Text>
                         </View>
@@ -281,9 +283,9 @@ export default function AdminUsers() {
                     <TouchableOpacity
                       onPress={() => toggleAgentStatus(agent.id, agent.is_active)}
                       activeOpacity={0.85}
-                      className="border border-border bg-white px-3.5 h-10 rounded-full items-center justify-center"
+                      className={`border px-3.5 h-10 rounded-full items-center justify-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
                     >
-                      <Text className="text-[12px] font-inter-bold text-ink">
+                      <Text className={`text-[12px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
                         {agent.is_active ? "Deactivate" : "Activate"}
                       </Text>
                     </TouchableOpacity>
@@ -304,11 +306,11 @@ export default function AdminUsers() {
             resetForm();
           }}
         >
-          <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+          <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
             <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
               <View className="flex-1">
                 <Eyebrow>Add to team</Eyebrow>
-                <Text className="text-[20px] font-inter-bold text-ink tracking-tight mt-1">
+                <Text className={`text-[20px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>
                   Add delivery agent
                 </Text>
               </View>
@@ -318,9 +320,9 @@ export default function AdminUsers() {
                   resetForm();
                 }}
                 activeOpacity={0.85}
-                className="w-11 h-11 rounded-full bg-white border border-border items-center justify-center"
+                className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
               >
-                <Text className="text-ink font-inter-bold">✕</Text>
+                <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>✕</Text>
               </TouchableOpacity>
             </View>
 
@@ -329,17 +331,17 @@ export default function AdminUsers() {
               contentContainerStyle={{ paddingBottom: 40, gap: 16 }}
               showsVerticalScrollIndicator={false}
             >
-              <View className="flex-row gap-2 bg-white border border-border rounded-full p-1.5">
+              <View className={`flex-row gap-2 border rounded-full p-1.5 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                 <TouchableOpacity
                   onPress={() => setAddTab("existing")}
                   activeOpacity={0.85}
                   className={`flex-1 h-14 rounded-full items-center justify-center ${
-                    addTab === "existing" ? "bg-ink" : "bg-transparent"
+                    addTab === "existing" ? (dark ? "bg-white" : "bg-ink") : "bg-transparent"
                   }`}
                 >
                   <Text
                     className={`font-inter-bold text-[14px] ${
-                      addTab === "existing" ? "text-white" : "text-ink"
+                      addTab === "existing" ? (dark ? "text-ink" : "text-white") : dark ? "text-white/60" : "text-ink"
                     }`}
                   >
                     Existing User
@@ -349,12 +351,12 @@ export default function AdminUsers() {
                   onPress={() => setAddTab("new")}
                   activeOpacity={0.85}
                   className={`flex-1 h-14 rounded-full items-center justify-center ${
-                    addTab === "new" ? "bg-ink" : "bg-transparent"
+                    addTab === "new" ? (dark ? "bg-white" : "bg-ink") : "bg-transparent"
                   }`}
                 >
                   <Text
                     className={`font-inter-bold text-[14px] ${
-                      addTab === "new" ? "text-white" : "text-ink"
+                      addTab === "new" ? (dark ? "text-ink" : "text-white") : dark ? "text-white/60" : "text-ink"
                     }`}
                   >
                     New User
@@ -364,31 +366,30 @@ export default function AdminUsers() {
 
               {addTab === "existing" ? (
                 <View className="gap-4">
-                  <View className="bg-white rounded-[24px] border border-border p-4">
+                  <View className={`rounded-[24px] border p-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                     <View className="flex-row gap-2">
                       <View className="flex-1">
                         <TextField
                           value={searchQuery}
                           onChangeText={setSearchQuery}
                           placeholder="Search by name..."
-                          dark={false}
                         />
                       </View>
                       <TouchableOpacity
                         onPress={searchUsers}
                         activeOpacity={0.85}
-                        className="w-14 h-[56px] bg-ink rounded-[20px] items-center justify-center"
+                        className={`w-14 h-[56px] rounded-[20px] items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}
                       >
                         {searchingUsers ? (
-                          <ActivityIndicator size="small" color="#FFFFFF" />
+                          <ActivityIndicator size="small" color={dark ? "#0A0A0E" : "#FFFFFF"} />
                         ) : (
-                          <Icon icon={Search01Icon} size={20} color="#fff" />
+                          <Icon icon={Search01Icon} size={20} color={dark ? "#0A0A0E" : "#fff"} />
                         )}
                       </TouchableOpacity>
                     </View>
 
                     {availableUsers.length > 0 && (
-                      <View className="bg-cream border border-border rounded-[20px] mt-3 overflow-hidden">
+                      <View className={`border rounded-[20px] mt-3 overflow-hidden ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
                         {availableUsers.map((u) => (
                           <TouchableOpacity
                             key={u.id}
@@ -396,15 +397,17 @@ export default function AdminUsers() {
                             activeOpacity={0.85}
                             className={`p-3.5 ${
                               selectedUserId === u.id
-                                ? "bg-white border border-primary rounded-[20px]"
+                                ? dark
+                                  ? "bg-white/10 border border-white/20 rounded-[20px]"
+                                  : "bg-white border border-primary rounded-[20px]"
                                 : ""
                             }`}
                           >
-                            <Text className="font-inter-bold text-[14px] text-ink">
+                            <Text className={`font-inter-bold text-[14px] ${dark ? "text-white" : "text-ink"}`}>
                               {u.name}
                             </Text>
                             {u.phone ? (
-                              <Text className="text-[13px] font-inter text-ink/55">
+                              <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
                                 {u.phone}
                               </Text>
                             ) : null}
@@ -414,7 +417,7 @@ export default function AdminUsers() {
                     )}
 
                     {searchQuery && availableUsers.length === 0 && !searchingUsers && (
-                      <Text className="text-[13px] font-inter text-ink/55 text-center py-4">
+                      <Text className={`text-[13px] font-inter text-center py-4 ${dark ? "text-white/55" : "text-ink/55"}`}>
                         No users found
                       </Text>
                     )}
@@ -422,7 +425,7 @@ export default function AdminUsers() {
 
                   <AppButton
                     title={submitting ? "Adding..." : "Add Selected User as Agent"}
-                    variant="ink"
+                    variant={dark ? "white" : "ink"}
                     onPress={addExistingUserAsAgent}
                     loading={submitting}
                     disabled={!selectedUserId || submitting}
@@ -430,14 +433,13 @@ export default function AdminUsers() {
                 </View>
               ) : (
                 <View className="gap-4">
-                  <View className="bg-white rounded-[24px] border border-border p-5 gap-4">
+                  <View className={`rounded-[24px] border p-5 gap-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                     <TextField
                       label="Full Name *"
                       value={newUserName}
                       onChangeText={setNewUserName}
                       placeholder="Enter full name"
                       autoCapitalize="words"
-                      dark={false}
                     />
                     <TextField
                       label="Email *"
@@ -446,7 +448,6 @@ export default function AdminUsers() {
                       placeholder="Enter email address"
                       keyboardType="email-address"
                       autoCapitalize="none"
-                      dark={false}
                     />
                     <TextField
                       label="Phone (optional)"
@@ -454,12 +455,11 @@ export default function AdminUsers() {
                       onChangeText={setNewUserPhone}
                       placeholder="Enter phone number"
                       keyboardType="phone-pad"
-                      dark={false}
                     />
                   </View>
                   <AppButton
                     title={submitting ? "Creating..." : "Create New Agent"}
-                    variant="ink"
+                    variant={dark ? "white" : "ink"}
                     onPress={createNewAgent}
                     loading={submitting}
                     disabled={!newUserName || !newUserEmail || submitting}

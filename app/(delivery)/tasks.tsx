@@ -11,6 +11,7 @@ import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
 import { Icon } from "../../src/components/ui/Icon";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import {
   Package01Icon,
   CheckmarkCircle01Icon,
@@ -92,6 +93,7 @@ const getTimeAgo = (date: string) => {
 };
 
 export default function DeliveryTasks() {
+  const { dark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("active");
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([]);
@@ -127,18 +129,18 @@ export default function DeliveryTasks() {
     return (
       <View
         key={delivery.id}
-        className="bg-white rounded-[24px] p-6 border border-border"
+        className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
       >
         <View className="flex-row items-start justify-between mb-3 gap-2">
           <View className="flex-1 flex-row items-center gap-2.5">
-            <View className="w-12 h-12 rounded-full bg-cream border border-border items-center justify-center">
-              <Icon icon={Package01Icon} size={20} color="#0A0A0E" />
+            <View className={`w-12 h-12 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+              <Icon icon={Package01Icon} size={20} color={dark ? "#FFFFFF" : "#0A0A0E"} />
             </View>
             <View className="flex-1">
-              <Text className="font-inter-bold text-ink">
+              <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
                 #{delivery.order_id.slice(0, 8)}
               </Text>
-              <Text className="text-[12px] font-inter text-ink/55 mt-0.5" numberOfLines={1}>
+              <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`} numberOfLines={1}>
                 {itemNames.join(", ")}
               </Text>
             </View>
@@ -146,17 +148,17 @@ export default function DeliveryTasks() {
           <StatusChip label={statusLabel(delivery.status)} tone={statusTone(delivery.status)} />
         </View>
 
-        <View className="flex-row items-center justify-between bg-cream border border-border rounded-[20px] px-4 py-3 mb-3">
-          <Text className="text-[13px] font-inter text-ink/55 flex-1" numberOfLines={1}>
+        <View className={`flex-row items-center justify-between border rounded-[20px] px-4 py-3 mb-3 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+          <Text className={`text-[13px] font-inter flex-1 ${dark ? "text-white/55" : "text-ink/55"}`} numberOfLines={1}>
             {order?.delivery_address}
           </Text>
-          <Text className="text-[16px] font-inter-bold text-ink ml-2">
+          <Text className={`text-[16px] font-inter-bold ml-2 ${dark ? "text-white" : "text-ink"}`}>
             ₦{delivery.delivery_fee}
           </Text>
         </View>
 
         <View className="flex-row items-center justify-between">
-          <Text className="text-[12px] font-inter text-ink/55">
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
             {getTimeAgo(delivery.created_at)}
           </Text>
           {showActions && (
@@ -167,10 +169,10 @@ export default function DeliveryTasks() {
                     updateDeliveryStatus(delivery.id, "picked_up")
                   }
                   activeOpacity={0.85}
-                  className="bg-ink px-4 h-11 rounded-full flex-row items-center gap-1.5"
+                  className={`px-4 h-11 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
                 >
-                  <Icon icon={CheckmarkCircle01Icon} size={14} color="#fff" />
-                  <Text className="text-white text-[12px] font-inter-bold">
+                  <Icon icon={CheckmarkCircle01Icon} size={14} color={dark ? "#0A0A0E" : "#fff"} />
+                  <Text className={`text-[12px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>
                     Picked Up
                   </Text>
                 </TouchableOpacity>
@@ -181,10 +183,10 @@ export default function DeliveryTasks() {
                     updateDeliveryStatus(delivery.id, "delivered")
                   }
                   activeOpacity={0.85}
-                  className="bg-ink px-4 h-11 rounded-full flex-row items-center gap-1.5"
+                  className={`px-4 h-11 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
                 >
-                  <Icon icon={CheckmarkCircle01Icon} size={14} color="#fff" />
-                  <Text className="text-white text-[12px] font-inter-bold">
+                  <Icon icon={CheckmarkCircle01Icon} size={14} color={dark ? "#0A0A0E" : "#fff"} />
+                  <Text className={`text-[12px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>
                     Delivered
                   </Text>
                 </TouchableOpacity>
@@ -198,8 +200,8 @@ export default function DeliveryTasks() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-cream">
-        <ActivityIndicator size="large" color="#0A0A0E" />
+      <View className={`flex-1 items-center justify-center ${dark ? "bg-ink" : "bg-cream"}`}>
+        <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
       </View>
     );
   }
@@ -208,27 +210,27 @@ export default function DeliveryTasks() {
     activeTab === "active" ? activeDeliveries : completedDeliveries;
 
   return (
-    <ScrollView className="flex-1 bg-cream px-5 pt-14" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+    <ScrollView className={`flex-1 px-5 pt-14 ${dark ? "bg-ink" : "bg-cream"}`} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
       <View className="mb-6">
         <Eyebrow>Tasks</Eyebrow>
-        <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">Deliveries</Text>
-        <Text className="text-[13px] font-inter text-ink/55 mt-1">
+        <Text className={`text-[28px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>Deliveries</Text>
+        <Text className={`text-[13px] font-inter mt-1 ${dark ? "text-white/55" : "text-ink/55"}`}>
           Track and manage your delivery tasks
         </Text>
       </View>
 
       {/* Tabs */}
-      <View className="flex-row gap-2 mb-6 bg-white border border-border rounded-full p-1.5">
+      <View className={`flex-row gap-2 mb-6 border rounded-full p-1.5 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
         <TouchableOpacity
           onPress={() => setActiveTab("active")}
           activeOpacity={0.85}
           className={`flex-1 h-14 rounded-full items-center justify-center ${
-            activeTab === "active" ? "bg-ink" : "bg-transparent"
+            activeTab === "active" ? (dark ? "bg-white" : "bg-ink") : "bg-transparent"
           }`}
         >
           <Text
             className={`font-inter-bold text-[13px] ${
-              activeTab === "active" ? "text-white" : "text-ink"
+              activeTab === "active" ? (dark ? "text-ink" : "text-white") : dark ? "text-white/60" : "text-ink"
             }`}
           >
             Active ({activeDeliveries.length})
@@ -238,12 +240,12 @@ export default function DeliveryTasks() {
           onPress={() => setActiveTab("completed")}
           activeOpacity={0.85}
           className={`flex-1 h-14 rounded-full items-center justify-center ${
-            activeTab === "completed" ? "bg-ink" : "bg-transparent"
+            activeTab === "completed" ? (dark ? "bg-white" : "bg-ink") : "bg-transparent"
           }`}
         >
           <Text
             className={`font-inter-bold text-[13px] ${
-              activeTab === "completed" ? "text-white" : "text-ink"
+              activeTab === "completed" ? (dark ? "text-ink" : "text-white") : dark ? "text-white/60" : "text-ink"
             }`}
           >
             Completed ({completedDeliveries.length})
@@ -253,11 +255,11 @@ export default function DeliveryTasks() {
 
       {/* Delivery List */}
       {displayDeliveries.length === 0 ? (
-        <View className="bg-white rounded-[24px] p-8 items-center border border-border">
-          <View className="w-16 h-16 rounded-full bg-cream border border-border items-center justify-center">
-            <Icon icon={DeliveryBox01Icon} size={22} color="rgba(10,10,14,0.4)" />
+        <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-16 h-16 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={DeliveryBox01Icon} size={22} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.4)"} />
           </View>
-          <Text className="text-ink/55 mt-3 font-inter-semibold">No deliveries found</Text>
+          <Text className={`mt-3 font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>No deliveries found</Text>
         </View>
       ) : (
         <View className="gap-4">

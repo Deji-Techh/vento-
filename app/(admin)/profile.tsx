@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
@@ -30,6 +31,7 @@ const mockProfile = {
 export default function AdminProfile() {
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const { dark } = useTheme();
   const [profile, setProfile] = useState<any>(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -79,17 +81,17 @@ export default function AdminProfile() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+      <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
         <View className="flex-1 px-5 pt-10 gap-4">
           <View className="items-center">
-            <Skeleton width={96} height={96} radius={48} dark={false} />
+            <Skeleton width={96} height={96} radius={48} />
             <View className="mt-3" />
-            <Skeleton width={180} height={24} radius={8} dark={false} />
+            <Skeleton width={180} height={24} radius={8} />
             <View className="mt-2" />
-            <Skeleton width={140} height={14} radius={6} dark={false} />
+            <Skeleton width={140} height={14} radius={6} />
           </View>
-          <Skeleton width="100%" height={90} radius={24} dark={false} />
-          <Skeleton width="100%" height={56} radius={28} dark={false} />
+          <Skeleton width="100%" height={90} radius={24} />
+          <Skeleton width="100%" height={56} radius={28} />
         </View>
       </SafeAreaView>
     );
@@ -98,7 +100,7 @@ export default function AdminProfile() {
   if (!profile) return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingBottom: 120, paddingTop: 12 }}
@@ -107,15 +109,15 @@ export default function AdminProfile() {
         <Eyebrow>Account</Eyebrow>
 
         {/* Profile header */}
-        <View className="bg-white rounded-[28px] p-6 border border-border mt-3 mb-4">
+        <View className={`rounded-[28px] p-6 border mt-3 mb-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
           <View className="items-center">
-            <View className="w-24 h-24 rounded-full bg-cream border border-border items-center justify-center mb-4">
-              <Text className="text-[28px] text-ink font-inter-bold">
+            <View className={`w-24 h-24 rounded-full border items-center justify-center mb-4 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+              <Text className={`text-[28px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
                 {profile.name?.charAt(0) || "A"}
               </Text>
             </View>
             <View className="flex-row items-center gap-2 mb-2">
-              <Text className="text-[20px] font-inter-bold text-ink tracking-tight">
+              <Text className={`text-[20px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>
                 {profile.name}
               </Text>
               <View className="bg-primary/10 px-3 py-1.5 rounded-full flex-row items-center gap-1">
@@ -125,23 +127,23 @@ export default function AdminProfile() {
                 </Text>
               </View>
             </View>
-            <Text className="text-[13px] font-inter text-ink/55">
+            <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
               {user?.email || profile.email}
             </Text>
           </View>
         </View>
 
         {/* Profile details */}
-        <View className="bg-white rounded-[24px] p-6 border border-border">
+        <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
           <View className="flex-row items-center justify-between mb-6">
-            <Text className="text-[20px] font-inter-bold text-ink tracking-tight">
+            <Text className={`text-[20px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>
               Profile details
             </Text>
             {!editing && (
               <TouchableOpacity
                 onPress={() => setEditing(true)}
                 activeOpacity={0.85}
-                className="flex-row items-center gap-1.5 bg-cream border border-border px-4 py-2.5 rounded-full"
+                className={`flex-row items-center gap-1.5 border px-4 py-2.5 rounded-full ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}
               >
                 <Icon icon={Edit02Icon} size={14} color="#1B1B8F" />
                 <Text className="text-[13px] text-primary font-inter-bold">Edit</Text>
@@ -152,8 +154,8 @@ export default function AdminProfile() {
           <View className="gap-5">
             <View>
               <View className="flex-row items-center gap-2 mb-2">
-                <Icon icon={UserIcon} size={16} color="rgba(10,10,14,0.45)" />
-                <Text className="text-[11px] text-ink/50 font-inter-bold uppercase tracking-[2px]">
+                <Icon icon={UserIcon} size={16} color={dark ? "rgba(255,255,255,0.45)" : "rgba(10,10,14,0.45)"} />
+                <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/50" : "text-ink/50"}`}>
                   Name
                 </Text>
               </View>
@@ -163,28 +165,27 @@ export default function AdminProfile() {
                   onChangeText={(val) => setFormData({ ...formData, name: val })}
                   placeholder="Enter full name"
                   autoCapitalize="words"
-                  dark={false}
                 />
               ) : (
-                <Text className="text-[16px] font-inter-semibold text-ink">
+                <Text className={`text-[16px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>
                   {formData.name}
                 </Text>
               )}
             </View>
 
             <View>
-              <Text className="text-[11px] text-ink/50 font-inter-bold uppercase tracking-[2px] mb-2">
+              <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-2 ${dark ? "text-white/50" : "text-ink/50"}`}>
                 Email
               </Text>
-              <Text className="text-[16px] font-inter-semibold text-ink/55">
+              <Text className={`text-[16px] font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>
                 {user?.email || profile.email}
               </Text>
             </View>
 
             <View>
               <View className="flex-row items-center gap-2 mb-2">
-                <Icon icon={PhoneIcon} size={16} color="rgba(10,10,14,0.45)" />
-                <Text className="text-[11px] text-ink/50 font-inter-bold uppercase tracking-[2px]">
+                <Icon icon={PhoneIcon} size={16} color={dark ? "rgba(255,255,255,0.45)" : "rgba(10,10,14,0.45)"} />
+                <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/50" : "text-ink/50"}`}>
                   Phone number
                 </Text>
               </View>
@@ -194,10 +195,9 @@ export default function AdminProfile() {
                   onChangeText={(val) => setFormData({ ...formData, phone: val })}
                   placeholder="Enter phone number"
                   keyboardType="phone-pad"
-                  dark={false}
                 />
               ) : (
-                <Text className="text-[16px] font-inter-semibold text-ink">
+                <Text className={`text-[16px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>
                   {formData.phone || "—"}
                 </Text>
               )}
@@ -207,14 +207,14 @@ export default function AdminProfile() {
               <View className="gap-3 pt-2">
                 <AppButton
                   title="Save Changes"
-                  variant="ink"
+                  variant={dark ? "white" : "ink"}
                   loading={saving}
                   disabled={saving}
                   onPress={handleUpdateProfile}
                 />
                 <AppButton
                   title="Cancel"
-                  variant="ghost-light"
+                  variant={dark ? "ghost-dark" : "ghost-light"}
                   onPress={() => {
                     setEditing(false);
                     setFormData({ name: profile.name, phone: profile.phone });
@@ -229,7 +229,7 @@ export default function AdminProfile() {
         <TouchableOpacity
           onPress={handleSignOut}
           activeOpacity={0.85}
-          className="mt-4 bg-white rounded-[24px] h-14 px-4 border border-border items-center flex-row justify-center gap-2"
+          className={`mt-4 rounded-[24px] h-14 px-4 border items-center flex-row justify-center gap-2 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
         >
           <Icon icon={Logout01Icon} size={18} color="#D92D20" />
           <Text className="text-destructive font-inter-bold text-[15px]">Sign Out</Text>

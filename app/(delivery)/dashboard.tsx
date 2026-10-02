@@ -12,6 +12,7 @@ import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
 import { Icon } from "../../src/components/ui/Icon";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import {
   Navigation01Icon,
   Wallet01Icon,
@@ -82,6 +83,7 @@ const buzz = () => {
 };
 
 export default function DeliveryDashboard() {
+  const { dark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [agent, setAgent] = useState<any>(null);
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([]);
@@ -124,47 +126,47 @@ export default function DeliveryDashboard() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-cream">
-        <ActivityIndicator size="large" color="#0A0A0E" />
+      <View className={`flex-1 items-center justify-center ${dark ? "bg-ink" : "bg-cream"}`}>
+        <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-cream" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+    <ScrollView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
       {/* Availability hero */}
       <View className="px-5 pt-14">
         <Eyebrow>Rider dashboard</Eyebrow>
-        <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">
+        <Text className={`text-[28px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>
           Deliveries
         </Text>
-        <View className="bg-white rounded-[28px] p-6 border border-border mt-4">
+        <View className={`rounded-[28px] p-6 border mt-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
-              <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55">
+              <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/55" : "text-ink/55"}`}>
                 Availability
               </Text>
               <View className="flex-row items-center mt-3">
-                <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-ink/5">
-                  <View className={`w-2 h-2 rounded-full ${isOnline ? "bg-success" : "bg-ink/30"}`} />
-                  <Text className="text-[11px] font-inter-bold tracking-[1px] text-ink">
+                <View className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full ${dark ? "bg-white/10" : "bg-ink/5"}`}>
+                  <View className={`w-2 h-2 rounded-full ${isOnline ? "bg-success" : dark ? "bg-white/30" : "bg-ink/30"}`} />
+                  <Text className={`text-[11px] font-inter-bold tracking-[1px] ${dark ? "text-white" : "text-ink"}`}>
                     {isOnline ? "ONLINE" : "OFFLINE"}
                   </Text>
                 </View>
               </View>
-              <Text className="text-[13px] font-inter text-ink/55 mt-2">
+              <Text className={`text-[13px] font-inter mt-2 ${dark ? "text-white/55" : "text-ink/55"}`}>
                 {isOnline ? "You can receive new assignments" : "Go online to receive assignments"}
               </Text>
             </View>
             <View className="items-center gap-2">
-              <View className="w-14 h-14 rounded-full bg-cream border border-border items-center justify-center">
-                <Icon icon={Navigation01Icon} size={22} color="#0A0A0E" />
+              <View className={`w-14 h-14 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                <Icon icon={Navigation01Icon} size={22} color={dark ? "#FFFFFF" : "#0A0A0E"} />
               </View>
               <Switch
                 value={isOnline}
                 onValueChange={toggleOnlineStatus}
-                trackColor={{ true: "#0A0A0E", false: "#E7E0D2" }}
-                thumbColor="#FFFFFF"
+                trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#E7E0D2" }}
+                thumbColor={dark ? (isOnline ? "#0A0A0E" : "#FFFFFF") : "#FFFFFF"}
               />
             </View>
           </View>
@@ -173,40 +175,40 @@ export default function DeliveryDashboard() {
 
       {/* 2x2 stat cards */}
       <View className="px-5 mt-4 flex-row gap-3">
-        <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
-          <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center mb-2">
-            <Icon icon={Wallet01Icon} size={20} color="#0A0A0E" />
+        <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-11 h-11 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={Wallet01Icon} size={20} color={dark ? "#FFFFFF" : "#0A0A0E"} />
           </View>
-          <Text className="text-[12px] font-inter text-ink/55">Total earnings</Text>
-          <Text className="text-[18px] font-inter-bold text-ink mt-0.5">
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Total earnings</Text>
+          <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
             ₦{(agent?.total_earnings || 0).toLocaleString()}
           </Text>
         </View>
-        <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
-          <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center mb-2">
+        <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-11 h-11 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
             <Icon icon={Package01Icon} size={20} color="#12805C" />
           </View>
-          <Text className="text-[12px] font-inter text-ink/55">Completed</Text>
-          <Text className="text-[18px] font-inter-bold text-ink mt-0.5">
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Completed</Text>
+          <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
             {agent?.completed_deliveries || 0}
           </Text>
         </View>
       </View>
       <View className="px-5 mt-3 flex-row gap-3">
-        <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
-          <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center mb-2">
-            <Icon icon={Clock01Icon} size={20} color="#0A0A0E" />
+        <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-11 h-11 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={Clock01Icon} size={20} color={dark ? "#FFFFFF" : "#0A0A0E"} />
           </View>
-          <Text className="text-[12px] font-inter text-ink/55">Active</Text>
-          <Text className="text-[18px] font-inter-bold text-ink mt-0.5">
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Active</Text>
+          <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
             {activeDeliveries.length}
           </Text>
         </View>
-        <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
-          <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center mb-2">
-            <Icon icon={ChartLineIcon} size={20} color="#0A0A0E" />
+        <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-11 h-11 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={ChartLineIcon} size={20} color={dark ? "#FFFFFF" : "#0A0A0E"} />
           </View>
-          <Text className="text-[12px] font-inter text-ink/55">Status</Text>
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Status</Text>
           <View className="mt-1.5 self-start">
             <StatusChip label={agent?.is_active ? "Active" : "Inactive"} tone={agent?.is_active ? "success" : "neutral"} />
           </View>
@@ -215,16 +217,16 @@ export default function DeliveryDashboard() {
 
       {/* Active deliveries */}
       <View className="px-5 mt-8">
-        <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55 mb-4">
+        <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-4 ${dark ? "text-white/55" : "text-ink/55"}`}>
           Active deliveries
         </Text>
         {activeDeliveries.length === 0 ? (
-          <View className="bg-white rounded-[24px] p-8 items-center border border-border">
-            <View className="w-16 h-16 rounded-full bg-cream border border-border items-center justify-center">
-              <Icon icon={DeliveryBox01Icon} size={22} color="rgba(10,10,14,0.4)" />
+          <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+            <View className={`w-16 h-16 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+              <Icon icon={DeliveryBox01Icon} size={22} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.4)"} />
             </View>
-            <Text className="text-ink font-inter-bold mt-3">No active deliveries</Text>
-            <Text className="text-[13px] font-inter text-ink/55 mt-1 text-center">
+            <Text className={`font-inter-bold mt-3 ${dark ? "text-white" : "text-ink"}`}>No active deliveries</Text>
+            <Text className={`text-[13px] font-inter mt-1 text-center ${dark ? "text-white/55" : "text-ink/55"}`}>
               {isOnline
                 ? "New deliveries will appear here when assigned"
                 : "Go online to receive delivery assignments"}
@@ -242,18 +244,18 @@ export default function DeliveryDashboard() {
               return (
                 <View
                   key={delivery.id}
-                  className="bg-white rounded-[24px] p-6 border border-border"
+                  className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
                 >
                   <View className="flex-row items-start justify-between mb-3 gap-2">
                     <View className="flex-1 flex-row items-center gap-2.5">
-                      <View className="w-12 h-12 rounded-full bg-cream border border-border items-center justify-center">
-                        <Icon icon={Package01Icon} size={20} color="#0A0A0E" />
+                      <View className={`w-12 h-12 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                        <Icon icon={Package01Icon} size={20} color={dark ? "#FFFFFF" : "#0A0A0E"} />
                       </View>
                       <View className="flex-1">
-                        <Text className="font-inter-bold text-ink">
+                        <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
                           #{delivery.order_id.slice(0, 8)}
                         </Text>
-                        <Text className="text-[12px] font-inter text-ink/55 mt-0.5" numberOfLines={1}>
+                        <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`} numberOfLines={1}>
                           {itemNames.join(", ")}
                         </Text>
                       </View>
@@ -261,17 +263,17 @@ export default function DeliveryDashboard() {
                     <StatusChip label={statusLabel(delivery.status)} tone={statusTone(delivery.status)} />
                   </View>
 
-                  <View className="flex-row items-center justify-between bg-cream border border-border rounded-[20px] px-4 py-3 mb-3">
-                    <Text className="text-[13px] font-inter text-ink/55 flex-1" numberOfLines={1}>
+                  <View className={`flex-row items-center justify-between border rounded-[20px] px-4 py-3 mb-3 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                    <Text className={`text-[13px] font-inter flex-1 ${dark ? "text-white/55" : "text-ink/55"}`} numberOfLines={1}>
                       {order?.delivery_address}
                     </Text>
-                    <Text className="text-[16px] font-inter-bold text-ink ml-2">
+                    <Text className={`text-[16px] font-inter-bold ml-2 ${dark ? "text-white" : "text-ink"}`}>
                       ₦{delivery.delivery_fee}
                     </Text>
                   </View>
 
                   <View className="flex-row items-center justify-between">
-                    <Text className="text-[12px] font-inter text-ink/55">
+                    <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
                       {getTimeAgo(delivery.created_at)}
                     </Text>
                     <View className="flex-row gap-2">
@@ -281,10 +283,10 @@ export default function DeliveryDashboard() {
                             updateDeliveryStatus(delivery.id, "picked_up")
                           }
                           activeOpacity={0.85}
-                          className="bg-ink px-4 h-11 rounded-full flex-row items-center gap-1.5"
+                          className={`px-4 h-11 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
                         >
-                          <Icon icon={CheckmarkCircle01Icon} size={14} color="#fff" />
-                          <Text className="text-white text-[12px] font-inter-bold">
+                          <Icon icon={CheckmarkCircle01Icon} size={14} color={dark ? "#0A0A0E" : "#fff"} />
+                          <Text className={`text-[12px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>
                             Picked Up
                           </Text>
                         </TouchableOpacity>
@@ -295,10 +297,10 @@ export default function DeliveryDashboard() {
                             updateDeliveryStatus(delivery.id, "delivered")
                           }
                           activeOpacity={0.85}
-                          className="bg-ink px-4 h-11 rounded-full flex-row items-center gap-1.5"
+                          className={`px-4 h-11 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
                         >
-                          <Icon icon={CheckmarkCircle01Icon} size={14} color="#fff" />
-                          <Text className="text-white text-[12px] font-inter-bold">
+                          <Icon icon={CheckmarkCircle01Icon} size={14} color={dark ? "#0A0A0E" : "#fff"} />
+                          <Text className={`text-[12px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>
                             Delivered
                           </Text>
                         </TouchableOpacity>

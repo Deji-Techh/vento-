@@ -14,6 +14,7 @@ import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
 import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
 import { Icon } from "../../src/components/ui/Icon";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import {
   Wallet01Icon,
   ChartLineIcon,
@@ -65,6 +66,7 @@ const withdrawalTone = (status: string): ChipTone => {
 };
 
 export default function DeliveryEarnings() {
+  const { dark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [agent, setAgent] = useState<any>(null);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
@@ -120,8 +122,8 @@ export default function DeliveryEarnings() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-cream">
-        <ActivityIndicator size="large" color="#0A0A0E" />
+      <View className={`flex-1 items-center justify-center ${dark ? "bg-ink" : "bg-cream"}`}>
+        <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
       </View>
     );
   }
@@ -132,31 +134,31 @@ export default function DeliveryEarnings() {
   const availableBalance = (agent?.total_earnings || 0) - pendingTotal;
 
   return (
-    <ScrollView className="flex-1 bg-cream px-5 pt-14" contentContainerStyle={{ paddingBottom: 120, gap: 16 }} showsVerticalScrollIndicator={false}>
+    <ScrollView className={`flex-1 px-5 pt-14 ${dark ? "bg-ink" : "bg-cream"}`} contentContainerStyle={{ paddingBottom: 120, gap: 16 }} showsVerticalScrollIndicator={false}>
       <View>
         <Eyebrow>Payouts</Eyebrow>
-        <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">Earnings</Text>
-        <Text className="text-[13px] font-inter text-ink/55">
+        <Text className={`text-[28px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>Earnings</Text>
+        <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
           Track your delivery earnings and withdrawals
         </Text>
       </View>
 
       {/* Balance hero */}
-      <View className="bg-white rounded-[28px] p-6 border border-border">
-        <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55">
+      <View className={`rounded-[28px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+        <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/55" : "text-ink/55"}`}>
           Available balance
         </Text>
-        <Text className="text-[36px] font-inter-bold text-ink tracking-tight mt-2">
+        <Text className={`text-[36px] font-inter-bold tracking-tight mt-2 ${dark ? "text-white" : "text-ink"}`}>
           ₦{availableBalance.toLocaleString()}
         </Text>
         <View className="flex-row items-center mt-4 gap-2">
-          <View className="px-3 py-1.5 rounded-full bg-ink/5">
-            <Text className="text-[12px] font-inter-bold text-ink">
+          <View className={`px-3 py-1.5 rounded-full ${dark ? "bg-white/10" : "bg-ink/5"}`}>
+            <Text className={`text-[12px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
               ₦{(agent?.total_earnings || 0).toLocaleString()} total
             </Text>
           </View>
-          <View className="px-3 py-1.5 rounded-full bg-ink/5">
-            <Text className="text-[12px] font-inter-bold text-ink">
+          <View className={`px-3 py-1.5 rounded-full ${dark ? "bg-white/10" : "bg-ink/5"}`}>
+            <Text className={`text-[12px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
               {agent?.completed_deliveries || 0} trips
             </Text>
           </View>
@@ -164,7 +166,7 @@ export default function DeliveryEarnings() {
         <View className="mt-5">
           <AppButton
             title="Request Withdrawal"
-            variant="ink"
+            variant={dark ? "white" : "ink"}
             onPress={() => setDialogOpen(true)}
             disabled={availableBalance <= 0}
           />
@@ -173,30 +175,30 @@ export default function DeliveryEarnings() {
 
       {/* Stats cards */}
       <View className="flex-row gap-3">
-        <View className="flex-1 bg-white rounded-[24px] p-4 border border-border">
-          <View className="w-10 h-10 rounded-full bg-cream border border-border items-center justify-center mb-2">
-            <Icon icon={Wallet01Icon} size={18} color="#0A0A0E" />
+        <View className={`flex-1 rounded-[24px] p-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-10 h-10 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={Wallet01Icon} size={18} color={dark ? "#FFFFFF" : "#0A0A0E"} />
           </View>
-          <Text className="text-[12px] font-inter text-ink/55">Total</Text>
-          <Text className="text-[18px] font-inter-bold text-ink mt-0.5">
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Total</Text>
+          <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
             ₦{(agent?.total_earnings || 0).toLocaleString()}
           </Text>
         </View>
-        <View className="flex-1 bg-white rounded-[24px] p-4 border border-border">
-          <View className="w-10 h-10 rounded-full bg-cream border border-border items-center justify-center mb-2">
+        <View className={`flex-1 rounded-[24px] p-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-10 h-10 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
             <Icon icon={ChartLineIcon} size={18} color="#12805C" />
           </View>
-          <Text className="text-[12px] font-inter text-ink/55">Available</Text>
-          <Text className="text-[18px] font-inter-bold text-ink mt-0.5">
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Available</Text>
+          <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
             ₦{availableBalance.toLocaleString()}
           </Text>
         </View>
-        <View className="flex-1 bg-white rounded-[24px] p-4 border border-border">
-          <View className="w-10 h-10 rounded-full bg-cream border border-border items-center justify-center mb-2">
-            <Icon icon={Package01Icon} size={18} color="#0A0A0E" />
+        <View className={`flex-1 rounded-[24px] p-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-10 h-10 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={Package01Icon} size={18} color={dark ? "#FFFFFF" : "#0A0A0E"} />
           </View>
-          <Text className="text-[12px] font-inter text-ink/55">Trips</Text>
-          <Text className="text-[18px] font-inter-bold text-ink mt-0.5">
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Trips</Text>
+          <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
             {agent?.completed_deliveries || 0}
           </Text>
         </View>
@@ -204,39 +206,39 @@ export default function DeliveryEarnings() {
 
       {/* Withdrawal history */}
       <View>
-        <Text className="text-[18px] font-inter-bold text-ink tracking-tight mb-3">
+        <Text className={`text-[18px] font-inter-bold tracking-tight mb-3 ${dark ? "text-white" : "text-ink"}`}>
           Withdrawal history
         </Text>
         {withdrawals.length === 0 ? (
-          <View className="bg-white rounded-[24px] p-8 items-center border border-border">
-            <View className="w-12 h-12 rounded-full bg-cream border border-border items-center justify-center">
-              <Icon icon={Wallet01Icon} size={20} color="rgba(10,10,14,0.4)" />
+          <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+            <View className={`w-12 h-12 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+              <Icon icon={Wallet01Icon} size={20} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.4)"} />
             </View>
-            <Text className="text-ink/55 mt-3 font-inter-semibold">No withdrawals yet</Text>
+            <Text className={`mt-3 font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>No withdrawals yet</Text>
           </View>
         ) : (
           <View className="gap-3">
             {withdrawals.map((withdrawal) => (
               <View
                 key={withdrawal.id}
-                className="bg-white rounded-[24px] p-4 flex-row items-center justify-between border border-border"
+                className={`rounded-[24px] p-4 flex-row items-center justify-between border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
               >
                 <View className="flex-row items-center gap-3">
-                  <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center">
-                    <Icon icon={BanknoteIcon} size={18} color="#0A0A0E" />
+                  <View className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                    <Icon icon={BanknoteIcon} size={18} color={dark ? "#FFFFFF" : "#0A0A0E"} />
                   </View>
                   <View>
-                    <Text className="font-inter-bold text-ink">
+                    <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
                       ₦{withdrawal.amount.toLocaleString()}
                     </Text>
-                    <Text className="text-[12px] font-inter text-ink/55 mt-0.5">
+                    <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`}>
                       {new Date(withdrawal.created_at).toLocaleDateString()}
                     </Text>
                   </View>
                 </View>
                 <View className="items-end gap-1">
                   <StatusChip label={withdrawal.status} tone={withdrawalTone(withdrawal.status)} />
-                  <Text className="text-[11px] font-inter text-ink/55 capitalize">
+                  <Text className={`text-[11px] font-inter capitalize ${dark ? "text-white/55" : "text-ink/55"}`}>
                     {withdrawal.method.replaceAll("_", " ")}
                   </Text>
                 </View>
@@ -253,35 +255,34 @@ export default function DeliveryEarnings() {
         presentationStyle="pageSheet"
         onRequestClose={() => setDialogOpen(false)}
       >
-        <View className="flex-1 bg-cream">
+        <View className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
           <View className="flex-row items-center justify-between px-5 pt-6 pb-4">
-            <Text className="text-[20px] font-inter-bold text-ink tracking-tight">Request withdrawal</Text>
+            <Text className={`text-[20px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Request withdrawal</Text>
             <TouchableOpacity
               onPress={() => setDialogOpen(false)}
               activeOpacity={0.85}
-              className="w-10 h-10 rounded-full bg-white border border-border items-center justify-center"
+              className={`w-10 h-10 rounded-full border items-center justify-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
             >
-              <Text className="text-ink font-inter-bold">✕</Text>
+              <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>✕</Text>
             </TouchableOpacity>
           </View>
 
           <View className="flex-1 px-5 gap-4">
-            <View className="bg-white rounded-[24px] border border-border p-5">
+            <View className={`rounded-[24px] border p-5 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
               <TextField
                 label="Amount (₦)"
                 value={withdrawAmount}
                 onChangeText={setWithdrawAmount}
                 placeholder="Enter amount"
                 keyboardType="numeric"
-                dark={false}
               />
-              <Text className="text-[12px] font-inter text-ink/55 mt-2">
+              <Text className={`text-[12px] font-inter mt-2 ${dark ? "text-white/55" : "text-ink/55"}`}>
                 Available: ₦{availableBalance.toLocaleString()}
               </Text>
             </View>
 
-            <View className="bg-white rounded-[24px] border border-border p-5">
-              <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55">
+            <View className={`rounded-[24px] border p-5 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+              <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/55" : "text-ink/55"}`}>
                 Withdrawal method
               </Text>
               <View className="flex-row gap-2 mt-3">
@@ -290,20 +291,20 @@ export default function DeliveryEarnings() {
                   activeOpacity={0.85}
                   className={`flex-1 h-14 rounded-full items-center justify-center flex-row gap-1.5 border ${
                     withdrawMethod === "bank_transfer"
-                      ? "bg-ink border-ink"
-                      : "bg-white border-border"
+                      ? dark ? "bg-white border-white" : "bg-ink border-ink"
+                      : dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"
                   }`}
                 >
                   <Icon
                     icon={CreditCardIcon}
                     size={16}
-                    color={withdrawMethod === "bank_transfer" ? "#fff" : "#0A0A0E"}
+                    color={withdrawMethod === "bank_transfer" ? (dark ? "#0A0A0E" : "#fff") : dark ? "#FFFFFF" : "#0A0A0E"}
                   />
                   <Text
                     className={`font-inter-bold text-[13px] ${
                       withdrawMethod === "bank_transfer"
-                        ? "text-white"
-                        : "text-ink"
+                        ? dark ? "text-ink" : "text-white"
+                        : dark ? "text-white" : "text-ink"
                     }`}
                   >
                     Bank Transfer
@@ -314,20 +315,20 @@ export default function DeliveryEarnings() {
                   activeOpacity={0.85}
                   className={`flex-1 h-14 rounded-full items-center justify-center flex-row gap-1.5 border ${
                     withdrawMethod === "mobile_money"
-                      ? "bg-ink border-ink"
-                      : "bg-white border-border"
+                      ? dark ? "bg-white border-white" : "bg-ink border-ink"
+                      : dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"
                   }`}
                 >
                   <Icon
                     icon={Wallet01Icon}
                     size={16}
-                    color={withdrawMethod === "mobile_money" ? "#fff" : "#0A0A0E"}
+                    color={withdrawMethod === "mobile_money" ? (dark ? "#0A0A0E" : "#fff") : dark ? "#FFFFFF" : "#0A0A0E"}
                   />
                   <Text
                     className={`font-inter-bold text-[13px] ${
                       withdrawMethod === "mobile_money"
-                        ? "text-white"
-                        : "text-ink"
+                        ? dark ? "text-ink" : "text-white"
+                        : dark ? "text-white" : "text-ink"
                     }`}
                   >
                     Mobile Money
@@ -339,7 +340,7 @@ export default function DeliveryEarnings() {
             <View className="mt-2 mb-8">
               <AppButton
                 title="Confirm Withdrawal"
-                variant="ink"
+                variant={dark ? "white" : "ink"}
                 onPress={handleWithdrawal}
                 loading={submitting}
                 disabled={submitting}

@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
@@ -81,6 +82,7 @@ function verificationTone(status: string): "warning" | "info" | "neutral" {
 export default function AdminDashboard() {
   const router = useRouter();
   const { user } = useAuth();
+  const { dark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [stats] = useState(mockStats);
   const [pendingSellers, setPendingSellers] = useState<any[]>([]);
@@ -113,9 +115,9 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+      <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#1B1B8F" />
+          <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#1B1B8F"} />
         </View>
       </SafeAreaView>
     );
@@ -129,7 +131,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingBottom: 120, paddingTop: 12, gap: 16 }}
@@ -137,21 +139,21 @@ export default function AdminDashboard() {
       >
         <View>
           <Eyebrow>Platform</Eyebrow>
-          <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">
+          <Text className={`text-[28px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>
             Admin
           </Text>
-          <Text className="text-[13px] font-inter text-ink/55 mt-1">
+          <Text className={`text-[13px] font-inter mt-1 ${dark ? "text-white/55" : "text-ink/55"}`}>
             {user?.email ? `${user.email} • ` : ""}Manage your Vento platform
           </Text>
         </View>
 
         {/* Summary hero */}
-        <View className="bg-white rounded-[28px] p-6 border border-border">
+        <View className={`rounded-[28px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
           <View className="flex-row items-center gap-2">
             <Icon icon={DashboardSquare01Icon} size={18} color="#1B1B8F" />
             <Eyebrow>Platform at a glance</Eyebrow>
           </View>
-          <Text className="text-[22px] font-inter-bold text-ink tracking-tight mt-3">
+          <Text className={`text-[22px] font-inter-bold tracking-tight mt-3 ${dark ? "text-white" : "text-ink"}`}>
             {stats.totalOrders} orders • {stats.totalUsers} users
           </Text>
           <View className="flex-row gap-2 mt-4">
@@ -165,13 +167,13 @@ export default function AdminDashboard() {
           {statCards.map((s) => (
             <View
               key={s.label}
-              className="bg-white rounded-[24px] p-5 border border-border flex-1 min-w-[45%]"
+              className={`rounded-[24px] p-5 border flex-1 min-w-[45%] ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
             >
-              <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center mb-2">
+              <View className={`w-11 h-11 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
                 <Icon icon={s.icon} size={20} color={s.tint} />
               </View>
-              <Text className="text-[12px] font-inter text-ink/55">{s.label}</Text>
-              <Text className="text-[20px] font-inter-bold text-ink mt-0.5">
+              <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>{s.label}</Text>
+              <Text className={`text-[20px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
                 {s.value}
               </Text>
             </View>
@@ -179,13 +181,13 @@ export default function AdminDashboard() {
         </View>
 
         {/* Quick actions */}
-        <View className="bg-white rounded-[24px] border border-border p-6">
-          <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/50 mb-4">
+        <View className={`rounded-[24px] border p-6 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-4 ${dark ? "text-white/50" : "text-ink/50"}`}>
             Quick Actions
           </Text>
           <AppButton
             title="Manage Delivery Agents"
-            variant="ink"
+            variant={dark ? "white" : "ink"}
             onPress={() => router.push("/(admin)/users" as any)}
           />
         </View>
@@ -198,11 +200,11 @@ export default function AdminDashboard() {
               {pendingSellers.map((seller) => (
                 <View
                   key={seller.id}
-                  className="bg-white rounded-[24px] p-6 border border-border"
+                  className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
                 >
                   <View className="mb-4">
                     <View className="flex-row items-center gap-2 mb-1.5 flex-wrap">
-                      <Text className="font-inter-bold text-[15px] text-ink">
+                      <Text className={`font-inter-bold text-[15px] ${dark ? "text-white" : "text-ink"}`}>
                         {seller.store_name}
                       </Text>
                       <StatusChip
@@ -210,12 +212,12 @@ export default function AdminDashboard() {
                         tone={verificationTone(seller.verification_status || "pending")}
                       />
                     </View>
-                    <Text className="text-[13px] font-inter text-ink/55">
+                    <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
                       {seller.profiles?.name}{" "}
                       {seller.profiles?.phone && `• ${seller.profiles.phone}`}
                     </Text>
                     {seller.description ? (
-                      <Text className="text-[13px] font-inter text-ink/55 mt-1">
+                      <Text className={`text-[13px] font-inter mt-1 ${dark ? "text-white/55" : "text-ink/55"}`}>
                         {seller.description}
                       </Text>
                     ) : null}
@@ -224,25 +226,25 @@ export default function AdminDashboard() {
                     <TouchableOpacity
                       onPress={() => router.push("/(admin)/users" as any)}
                       activeOpacity={0.85}
-                      className="flex-1 border border-border h-14 rounded-full items-center justify-center bg-white"
+                      className={`flex-1 border h-14 rounded-full items-center justify-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
                     >
-                      <Text className="text-ink font-inter-bold text-[14px]">View</Text>
+                      <Text className={`font-inter-bold text-[14px] ${dark ? "text-white" : "text-ink"}`}>View</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => handleApproval(seller.id, true)}
                       activeOpacity={0.85}
-                      className="flex-1 bg-ink h-14 rounded-full items-center justify-center flex-row gap-1.5"
+                      className={`flex-1 h-14 rounded-full items-center justify-center flex-row gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
                     >
-                      <Icon icon={CheckmarkCircle01Icon} size={15} color="#fff" />
-                      <Text className="text-white font-inter-bold text-[14px]">Approve</Text>
+                      <Icon icon={CheckmarkCircle01Icon} size={15} color={dark ? "#0A0A0E" : "#fff"} />
+                      <Text className={`font-inter-bold text-[14px] ${dark ? "text-ink" : "text-white"}`}>Approve</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => handleApproval(seller.id, false)}
                       activeOpacity={0.85}
-                      className="flex-1 bg-white border border-border h-14 rounded-full items-center justify-center flex-row gap-1.5"
+                      className={`flex-1 border h-14 rounded-full items-center justify-center flex-row gap-1.5 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
                     >
                       <Icon icon={Delete02Icon} size={15} color="#D92D20" />
-                      <Text className="text-ink font-inter-bold text-[14px]">Reject</Text>
+                      <Text className={`font-inter-bold text-[14px] ${dark ? "text-white" : "text-ink"}`}>Reject</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -255,18 +257,18 @@ export default function AdminDashboard() {
         <View>
           <SectionHeader title="Recent activity" />
           {activities.length === 0 ? (
-            <View className="bg-white rounded-[24px] p-8 items-center border border-border">
-              <Text className="text-ink/55 font-inter text-[14px]">No recent activity</Text>
+            <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+              <Text className={`font-inter text-[14px] ${dark ? "text-white/55" : "text-ink/55"}`}>No recent activity</Text>
             </View>
           ) : (
             <View className="gap-3">
               {activities.map((activity) => (
                 <View
                   key={activity.id}
-                  className="bg-white rounded-[24px] p-5 border border-border"
+                  className={`rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
                 >
                   <View className="flex-row items-center gap-2 mb-1 flex-wrap">
-                    <Text className="text-[14px] font-inter-bold text-ink">
+                    <Text className={`text-[14px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
                       {activityLabels[activity.action_type] || activity.action_type}
                     </Text>
                     <StatusChip
@@ -274,7 +276,7 @@ export default function AdminDashboard() {
                       tone="neutral"
                     />
                   </View>
-                  <Text className="text-[12px] font-inter text-ink/55">
+                  <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
                     {new Date(activity.created_at).toLocaleString()}
                   </Text>
                 </View>
@@ -282,8 +284,8 @@ export default function AdminDashboard() {
             </View>
           )}
           <View className="mt-3 flex-row items-center gap-2 opacity-60">
-            <Icon icon={DeliveryBox01Icon} size={14} color="#6E6A75" />
-            <Text className="text-[12px] font-inter text-ink/55">
+            <Icon icon={DeliveryBox01Icon} size={14} color={dark ? "rgba(255,255,255,0.6)" : "#6E6A75"} />
+            <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
               Ops monitored in real-time
             </Text>
           </View>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Modal, ActivityIndicator, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
@@ -71,6 +72,7 @@ function toneFor(status: string): "success" | "warning" | "info" | "danger" | "n
 
 export default function SellerOrders() {
   const { profile } = useAuth();
+  const { dark } = useTheme();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -95,41 +97,41 @@ export default function SellerOrders() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-cream items-center justify-center" edges={["top"]}>
-        <ActivityIndicator size="large" color="#0A0A0E" />
+      <SafeAreaView className={`flex-1 items-center justify-center ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
+        <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <View className="px-5 pt-4 pb-4">
         <Eyebrow>Incoming</Eyebrow>
-        <Text className="text-[28px] font-inter-bold text-ink mt-1 tracking-tight">Orders</Text>
-        <Text className="text-[13px] font-inter text-ink/55 mt-1">Manage incoming orders</Text>
+        <Text className={`text-[28px] font-inter-bold mt-1 tracking-tight ${dark ? "text-white" : "text-ink"}`}>Orders</Text>
+        <Text className={`text-[13px] font-inter mt-1 ${dark ? "text-white/55" : "text-ink/55"}`}>Manage incoming orders</Text>
       </View>
 
       <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         {orders.length === 0 ? (
-          <View className="bg-white rounded-[24px] p-8 items-center border border-border">
-            <View className="w-12 h-12 rounded-full bg-cream border border-border items-center justify-center mb-3">
+          <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+            <View className={`w-12 h-12 rounded-full border items-center justify-center mb-3 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
               <Icon icon={ReceiptIcon} size={20} color="#1B1B8F" />
             </View>
-            <Text className="font-inter text-ink/55">No orders yet.</Text>
+            <Text className={`font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>No orders yet.</Text>
           </View>
         ) : (
           <View className="gap-4">
             {orders.map((order) => (
-              <View key={order.id} className="bg-white rounded-[24px] p-6 border border-border">
+              <View key={order.id} className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                 <View className="flex-row justify-between items-start mb-4 gap-2">
                   <View className="flex-1">
-                    <Text className="font-inter-bold text-lg text-ink tracking-tight">
+                    <Text className={`font-inter-bold text-lg tracking-tight ${dark ? "text-white" : "text-ink"}`}>
                       Order #{order.id.slice(0, 8)}
                     </Text>
-                    <Text className="text-[13px] font-inter text-ink/55 mt-0.5">{order.profiles.name}</Text>
+                    <Text className={`text-[13px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`}>{order.profiles.name}</Text>
                     <View className="flex-row items-center gap-1.5 mt-1">
-                      <Icon icon={Clock01Icon} size={13} color="rgba(10,10,14,0.4)" />
-                      <Text className="text-xs font-inter text-ink/55">
+                      <Icon icon={Clock01Icon} size={13} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.4)"} />
+                      <Text className={`text-xs font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
                         {new Date(order.created_at).toLocaleString()}
                       </Text>
                     </View>
@@ -137,25 +139,25 @@ export default function SellerOrders() {
                   <StatusChip label={order.status} tone={toneFor(order.status)} />
                 </View>
 
-                <View className="mb-4 bg-cream border border-border rounded-[20px] p-4">
-                  <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55 mb-1">Items</Text>
-                  <Text className="text-[13px] font-inter text-ink">
+                <View className={`mb-4 border rounded-[20px] p-4 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                  <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-1 ${dark ? "text-white/55" : "text-ink/55"}`}>Items</Text>
+                  <Text className={`text-[13px] font-inter ${dark ? "text-white" : "text-ink"}`}>
                     {order.items.map((item: any) => `${item.name} (x${item.quantity})`).join(", ")}
                   </Text>
                 </View>
 
-                <View className="flex-row justify-between items-center pt-4 border-t border-border">
-                  <Text className="font-inter-bold text-ink text-lg">₦{order.total_price.toFixed(2)}</Text>
+                <View className={`flex-row justify-between items-center pt-4 border-t ${dark ? "border-white/10" : "border-border"}`}>
+                  <Text className={`font-inter-bold text-lg ${dark ? "text-white" : "text-ink"}`}>₦{order.total_price.toFixed(2)}</Text>
                   <TouchableOpacity
                     onPress={() => {
                       setSelectedOrder(order);
                       setDialogOpen(true);
                     }}
                     activeOpacity={0.85}
-                    className="flex-row items-center gap-1.5 bg-white border border-border px-4 h-11 rounded-full"
+                    className={`flex-row items-center gap-1.5 border px-4 h-11 rounded-full ${dark ? "bg-white/10 border-white/10" : "bg-white border-border"}`}
                   >
                     <Icon icon={EyeIcon} size={16} color="#1B1B8F" />
-                    <Text className="text-[13px] font-inter-bold text-ink">View details</Text>
+                    <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>View details</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -165,117 +167,117 @@ export default function SellerOrders() {
       </ScrollView>
 
       <Modal visible={dialogOpen} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setDialogOpen(false)}>
-        <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+        <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-4">
-            <Text className="text-xl font-inter-bold text-ink tracking-tight">Order details</Text>
+            <Text className={`text-xl font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Order details</Text>
             <TouchableOpacity
               onPress={() => setDialogOpen(false)}
               activeOpacity={0.85}
-              className="w-10 h-10 rounded-full bg-white border border-border items-center justify-center"
+              className={`w-10 h-10 rounded-full border items-center justify-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
             >
-              <Icon icon={ArrowLeft01Icon} size={16} color="#0A0A0E" />
+              <Icon icon={ArrowLeft01Icon} size={16} color={dark ? "#fff" : "#0A0A0E"} />
             </TouchableOpacity>
           </View>
 
           {selectedOrder && (
             <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
               <View className="gap-4">
-                <View className="bg-white rounded-[24px] p-6 border border-border">
-                  <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55 mb-3">Order information</Text>
+                <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                  <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-3 ${dark ? "text-white/55" : "text-ink/55"}`}>Order information</Text>
                   <View className="gap-2">
-                    <Text className="text-[13px] font-inter text-ink">
+                    <Text className={`text-[13px] font-inter ${dark ? "text-white" : "text-ink"}`}>
                       <Text className="font-inter-bold">Order ID: </Text>
                       {selectedOrder.id}
                     </Text>
                     <View className="flex-row items-center gap-2">
-                      <Text className="text-[13px] font-inter-bold text-ink">Status: </Text>
+                      <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Status: </Text>
                       <StatusChip label={selectedOrder.status} tone={toneFor(selectedOrder.status)} />
                     </View>
-                    <Text className="text-[13px] font-inter text-ink">
+                    <Text className={`text-[13px] font-inter ${dark ? "text-white" : "text-ink"}`}>
                       <Text className="font-inter-bold">Date: </Text>
                       {new Date(selectedOrder.created_at).toLocaleString()}
                     </Text>
                   </View>
                 </View>
 
-                <View className="bg-white rounded-[24px] p-6 border border-border">
-                  <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55 mb-3">
+                <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                  <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-3 ${dark ? "text-white/55" : "text-ink/55"}`}>
                     Buyer information
                   </Text>
                   <View className="gap-1">
-                    <Text className="text-[13px] font-inter text-ink">
+                    <Text className={`text-[13px] font-inter ${dark ? "text-white" : "text-ink"}`}>
                       <Text className="font-inter-bold">Name: </Text>
                       {selectedOrder.profiles.name}
                     </Text>
                     {selectedOrder.profiles.phone && (
-                      <Text className="text-[13px] font-inter text-ink">
+                      <Text className={`text-[13px] font-inter ${dark ? "text-white" : "text-ink"}`}>
                         <Text className="font-inter-bold">Phone: </Text>
                         {selectedOrder.profiles.phone}
                       </Text>
                     )}
-                    <Text className="text-[13px] font-inter text-ink">
+                    <Text className={`text-[13px] font-inter ${dark ? "text-white" : "text-ink"}`}>
                       <Text className="font-inter-bold">Delivery address: </Text>
                       {selectedOrder.delivery_address}
                     </Text>
                   </View>
                 </View>
 
-                <View className="bg-white rounded-[24px] p-6 border border-border">
-                  <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55 mb-3">Order items</Text>
+                <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                  <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-3 ${dark ? "text-white/55" : "text-ink/55"}`}>Order items</Text>
                   <View className="gap-2">
                     {selectedOrder.items.map((item: any, idx: number) => (
-                      <View key={idx} className="flex-row justify-between items-center p-4 bg-cream border border-border rounded-[20px]">
+                      <View key={idx} className={`flex-row justify-between items-center p-4 border rounded-[20px] ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
                         <View>
-                          <Text className="font-inter-bold text-ink text-[13px]">{item.name}</Text>
-                          <Text className="text-[13px] font-inter text-ink/55">Quantity: {item.quantity}</Text>
+                          <Text className={`font-inter-bold text-[13px] ${dark ? "text-white" : "text-ink"}`}>{item.name}</Text>
+                          <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Quantity: {item.quantity}</Text>
                         </View>
-                        <Text className="font-inter-bold text-ink">₦{(item.price * item.quantity).toFixed(2)}</Text>
+                        <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>₦{(item.price * item.quantity).toFixed(2)}</Text>
                       </View>
                     ))}
                   </View>
                 </View>
 
-                <View className="bg-white rounded-[24px] p-6 border border-border">
-                  <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55 mb-2">
+                <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                  <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-2 ${dark ? "text-white/55" : "text-ink/55"}`}>
                     Payment information
                   </Text>
-                  <Text className="text-[13px] font-inter text-ink">
+                  <Text className={`text-[13px] font-inter ${dark ? "text-white" : "text-ink"}`}>
                     <Text className="font-inter-bold">Total amount: </Text>₦{selectedOrder.total_price.toFixed(2)}
                   </Text>
                 </View>
 
                 {selectedOrder.notes && (
-                  <View className="bg-white rounded-[24px] p-6 border border-border">
-                    <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55 mb-2">Order notes</Text>
-                    <Text className="text-[13px] font-inter text-ink/55 bg-cream border border-border p-4 rounded-[20px]">
+                  <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                    <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-2 ${dark ? "text-white/55" : "text-ink/55"}`}>Order notes</Text>
+                    <Text className={`text-[13px] font-inter border p-4 rounded-[20px] ${dark ? "text-white/55 bg-white/10 border-white/10" : "text-ink/55 bg-cream border-border"}`}>
                       {selectedOrder.notes}
                     </Text>
                   </View>
                 )}
 
                 {selectedOrder.status !== "completed" && selectedOrder.status !== "cancelled" && (
-                  <View className="bg-white rounded-[24px] p-6 border border-border">
-                    <Text className="font-inter-bold text-ink mb-4">Update order status</Text>
+                  <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                    <Text className={`font-inter-bold mb-4 ${dark ? "text-white" : "text-ink"}`}>Update order status</Text>
                     <View className="gap-3">
                       {selectedOrder.status === "pending" && (
                         <>
-                          <AppButton title="Accept Order" variant="ink" onPress={() => updateOrderStatus(selectedOrder.id, "accepted")} />
-                          <AppButton title="Decline Order" variant="ghost-light" onPress={() => updateOrderStatus(selectedOrder.id, "cancelled")} />
+                          <AppButton title="Accept Order" variant={dark ? "white" : "ink"} onPress={() => updateOrderStatus(selectedOrder.id, "accepted")} />
+                          <AppButton title="Decline Order" variant={dark ? "ghost-dark" : "ghost-light"} onPress={() => updateOrderStatus(selectedOrder.id, "cancelled")} />
                         </>
                       )}
                       {selectedOrder.status === "accepted" && (
-                        <AppButton title="Mark as Preparing" variant="ink" onPress={() => updateOrderStatus(selectedOrder.id, "preparing")} />
+                        <AppButton title="Mark as Preparing" variant={dark ? "white" : "ink"} onPress={() => updateOrderStatus(selectedOrder.id, "preparing")} />
                       )}
                       {selectedOrder.status === "preparing" && (
-                        <AppButton title="Mark as Completed" variant="ink" onPress={() => updateOrderStatus(selectedOrder.id, "completed")} />
+                        <AppButton title="Mark as Completed" variant={dark ? "white" : "ink"} onPress={() => updateOrderStatus(selectedOrder.id, "completed")} />
                       )}
                     </View>
                   </View>
                 )}
 
                 <View className="flex-row items-center justify-center gap-2 pt-1">
-                  <Icon icon={CheckmarkCircle01Icon} size={15} color="rgba(10,10,14,0.4)" />
-                  <Text className="text-xs font-inter text-ink/55">Status updates notify the buyer instantly</Text>
+                  <Icon icon={CheckmarkCircle01Icon} size={15} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.4)"} />
+                  <Text className={`text-xs font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Status updates notify the buyer instantly</Text>
                 </View>
               </View>
             </ScrollView>
