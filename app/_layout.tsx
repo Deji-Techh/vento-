@@ -44,7 +44,7 @@ export default function RootLayout() {
         <Stack.Screen name="(delivery)" />
         <Stack.Screen name="(admin)" />
       </Stack>
-      <Toaster position="bottom-center" />
+      <Toaster position="bottom-center" offset={110} />
     </AuthProvider>
   );
 }

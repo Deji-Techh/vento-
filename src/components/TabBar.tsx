@@ -3,6 +3,7 @@ import { usePathname, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeIn, SlideInDown, useReducedMotion } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 export interface BarItem {
@@ -103,13 +104,15 @@ export default function TabBar({
   };
 
   const ActionIcon = action?.icon;
-  const actionActive = action ? pathname === action.href || pathname.startsWith(action.href + "/") : false;
+
+  const reduced = useReducedMotion();
 
   const glassBg = dark ? "rgba(19,19,24,0.62)" : "rgba(255,255,255,0.68)";
   const glassBorder = dark ? "rgba(255,255,255,0.12)" : "rgba(10,10,14,0.10)";
 
   return (
-    <View
+    <Animated.View
+      entering={reduced ? FadeIn.duration(200) : SlideInDown.delay(80).duration(500).damping(24)}
       className="absolute left-6 right-6 flex-row items-center"
       style={{ bottom: Math.max(insets.bottom, 14), gap: 10 }}
     >
@@ -172,6 +175,6 @@ export default function TabBar({
           )}
         </TouchableOpacity>
       ) : null}
-    </View>
+    </Animated.View>
   );
 }

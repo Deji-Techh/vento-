@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/contexts/AuthContext";

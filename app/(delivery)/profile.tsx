@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
@@ -89,7 +90,8 @@ export default function DeliveryProfile() {
   if (!profile) return null;
 
   return (
-    <ScrollView className="flex-1 bg-cream px-5 pt-14" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+      <ScrollView className="flex-1 px-5 pt-2" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
       <Eyebrow>Account</Eyebrow>
 
       {/* Profile header */}
@@ -225,5 +227,6 @@ export default function DeliveryProfile() {
         <Text className="text-destructive font-inter-bold">Sign Out</Text>
       </TouchableOpacity>
     </ScrollView>
+    </SafeAreaView>
   );
 }

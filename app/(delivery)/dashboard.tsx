@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import { useAuth } from "../../src/contexts/AuthContext";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
@@ -83,7 +82,6 @@ const buzz = () => {
 };
 
 export default function DeliveryDashboard() {
-  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [agent, setAgent] = useState<any>(null);
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([]);

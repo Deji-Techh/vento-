@@ -47,7 +47,7 @@ export default function AdminSettings() {
     { label: "Total Users", value: stats.totalUsers, icon: UsersIcon, tint: "#1B1B8F" },
     { label: "Total Sellers", value: stats.totalSellers, icon: Store01Icon, tint: "#12805C" },
     { label: "Total Orders", value: stats.totalOrders, icon: ReceiptIcon, tint: "#1B1B8F" },
-    { label: "Delivery Agents", value: stats.totalAgents, icon: Settings01Icon, tint: "#1B1B8F" },
+    { label: "Delivery Agents", value: stats.totalAgents, icon: UsersIcon, tint: "#B54708" },
   ];
 
   return (
