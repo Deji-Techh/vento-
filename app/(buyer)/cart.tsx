@@ -3,8 +3,10 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { useCart } from "../../src/stores/cartStore";
+import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { EmptyState } from "../../src/components/ui/Cards";
 import { Enter } from "../../src/components/motion";
@@ -17,6 +19,7 @@ const FEE = 1500;
 export default function Cart() {
   const router = useRouter();
   const { items, removeItem, updateQuantity, getTotal } = useCart();
+  const { user } = useAuth();
   const { dark } = useTheme();
   const subtotal = getTotal();
   const freeDelivery = subtotal >= FREE_DELIVERY_AT;
@@ -114,7 +117,14 @@ export default function Cart() {
               <AppButton
                 title={`Checkout • ₦${total.toLocaleString()}`}
                 variant={dark ? "white" : "ink"}
-                onPress={() => router.push("/(buyer)/checkout" as any)}
+                onPress={() => {
+                  if (!user) {
+                    toast("Sign in to finish checkout");
+                    router.push("/auth/login");
+                    return;
+                  }
+                  router.push("/(buyer)/checkout" as any);
+                }}
               />
             </View>
           </>

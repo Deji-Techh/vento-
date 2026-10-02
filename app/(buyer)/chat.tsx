@@ -151,10 +151,10 @@ export default function Chat() {
             </View>
           </View>
 
-          {messages.map((msg: any) => {
+          {messages.map((msg: any, idx: number) => {
             if (msg.type === "date") {
               return (
-                <View key={msg.id} className="items-center mb-4 mt-1">
+                <View key={msg.id} className="items-center mb-5 mt-2">
                   <View className={`rounded-full px-4 py-1.5 border ${dark ? "bg-white/10 border-white/10" : "bg-ink/[0.05] border-ink/10"}`}>
                     <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/50" : "text-ink/50"}`}>
                       {msg.text}
@@ -163,25 +163,50 @@ export default function Chat() {
                 </View>
               );
             }
+            const prev = messages[idx - 1];
+            const next = messages[idx + 1];
+            const groupedPrev = prev && prev.type === msg.type;
+            const groupedNext = next && next.type === msg.type;
+            const gap = groupedNext ? "mb-[3px]" : "mb-4";
             if (msg.type === "sender") {
               return (
-                <Animated.View key={msg.id} entering={FadeIn.duration(200)} className="flex-row justify-end mb-2">
-                  <View className={`rounded-[20px] rounded-br-md px-4 py-3 max-w-[85%] ${dark ? "bg-white" : "bg-ink"}`}>
-                    <Text className={`text-[14px] font-inter-medium mb-1 leading-snug ${dark ? "text-ink" : "text-white"}`}>{msg.text}</Text>
-                    <View className="flex-row items-center justify-end gap-1">
-                      <Text className={`text-[11px] font-inter-semibold ${dark ? "text-ink/60" : "text-white/60"}`}>{msg.time}</Text>
-                      <Icon icon={CheckCheckIcon} size={15} color={dark ? "rgba(10,10,14,0.6)" : "rgba(255,255,255,0.6)"} />
+                <Animated.View key={msg.id} entering={FadeIn.duration(200)} className={`flex-row justify-end ${gap}`}>
+                  <View
+                    className={`px-4 pt-2.5 pb-1.5 max-w-[78%] ${dark ? "bg-white" : "bg-ink"} ${
+                      groupedPrev && groupedNext
+                        ? "rounded-[20px] rounded-br-[20px] rounded-tr-[6px]"
+                        : groupedPrev
+                          ? "rounded-[20px] rounded-br-[5px]"
+                          : groupedNext
+                            ? "rounded-[20px] rounded-tr-[6px]"
+                            : "rounded-[20px] rounded-br-[5px]"
+                    }`}
+                  >
+                    <Text className={`text-[14px] font-inter leading-[20px] ${dark ? "text-ink" : "text-white"}`}>{msg.text}</Text>
+                    <View className="flex-row items-center justify-end gap-1 mt-0.5">
+                      <Text className={`text-[10px] font-inter-medium ${dark ? "text-ink/50" : "text-white/50"}`}>{msg.time}</Text>
+                      <Icon icon={CheckCheckIcon} size={13} color={dark ? "rgba(10,10,14,0.5)" : "rgba(255,255,255,0.5)"} />
                     </View>
                   </View>
                 </Animated.View>
               );
             }
             return (
-              <Animated.View key={msg.id} entering={FadeIn.duration(200)} className="flex-row justify-start mb-2">
-                <View className={`rounded-[20px] rounded-tl-md px-4 py-3 max-w-[85%] ${dark ? "bg-white/10" : "bg-white border border-border"}`}>
-                  <Text className={`text-[14px] font-inter mb-1 leading-snug ${dark ? "text-white" : "text-ink"}`}>{msg.text}</Text>
-                  <View className="flex-row items-center justify-end">
-                    <Text className={`text-[11px] font-inter ${dark ? "text-white/45" : "text-ink/45"}`}>{msg.time}</Text>
+              <Animated.View key={msg.id} entering={FadeIn.duration(200)} className={`flex-row justify-start ${gap}`}>
+                <View
+                  className={`px-4 pt-2.5 pb-1.5 max-w-[78%] ${dark ? "bg-white/[0.09]" : "bg-white border border-border"} ${
+                    groupedPrev && groupedNext
+                      ? "rounded-[20px] rounded-bl-[20px] rounded-tl-[6px]"
+                      : groupedPrev
+                        ? "rounded-[20px] rounded-bl-[5px]"
+                        : groupedNext
+                          ? "rounded-[20px] rounded-tl-[6px]"
+                          : "rounded-[20px] rounded-bl-[5px]"
+                  }`}
+                >
+                  <Text className={`text-[14px] font-inter leading-[20px] ${dark ? "text-white" : "text-ink"}`}>{msg.text}</Text>
+                  <View className="flex-row items-center justify-end mt-0.5">
+                    <Text className={`text-[10px] font-inter ${dark ? "text-white/40" : "text-ink/40"}`}>{msg.time}</Text>
                   </View>
                 </View>
               </Animated.View>

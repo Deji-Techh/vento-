@@ -122,6 +122,12 @@ export default function Login() {
 
             <AppButton title="Sign in" variant={dark ? "white" : "ink"} loading={loading} onPress={handleLogin} />
 
+            <TouchableOpacity onPress={() => router.replace("/(buyer)/browse" as any)} className="items-center mt-5 active:opacity-60">
+              <Text className={`text-[14px] font-inter-semibold ${dark ? "text-white/70" : "text-ink/60"}`}>
+                Continue as guest →
+              </Text>
+            </TouchableOpacity>
+
             <View className="flex-row items-center my-7">
               <View className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-ink/10"}`} />
               <Text className={`px-3 text-[11px] font-inter-bold tracking-[1px] ${dark ? "text-white/40" : "text-ink/40"}`}>OR</Text>

@@ -78,7 +78,7 @@ export default function Onboarding() {
           <View className="w-10 h-10 rounded-full bg-white items-center justify-center">
             <Text className="text-ink text-lg font-inter-bold">V</Text>
           </View>
-          <Pressable onPress={() => router.replace("/auth/login" as any)} className="active:opacity-60">
+          <Pressable onPress={() => router.replace("/(buyer)/browse" as any)} className="active:opacity-60">
             <Text className="text-white text-[14px] font-inter-semibold">Skip</Text>
           </Pressable>
         </View>
