@@ -73,7 +73,10 @@ export default function Browse() {
             >
               <Icon icon={BubbleChatIcon} size={18} color="#fff" />
             </TouchableOpacity>
-            <TouchableOpacity className="w-10 h-10 rounded-full bg-white/10 items-center justify-center">
+            <TouchableOpacity
+              onPress={() => toast("You're all caught up")}
+              className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
+            >
               <Icon icon={Notification01Icon} size={18} color="#fff" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push("/(buyer)/profile" as any)} className="w-10 h-10 rounded-full bg-white items-center justify-center">
@@ -154,13 +157,18 @@ export default function Browse() {
 
         {/* Single ember moment */}
         <View className="px-5 mt-4">
-          <PromoBanner title="Midnight craving?" subtitle="Hot food from kitchens still open near you." cta="Order" />
+          <PromoBanner
+            title="Midnight craving?"
+            subtitle="Hot food from kitchens still open near you."
+            cta="Order"
+            onPress={() => router.push(`/(buyer)/food-details?id=pop-3` as any)}
+          />
         </View>
 
         {/* Kitchens */}
         <View className="mt-7 pl-5">
           <View className="pr-5">
-            <SectionHeader title="Kitchens you follow" action="See all" dark />
+            <SectionHeader title="Kitchens you follow" dark />
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
             <StoryRow items={stories} />
@@ -171,7 +179,6 @@ export default function Browse() {
         <View className="px-5 mt-7">
           <SectionHeader
             title={q || filter !== "All" ? `${visible.length} result${visible.length === 1 ? "" : "s"}` : "Nearby"}
-            action="See all"
             dark
           />
           <View className="gap-2.5">

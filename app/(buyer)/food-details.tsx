@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCart } from "../../src/stores/cartStore";
@@ -40,6 +40,7 @@ export default function FoodDetails() {
   const [fav, setFav] = useState(false);
 
   const product = products[id || ""] || { ...fallback, id: id || "default" };
+  const insets = useSafeAreaInsets();
   const total = ((product.price + (product.sizes[selectedSize]?.price || 0)) * quantity).toLocaleString();
 
   const handleAdd = () => {
@@ -118,7 +119,7 @@ export default function FoodDetails() {
         </View>
       </ScrollView>
 
-      <View className="absolute bottom-0 w-full px-5 bg-ink border-t border-white/10 pt-4" style={{ paddingBottom: 34 }}>
+      <View className="absolute bottom-0 w-full px-5 bg-ink border-t border-white/10 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
         <View className="flex-row items-center justify-between mb-3.5">
           <View className="flex-row items-center bg-white/[0.07] rounded-full p-1">
             <TouchableOpacity onPress={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 rounded-full items-center justify-center">

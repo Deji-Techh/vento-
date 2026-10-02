@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { useCart } from "../../src/stores/cartStore";
 import { AppButton } from "../../src/components/ui/AppButton";
@@ -15,6 +15,7 @@ export default function Cart() {
   const router = useRouter();
   const { items, removeItem, updateQuantity, getTotal } = useCart();
   const subtotal = getTotal();
+  const insets = useSafeAreaInsets();
   const progress = Math.min(1, subtotal / FREE_DELIVERY_AT);
 
   return (
@@ -105,7 +106,7 @@ export default function Cart() {
       </ScrollView>
 
       {items.length > 0 && (
-        <View className="absolute bottom-0 left-0 right-0 px-5 bg-ink pt-3" style={{ paddingBottom: 34 }}>
+        <View className="absolute bottom-0 left-0 right-0 px-5 bg-ink pt-3" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
           <AppButton
             title={`Checkout • ₦${(subtotal + (subtotal >= FREE_DELIVERY_AT ? 0 : FEE)).toLocaleString()}`}
             variant="white"

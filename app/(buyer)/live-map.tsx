@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { Icon } from "../../src/components/ui/Icon";
 import {
@@ -117,7 +118,7 @@ export default function LiveMap() {
               </View>
               <Text className="text-[12px] text-white/55 font-inter-semibold">Message</Text>
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.85} className="items-center gap-2">
+            <TouchableOpacity activeOpacity={0.85} className="items-center gap-2" onPress={() => toast("Calling your rider…")}>
               <View className="w-14 h-14 rounded-full bg-white/10 border border-white/10 items-center justify-center">
                 <Icon icon={PhoneIcon} size={22} color="#fff" />
               </View>

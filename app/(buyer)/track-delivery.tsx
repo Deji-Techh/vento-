@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
@@ -24,6 +25,15 @@ const steps = [
 
 export default function TrackDelivery() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [fav, setFav] = useState(false);
+
+  const toggleFav = () => {
+    setFav(!fav);
+    if (Platform.OS !== "web") {
+      Haptics.selectionAsync().catch(() => {});
+    }
+  };
 
   const confirm = () => {
     if (Platform.OS !== "web") {
@@ -45,10 +55,11 @@ export default function TrackDelivery() {
         </TouchableOpacity>
         <Text className="text-[17px] font-inter-bold text-white tracking-tight">Order status</Text>
         <TouchableOpacity
+          onPress={toggleFav}
           activeOpacity={0.85}
           className="w-11 h-11 items-center justify-center rounded-full bg-white/10"
         >
-          <Icon icon={FavouriteIcon} size={20} color="#fff" />
+          <Icon icon={FavouriteIcon} size={20} color={fav ? "#FF5A1F" : "#fff"} />
         </TouchableOpacity>
       </View>
 
@@ -156,7 +167,7 @@ export default function TrackDelivery() {
         </View>
       </ScrollView>
 
-      <View className="px-5 pb-6 pt-2">
+      <View className="px-5 pt-2" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
         <AppButton title="Confirm Delivery" variant="white" onPress={confirm} />
       </View>
     </SafeAreaView>

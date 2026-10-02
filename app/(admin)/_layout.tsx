@@ -1,4 +1,5 @@
 import { Tabs } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import TabBar from "../../src/components/TabBar";
 import { ic, DashboardSquare01Icon, UsersIcon, ReceiptIcon, Settings01Icon, UserIcon } from "../../src/components/icons";
 
@@ -12,7 +13,9 @@ const tabs = [
 
 export default function AdminLayout() {
   return (
-    <Tabs
+    <>
+      <StatusBar style="dark" />
+      <Tabs
       screenOptions={{ headerShown: false }}
       tabBar={() => <TabBar tabs={tabs} dark={false} />}
     >
@@ -22,5 +25,6 @@ export default function AdminLayout() {
       <Tabs.Screen name="settings" />
       <Tabs.Screen name="profile" />
     </Tabs>
+    </>
   );
 }

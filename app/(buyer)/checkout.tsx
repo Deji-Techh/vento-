@@ -43,6 +43,10 @@ export default function Checkout() {
 
   if (items.length === 0) return null;
 
+  const subtotal = getTotal();
+  const freeDelivery = subtotal >= 10000;
+  const total = subtotal + (freeDelivery ? 0 : 1500);
+
   const methods = [
     { id: "pod", label: "Pay on delivery", hint: "Cash or transfer at the door", icon: BanknoteIcon },
     { id: "paystack", label: "Pay now with Paystack", hint: "Card, bank or USSD", icon: CreditCardIcon },
@@ -113,9 +117,15 @@ export default function Checkout() {
               <Text className="text-white text-[14px] font-inter-semibold">₦{(i.price * i.quantity).toLocaleString()}</Text>
             </View>
           ))}
+          <View className="flex-row justify-between mt-2">
+            <Text className="text-white/60 text-[14px] font-inter">Delivery</Text>
+            <Text className="text-white text-[14px] font-inter-semibold">
+              {freeDelivery ? "Free" : "₦1,500"}
+            </Text>
+          </View>
           <View className="flex-row justify-between mt-2 pt-3 border-t border-white/10">
             <Text className="text-white text-[17px] font-inter-bold">Total</Text>
-            <Text className="text-white text-[17px] font-inter-bold">₦{getTotal().toLocaleString()}</Text>
+            <Text className="text-white text-[17px] font-inter-bold">₦{total.toLocaleString()}</Text>
           </View>
         </View>
 

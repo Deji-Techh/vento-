@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#000080",
+        "backgroundColor": "#1B1B8F",
         "foregroundImage": "./assets/adaptive-icon.png"
       },
       "package": "com.vento.app"
