@@ -26,6 +26,13 @@ module.exports = {
         ember: "#FF5A1F",
         destructive: "#D92D20",
         success: "#12805C",
+        warning: "#B54708",
+      },
+      fontFamily: {
+        inter: ["Inter_400Regular", "ui-sans-serif", "system-ui", "sans-serif"],
+        "inter-medium": ["Inter_500Medium", "ui-sans-serif", "system-ui", "sans-serif"],
+        "inter-semibold": ["Inter_600SemiBold", "ui-sans-serif", "system-ui", "sans-serif"],
+        "inter-bold": ["Inter_700Bold", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       borderRadius: {
         "4xl": "28px",

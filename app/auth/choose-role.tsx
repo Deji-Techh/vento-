@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppButton } from "../../src/components/ui/AppButton";
-import { Reveal } from "../../src/components/ui/Reveal";
 
 const roles = [
   { id: "buyer", label: "Order food", description: "Hot meals, delivered fast.", mark: "◆" },
@@ -29,16 +28,16 @@ export default function ChooseRole() {
   return (
     <SafeAreaView className="flex-1 bg-ink" edges={["top", "bottom"]}>
       <View className="flex-1 px-6 pt-8">
-        <Reveal>
+        <>
           <Text className="text-white/50 text-[11px] font-bold tracking-[2px] uppercase text-center">Vento</Text>
           <Text className="text-white text-[32px] font-bold tracking-tight text-center mt-2">What brings you?</Text>
-        </Reveal>
+        </>
 
         <View className="gap-3 mt-9">
           {roles.map((r, i) => {
             const active = selectedRole === r.id;
             return (
-              <Reveal key={r.id} delay={80 + i * 70}>
+              <Fragment key={r.id}>
                 <TouchableOpacity
                   onPress={() => setSelectedRole(r.id)}
                   activeOpacity={0.92}
@@ -55,7 +54,7 @@ export default function ChooseRole() {
                     {active && <Text className="text-white text-[11px] font-bold">✓</Text>}
                   </View>
                 </TouchableOpacity>
-              </Reveal>
+              </Fragment>
             );
           })}
         </View>

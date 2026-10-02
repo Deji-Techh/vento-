@@ -4,7 +4,6 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { AppButton } from "../../src/components/ui/AppButton";
-import { Reveal } from "../../src/components/ui/Reveal";
 
 export default function Signup() {
   const router = useRouter();
@@ -56,12 +55,12 @@ export default function Signup() {
             <TouchableOpacity onPress={() => router.back()} className="w-11 h-11 rounded-full bg-white/10 items-center justify-center active:opacity-70">
               <Text className="text-lg text-white">←</Text>
             </TouchableOpacity>
-            <Reveal delay={40}>
+            <>
               <Text className="text-white text-[34px] font-bold tracking-tight mt-6">Join Vento</Text>
               <Text className="text-white/55 text-[16px] mt-1 mb-7">Two minutes. Then dinner.</Text>
-            </Reveal>
+            </>
 
-            <Reveal delay={100}>
+            <>
               <View className="flex-row gap-3">
                 <View className="flex-1">
                   <TextInput className={input(!!errors.firstName)} placeholder="First name" placeholderTextColor="rgba(255,255,255,0.35)" value={formData.firstName} onChangeText={(v) => handleChange("firstName", v)} />
@@ -79,7 +78,7 @@ export default function Signup() {
                   <Text className="text-white/45 text-[13px] font-bold">{showPassword ? "Hide" : "Show"}</Text>
                 </TouchableOpacity>
               </View>
-            </Reveal>
+            </>
 
             <TouchableOpacity onPress={() => handleChange("terms", !formData.terms)} className="flex-row items-center mt-5 active:opacity-70">
               <View className={`w-6 h-6 rounded-full items-center justify-center ${formData.terms ? "bg-white" : "border-2 border-white/25"}`}>

@@ -4,7 +4,6 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { AppButton } from "../../src/components/ui/AppButton";
-import { Reveal } from "../../src/components/ui/Reveal";
 // DEV-BYPASS: remove this import with the bypass (see src/lib/devAuthBypass.ts)
 import { DEV_AUTH_BYPASS, inferDevRole } from "../../src/lib/devAuthBypass";
 
@@ -60,17 +59,17 @@ export default function Login() {
       <SafeAreaView edges={["top"]} className="flex-1">
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View className="flex-1 px-6 pt-10 pb-8">
-            <Reveal>
+            <>
               <View className="w-11 h-11 rounded-full bg-white items-center justify-center mb-8">
                 <Text className="text-ink text-lg font-bold">V</Text>
               </View>
-            </Reveal>
-            <Reveal delay={60}>
+            </>
+            <>
               <Text className="text-white text-[34px] font-bold tracking-tight leading-[36px]">Welcome back</Text>
               <Text className="text-white/55 text-[16px] mt-2 mb-8">Dinner is 30 minutes away.</Text>
-            </Reveal>
+            </>
 
-            <Reveal delay={120}>
+            <>
               <View>
                 <Text className="text-white text-[13px] font-bold mb-2">Email</Text>
                 <TextInput
@@ -89,9 +88,9 @@ export default function Login() {
                 />
                 {emailError ? <Text className="text-[#FF8A80] text-xs mt-1.5">{emailError}</Text> : null}
               </View>
-            </Reveal>
+            </>
 
-            <Reveal delay={180}>
+            <>
               <View className="mt-4">
                 <Text className="text-white text-[13px] font-bold mb-2">Password</Text>
                 <View className="relative">
@@ -109,7 +108,7 @@ export default function Login() {
                   </TouchableOpacity>
                 </View>
               </View>
-            </Reveal>
+            </>
 
             <View className="flex-row justify-end mt-3 mb-7">
               <TouchableOpacity className="active:opacity-60">
@@ -117,9 +116,9 @@ export default function Login() {
               </TouchableOpacity>
             </View>
 
-            <Reveal delay={240}>
+            <>
               <AppButton title="Sign in" variant="white" loading={loading} onPress={handleLogin} />
-            </Reveal>
+            </>
 
             <View className="flex-row items-center my-7">
               <View className="flex-1 h-px bg-white/10" />

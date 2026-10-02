@@ -5,7 +5,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useCart } from "../../src/stores/cartStore";
 import { ChevronLeft, Heart, Minus, Plus } from "lucide-react-native";
 import { AppButton } from "../../src/components/ui/AppButton";
-import { Reveal } from "../../src/components/ui/Reveal";
 
 const products: Record<string, any> = {
   "pop-1": { id: "pop-1", name: "Pepperoni Pizza Slice", description: "Stone-oven pepperoni, molten mozzarella, crisp crust. Simple and perfect.", price: 1500, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=900", seller_id: "seller-4", seller_name: "Pizzeria Delfina", sizes: [{ label: "Regular", price: 0 }, { label: "Large", price: 800 }] },
@@ -55,13 +54,13 @@ export default function FoodDetails() {
         </View>
 
         <View className="px-6 pt-6">
-          <Reveal>
+          <>
             <Text className="text-white/50 text-[11px] font-bold tracking-[2px] uppercase">{product.seller_name} • 20–30 min</Text>
             <Text className="text-white text-[30px] font-bold tracking-tight mt-2">{product.name}</Text>
             <Text className="text-white/55 text-[15px] leading-[23px] mt-3">{product.description}</Text>
-          </Reveal>
+          </>
 
-          <Reveal delay={100}>
+          <>
             <Text className="text-white text-[17px] font-bold mt-8 mb-3">Size</Text>
           <View className="gap-2.5">
             {product.sizes.map((s: any, i: number) => (
@@ -81,7 +80,7 @@ export default function FoodDetails() {
               </TouchableOpacity>
             ))}
           </View>
-          </Reveal>
+          </>
         </View>
       </ScrollView>
 

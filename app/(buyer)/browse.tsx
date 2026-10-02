@@ -6,7 +6,6 @@ import { useCart } from "../../src/stores/cartStore";
 import { Search, Bell } from "lucide-react-native";
 import { SectionHeader, Eyebrow } from "../../src/components/ui/SectionHeader";
 import { StoryRow, FoodSnapCard, PromoBanner } from "../../src/components/ui/Cards";
-import { Reveal } from "../../src/components/ui/Reveal";
 
 const categories = ["All", "Grocery", "Restaurants", "Convenience", "Alcohol", "Pharmacy"];
 
@@ -58,7 +57,7 @@ export default function Browse() {
         </View>
 
         {/* Greeting + search */}
-        <Reveal delay={60}>
+        <>
           <View className="px-5 mt-5">
           <Text className="text-white text-[28px] font-bold tracking-tight leading-[30px]">What are we{"\n"}eating today?</Text>
           <View className="flex-row items-center bg-white/[0.07] border border-white/10 rounded-full pl-4 pr-1.5 py-1.5 mt-4">
@@ -75,7 +74,7 @@ export default function Browse() {
             </View>
           </View>
         </View>
-        </Reveal>
+        </>
 
         {/* Categories */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-5 pl-5" contentContainerStyle={{ paddingRight: 20 }}>
@@ -91,7 +90,7 @@ export default function Browse() {
         </ScrollView>
 
         {/* Featured hero */}
-        <Reveal delay={140}>
+        <>
           <View className="px-5 mt-5">
           <TouchableOpacity
             activeOpacity={0.94}
@@ -120,17 +119,17 @@ export default function Browse() {
             <View className="w-1.5 h-1.5 rounded-full bg-white/25" />
           </View>
         </View>
-        </Reveal>
+        </>
 
         {/* Single ember moment */}
-        <Reveal delay={200}>
+        <>
           <View className="px-5 mt-4">
             <PromoBanner title="Midnight craving?" subtitle="Hot food from kitchens still open near you." cta="Order" />
           </View>
-        </Reveal>
+        </>
 
         {/* Stories */}
-        <Reveal delay={260}>
+        <>
           <View className="mt-7 pl-5">
             <View className="pr-5">
               <SectionHeader title="Kitchens you follow" action="See all" dark />
@@ -139,10 +138,10 @@ export default function Browse() {
               <StoryRow items={stories} />
             </ScrollView>
           </View>
-        </Reveal>
+        </>
 
         {/* For you */}
-        <Reveal delay={320}>
+        <>
           <View className="mt-7">
             <View className="px-5">
               <SectionHeader title="For you" action="See all" dark />
@@ -162,10 +161,10 @@ export default function Browse() {
             ))}
           </ScrollView>
         </View>
-        </Reveal>
+        </>
 
         {/* Nearby list */}
-        <Reveal delay={380}>
+        <>
           <View className="px-5 mt-7">
           <SectionHeader title="Nearby" action="See all" dark />
           <View className="gap-2.5">
@@ -189,7 +188,7 @@ export default function Browse() {
             ))}
           </View>
         </View>
-        </Reveal>
+        </>
       </ScrollView>
     </SafeAreaView>
   );
