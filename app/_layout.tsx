@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "../src/contexts/AuthContext";
+import { Toaster } from "sonner-native";
 import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts,
@@ -42,6 +43,7 @@ export default function RootLayout() {
         <Stack.Screen name="(delivery)" />
         <Stack.Screen name="(admin)" />
       </Stack>
+      <Toaster position="bottom-center" />
     </AuthProvider>
   );
 }

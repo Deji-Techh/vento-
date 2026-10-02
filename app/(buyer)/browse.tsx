@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCart } from "../../src/stores/cartStore";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
 import { Search, Bell } from "lucide-react-native";
 import { SectionHeader, Eyebrow } from "../../src/components/ui/SectionHeader";
 import { StoryRow, FoodSnapCard, PromoBanner } from "../../src/components/ui/Cards";
@@ -34,7 +36,10 @@ export default function Browse() {
 
   const handleAdd = (item: any) => {
     addItem({ id: item.id, name: item.name, price: item.price, image_url: item.image, seller_id: item.seller_id, seller_name: item.seller_name }, 1);
-    Alert.alert("Added to bag", item.name);
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
+    toast.success(`${item.name} added to bag`);
   };
 
   return (

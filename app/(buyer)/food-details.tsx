@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCart } from "../../src/stores/cartStore";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
 import { ChevronLeft, Heart, Minus, Plus } from "lucide-react-native";
 import { AppButton } from "../../src/components/ui/AppButton";
 
@@ -32,7 +34,10 @@ export default function FoodDetails() {
 
   const handleAdd = () => {
     addItem({ id: product.id, name: product.name, price: product.price + (product.sizes[selectedSize]?.price || 0), image_url: product.image, seller_id: product.seller_id, seller_name: product.seller_name }, quantity);
-    Alert.alert("Added to bag", `${quantity} × ${product.name}`);
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
+    toast.success(`${quantity} × ${product.name} added to bag`);
   };
 
   return (

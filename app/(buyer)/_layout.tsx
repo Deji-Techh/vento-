@@ -1,26 +1,27 @@
 import { Tabs } from "expo-router";
-import {
-  Home,
-  Search,
-  MessageCircle,
-  ShoppingBag,
-  User,
-} from "lucide-react-native";
+import { Home, ReceiptText, ShoppingBag, User } from "lucide-react-native";
 import TabBar from "../../src/components/TabBar";
+import { useCart } from "../../src/stores/cartStore";
 
 const tabs = [
   { icon: Home, label: "Home", href: "/(buyer)/browse" },
-  { icon: Search, label: "Search", href: "/(buyer)/browse" },
-  { icon: MessageCircle, label: "Chat", href: "/(buyer)/chat" },
-  { icon: ShoppingBag, label: "Bag", href: "/(buyer)/cart" },
+  { icon: ReceiptText, label: "Orders", href: "/(buyer)/orders" },
   { icon: User, label: "Account", href: "/(buyer)/profile" },
 ];
 
 export default function BuyerLayout() {
+  const count = useCart((s) => s.items.reduce((n, i) => n + i.quantity, 0));
+
   return (
     <Tabs
       screenOptions={{ headerShown: false }}
-      tabBar={(props) => <TabBar tabs={tabs} dark />}
+      tabBar={() => (
+        <TabBar
+          tabs={tabs}
+          dark
+          action={{ icon: ShoppingBag, label: "Bag", href: "/(buyer)/cart", badge: count }}
+        />
+      )}
     >
       <Tabs.Screen name="browse" />
       <Tabs.Screen name="chat" />
