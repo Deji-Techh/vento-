@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TouchableOpacity, Platform } from "react-native";
+import { View, Text, Pressable, TouchableOpacity, Platform, StyleSheet } from "react-native";
 import { usePathname, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
@@ -28,10 +28,19 @@ function Sheen() {
       locations={[0, 0.45, 0.75]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
-      style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+      style={StyleSheet.absoluteFill}
     />
   );
 }
+
+const webShadow = { boxShadow: "0 10px 22px rgba(0,0,0,0.28)" } as const;
+const nativeShadow = {
+  shadowColor: "#000",
+  shadowOpacity: 0.28,
+  shadowRadius: 22,
+  shadowOffset: { width: 0, height: 10 },
+  elevation: 12,
+} as const;
 
 function Pill({
   tab,
@@ -46,37 +55,32 @@ function Pill({
 }) {
   const TabIcon = tab.icon;
   return (
-    <Pressable
-      onPress={onPress}
-      className="items-center justify-center"
-      style={{ flex: 1, minHeight: 52, minWidth: 52 }}
-    >
+    <Pressable onPress={onPress} style={styles.pillTouch}>
       <View
-        className="items-center justify-center rounded-full"
-        style={{
-          width: 44,
-          height: 30,
-          backgroundColor: active ? (dark ? "#FFFFFF" : "#0A0A0E") : "transparent",
-        }}
+        style={[
+          styles.pillIcon,
+          { backgroundColor: active ? (dark ? "#FFFFFF" : "#0A0A0E") : "transparent" },
+        ]}
       >
         <TabIcon
           color={active ? (dark ? "#0A0A0E" : "#FFFFFF") : dark ? "rgba(255,255,255,0.7)" : "#4A4653"}
-          size={21}
+          size={20}
           strokeWidth={1.9}
         />
         {tab.badge != null && tab.badge > 0 && (
-          <View className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-ember rounded-full items-center justify-center">
-            <Text className="text-white text-[10px] font-inter-bold">{tab.badge > 99 ? "99+" : tab.badge}</Text>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{tab.badge > 99 ? "99+" : tab.badge}</Text>
           </View>
         )}
       </View>
       <Text
-        className="font-inter-medium"
-        style={{
-          fontSize: 10,
-          color: active ? (dark ? "#fff" : "#0A0A0E") : dark ? "rgba(255,255,255,0.55)" : "#6E6A75",
-          marginTop: 1,
-        }}
+        style={[
+          styles.pillLabel,
+          {
+            fontWeight: active ? "700" : "500",
+            color: active ? (dark ? "#fff" : "#0A0A0E") : dark ? "rgba(255,255,255,0.55)" : "#6E6A75",
+          },
+        ]}
       >
         {tab.label}
       </Text>
@@ -84,8 +88,9 @@ function Pill({
   );
 }
 
-// Floating bar: glass nav pill + solid primary action. The action is opaque
-// on purpose — a glyph must never depend on what's scrolling behind it.
+// Floating bar: glass nav pill + solid primary action side by side.
+// Layout is explicit StyleSheet (never class-dependent) so the action
+// can never wrap below the pill.
 export default function TabBar({
   tabs,
   dark: darkProp,
@@ -95,10 +100,11 @@ export default function TabBar({
   dark?: boolean;
   action?: BarItem;
 }) {
-  const dark = darkProp ?? useTheme().dark;
   const pathname = usePathname();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const dark = darkProp ?? useTheme().dark;
+  const reduced = useReducedMotion();
 
   const go = (href: string) => {
     press();
@@ -106,38 +112,28 @@ export default function TabBar({
   };
 
   const ActionIcon = action?.icon;
-
-  const reduced = useReducedMotion();
-
   const glassBg = dark ? "rgba(19,19,24,0.62)" : "rgba(255,255,255,0.68)";
   const glassBorder = dark ? "rgba(255,255,255,0.12)" : "rgba(10,10,14,0.10)";
 
   return (
     <Animated.View
       entering={reduced ? FadeIn.duration(200) : SlideInDown.delay(80).duration(500).damping(24)}
-      className="absolute left-6 right-6 flex-row items-center"
-      style={{ bottom: Math.max(insets.bottom, 14), gap: 10 }}
+      style={[styles.bar, { bottom: Math.max(insets.bottom, 12) }]}
     >
       <View
-        className="flex-row items-center px-3 rounded-full"
-        style={{
-          flex: 1,
-          height: 70,
-          overflow: "hidden",
-          borderWidth: 1,
-          borderColor: glassBorder,
-          backgroundColor: glassBg,
-          shadowColor: "#000",
-          shadowOpacity: 0.28,
-          shadowRadius: 22,
-          shadowOffset: { width: 0, height: 10 },
-          elevation: 12,
-        }}
+        style={[
+          styles.pill,
+          {
+            borderColor: glassBorder,
+            backgroundColor: glassBg,
+            ...(Platform.OS === "web" ? webShadow : nativeShadow),
+          },
+        ]}
       >
         <BlurView
           intensity={60}
           tint={dark ? "dark" : "light"}
-          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+          style={StyleSheet.absoluteFill}
         />
         <Sheen />
         {tabs.map((tab) => (
@@ -155,22 +151,18 @@ export default function TabBar({
         <TouchableOpacity
           onPress={() => go(action.href)}
           activeOpacity={0.85}
-          className="items-center justify-center rounded-full"
-          style={{
-            width: 70,
-            height: 70,
-            backgroundColor: dark ? "#FFFFFF" : "#0A0A0E",
-            shadowColor: "#000",
-            shadowOpacity: 0.28,
-            shadowRadius: 22,
-            shadowOffset: { width: 0, height: 10 },
-            elevation: 12,
-          }}
+          style={[
+            styles.circle,
+            {
+              backgroundColor: dark ? "#FFFFFF" : "#0A0A0E",
+              ...(Platform.OS === "web" ? webShadow : nativeShadow),
+            },
+          ]}
         >
-          <ActionIcon color={dark ? "#0A0A0E" : "#FFFFFF"} size={26} strokeWidth={2.2} />
+          <ActionIcon color={dark ? "#0A0A0E" : "#FFFFFF"} size={24} strokeWidth={2.2} />
           {action.badge != null && action.badge > 0 && (
-            <View className="absolute top-2 right-2 min-w-[20px] h-[20px] px-1 bg-ember rounded-full items-center justify-center border-2 border-white">
-              <Text className="text-white text-[10px] font-inter-bold">
+            <View style={styles.circleBadge}>
+              <Text style={styles.badgeText}>
                 {action.badge > 99 ? "99+" : action.badge}
               </Text>
             </View>
@@ -180,3 +172,81 @@ export default function TabBar({
     </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  bar: {
+    position: "absolute",
+    left: 20,
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  pill: {
+    flex: 1,
+    height: 62,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    borderRadius: 31,
+    overflow: "hidden",
+    borderWidth: 1,
+  },
+  circle: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pillTouch: {
+    flex: 1,
+    minHeight: 48,
+    minWidth: 48,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pillIcon: {
+    width: 42,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pillLabel: {
+    fontSize: 10,
+    fontFamily: "Inter_500Medium",
+    marginTop: 1,
+  },
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    backgroundColor: "#FF5A1F",
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  circleBadge: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 4,
+    backgroundColor: "#FF5A1F",
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontFamily: "Inter_700Bold",
+  },
+});

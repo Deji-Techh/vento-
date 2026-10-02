@@ -21,6 +21,7 @@ export default function DeliveryLayout() {
       <Tabs.Screen name="map" />
       <Tabs.Screen name="earnings" />
       <Tabs.Screen name="profile" />
+      <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
   );
 }

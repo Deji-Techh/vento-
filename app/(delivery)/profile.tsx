@@ -23,6 +23,7 @@ import {
   Package01Icon,
   ChartLineIcon,
   BanknoteIcon,
+  Settings01Icon,
 } from "../../src/components/icons";
 
 const mockProfile = {
@@ -94,7 +95,15 @@ export default function DeliveryProfile() {
   return (
     <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <ScrollView className="flex-1 px-5 pt-2" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-      <Eyebrow>Account</Eyebrow>
+      <View className="flex-row items-center justify-between">
+        <Eyebrow>Account</Eyebrow>
+        <TouchableOpacity
+          onPress={() => router.push("/(delivery)/settings" as any)}
+          className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}
+        >
+          <Icon icon={Settings01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+        </TouchableOpacity>
+      </View>
 
       {/* Profile header */}
       <View className={`rounded-[28px] p-6 border mt-4 mb-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>

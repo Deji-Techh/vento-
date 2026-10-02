@@ -24,7 +24,6 @@ function Shell() {
       <Stack screenOptions={{ headerShown: false, animation: "slide_from_right", gestureEnabled: true }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="onboarding" />
-        <Stack.Screen name="auth" />
         <Stack.Screen name="(buyer)" />
         <Stack.Screen name="(seller)" />
         <Stack.Screen name="(delivery)" />

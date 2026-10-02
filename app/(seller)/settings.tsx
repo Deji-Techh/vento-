@@ -7,6 +7,7 @@ import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import { useRouter } from "expo-router";
 import { Eyebrow } from "../../src/components/ui/SectionHeader";
+import { AppearanceCard } from "../../src/components/ui/Settings";
 import { Icon } from "../../src/components/ui/Icon";
 import {
   Store01Icon,
@@ -47,6 +48,8 @@ export default function SellerSettings() {
         <Eyebrow>Preferences</Eyebrow>
         <Text className={`text-[28px] font-inter-bold mt-1 tracking-tight ${dark ? "text-white" : "text-ink"}`}>Settings</Text>
         <Text className={`text-[13px] font-inter mt-1 mb-6 ${dark ? "text-white/55" : "text-ink/55"}`}>Store preferences</Text>
+
+        <AppearanceCard />
 
         <View className={`rounded-[24px] p-6 mb-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
           <View className={`flex-row items-center justify-between py-3 border-b ${dark ? "border-white/10" : "border-border"}`}>

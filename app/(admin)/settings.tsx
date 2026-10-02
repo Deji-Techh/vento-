@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import { Eyebrow, SectionHeader, StatusChip } from "../../src/components/ui/SectionHeader";
+import { AppearanceCard } from "../../src/components/ui/Settings";
 import { Icon } from "../../src/components/ui/Icon";
 import {
   UsersIcon,
@@ -68,6 +69,8 @@ export default function AdminSettings() {
             {user?.email ? `${user.email} • ` : ""}Platform overview and configuration
           </Text>
         </View>
+
+        <AppearanceCard />
 
         {/* Platform stats */}
         <View className={`rounded-[28px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
