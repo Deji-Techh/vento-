@@ -4,6 +4,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "../src/contexts/AuthContext";
 import { ThemeProvider, useTheme } from "../src/contexts/ThemeContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
 import { FlyLayer } from "../src/components/FlyLayer";
 import * as SplashScreen from "expo-splash-screen";
@@ -25,7 +26,7 @@ SplashScreen.preventAutoHideAsync();
 function Shell() {
   const { dark } = useTheme();
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style={dark ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false, animation: "slide_from_right", gestureEnabled: true }}>
         <Stack.Screen name="index" />
@@ -37,7 +38,7 @@ function Shell() {
       </Stack>
       <Toaster position="bottom-center" offset={110} />
       <FlyLayer />
-    </>
+    </GestureHandlerRootView>
   );
 }
 
