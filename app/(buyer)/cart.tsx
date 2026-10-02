@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { useRouter } from "expo-router";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { useCart } from "../../src/stores/cartStore";
 import { useTheme } from "../../src/contexts/ThemeContext";
@@ -18,7 +18,6 @@ export default function Cart() {
   const router = useRouter();
   const { items, removeItem, updateQuantity, getTotal } = useCart();
   const { dark } = useTheme();
-  const insets = useSafeAreaInsets();
   const subtotal = getTotal();
   const freeDelivery = subtotal >= FREE_DELIVERY_AT;
   const total = subtotal + (freeDelivery ? 0 : FEE);
@@ -39,7 +38,7 @@ export default function Cart() {
         <Text className={`text-[20px] font-inter-bold tracking-tight ml-3 ${dark ? "text-white" : "text-ink"}`}>Your bag</Text>
       </View>
 
-      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 150 }} showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         {items.length === 0 ? (
           <View>
             <EmptyState title="Bag's empty" subtitle="Something hot is waiting for you." />
@@ -110,19 +109,17 @@ export default function Cart() {
                 <Text className={`text-[18px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>₦{total.toLocaleString()}</Text>
               </View>
             </View>
+
+            <View className="mt-6">
+              <AppButton
+                title={`Checkout • ₦${total.toLocaleString()}`}
+                variant={dark ? "white" : "ink"}
+                onPress={() => router.push("/(buyer)/checkout" as any)}
+              />
+            </View>
           </>
         )}
       </ScrollView>
-
-      {items.length > 0 && (
-        <View className={`absolute bottom-0 left-0 right-0 px-5 pt-3 ${dark ? "bg-ink" : "bg-cream"}`} style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
-          <AppButton
-            title={`Checkout • ₦${total.toLocaleString()}`}
-            variant={dark ? "white" : "ink"}
-            onPress={() => router.push("/(buyer)/checkout" as any)}
-          />
-        </View>
-      )}
     </SafeAreaView>
   );
 }

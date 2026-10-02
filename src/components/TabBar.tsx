@@ -115,6 +115,20 @@ export default function TabBar({
   const glassBg = dark ? "rgba(19,19,24,0.62)" : "rgba(255,255,255,0.68)";
   const glassBorder = dark ? "rgba(255,255,255,0.12)" : "rgba(10,10,14,0.10)";
 
+  // Full-screen flows own their bottom edge (sticky CTAs, inputs, sheets)
+  // so the floating bar gets out of the way entirely.
+  const FULLSCREEN = [
+    "cart",
+    "checkout",
+    "food-details",
+    "track-delivery",
+    "live-map",
+    "chat",
+    "notifications",
+    "settings",
+  ];
+  if (FULLSCREEN.some((s) => pathname.includes(s))) return null;
+
   return (
     <Animated.View
       entering={reduced ? FadeIn.duration(200) : SlideInDown.delay(80).duration(500).damping(24)}
