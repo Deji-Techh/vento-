@@ -3,8 +3,10 @@ import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollVie
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
+import { Enter } from "../../src/components/motion";
 import { Icon } from "../../src/components/ui/Icon";
 import { ArrowLeft01Icon } from "../../src/components/icons";
 import { toast } from "sonner-native";
@@ -12,6 +14,7 @@ import { toast } from "sonner-native";
 export default function Signup() {
   const router = useRouter();
   const { signUp } = useAuth();
+  const { dark } = useTheme();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", password: "", terms: false });
@@ -50,15 +53,20 @@ export default function Signup() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1 bg-ink">
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
       <SafeAreaView edges={["top"]} className="flex-1">
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View className="flex-1 px-6 pt-6 pb-8">
-            <TouchableOpacity onPress={() => router.back()} className="w-11 h-11 rounded-full bg-white/10 items-center justify-center active:opacity-70">
-              <Icon icon={ArrowLeft01Icon} size={20} color="#fff" />
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className={`w-11 h-11 rounded-full items-center justify-center active:opacity-70 ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}
+            >
+              <Icon icon={ArrowLeft01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
             </TouchableOpacity>
-            <Text className="text-white text-[32px] font-inter-bold tracking-tight mt-6">Join Vento</Text>
-            <Text className="text-white/55 text-[15px] font-inter mt-1 mb-7">Two minutes. Then dinner.</Text>
+            <Enter delay={40}>
+              <Text className={`text-[32px] font-inter-bold tracking-tight mt-6 ${dark ? "text-white" : "text-ink"}`}>Join Vento</Text>
+              <Text className={`text-[15px] font-inter mt-1 mb-7 ${dark ? "text-white/55" : "text-ink/55"}`}>Two minutes. Then dinner.</Text>
+            </Enter>
 
             <View className="flex-row gap-3">
               <View className="flex-1">
@@ -84,22 +92,22 @@ export default function Signup() {
             </View>
 
             <TouchableOpacity onPress={() => handleChange("terms", !formData.terms)} className="flex-row items-center mt-5 active:opacity-70">
-              <View className={`w-6 h-6 rounded-full items-center justify-center ${formData.terms ? "bg-white" : "border-2 border-white/25"}`}>
-                {formData.terms && <Text className="text-ink text-xs font-inter-bold">✓</Text>}
+              <View className={`w-6 h-6 rounded-full items-center justify-center ${formData.terms ? (dark ? "bg-white" : "bg-ink") : dark ? "border-2 border-white/25" : "border-2 border-ink/20"}`}>
+                {formData.terms && <Text className={`text-xs font-inter-bold ${dark ? "text-ink" : "text-white"}`}>✓</Text>}
               </View>
-              <Text className="text-[13px] font-inter text-white/60 ml-3 flex-1">
-                I agree to the <Text className="font-inter-bold text-white">Terms</Text> and <Text className="font-inter-bold text-white">Privacy Policy</Text>
+              <Text className={`text-[13px] font-inter ml-3 flex-1 ${dark ? "text-white/60" : "text-ink/60"}`}>
+                I agree to the <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Terms</Text> and <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Privacy Policy</Text>
               </Text>
             </TouchableOpacity>
             {errors.terms ? <Text className="text-[#FF8A80] text-xs font-inter-medium mt-1.5">{errors.terms}</Text> : null}
 
             <View className="mt-7">
-              <AppButton title="Create account" variant="white" loading={loading} onPress={handleSignup} />
+              <AppButton title="Create account" variant={dark ? "white" : "ink"} loading={loading} onPress={handleSignup} />
             </View>
 
             <TouchableOpacity onPress={() => router.push("/auth/login")} className="items-center mt-6 active:opacity-60">
-              <Text className="text-[14px] font-inter text-white/55">
-                Have an account? <Text className="font-inter-bold text-white">Log in</Text>
+              <Text className={`text-[14px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
+                Have an account? <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Log in</Text>
               </Text>
             </TouchableOpacity>
           </View>

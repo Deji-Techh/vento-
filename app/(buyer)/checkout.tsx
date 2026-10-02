@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCart } from "../../src/stores/cartStore";
+import { useTheme } from "../../src/contexts/ThemeContext";
+import * as Haptics from "expo-haptics";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
 import { Eyebrow } from "../../src/components/ui/SectionHeader";
@@ -13,6 +15,7 @@ import { toast } from "sonner-native";
 export default function Checkout() {
   const router = useRouter();
   const { items, getTotal, clearCart } = useCart();
+  const { dark } = useTheme();
   const [loading, setLoading] = useState(false);
   const [pay, setPay] = useState<"paystack" | "pod">("pod");
   const [address, setAddress] = useState("");
@@ -53,16 +56,16 @@ export default function Checkout() {
   ] as const;
 
   return (
-    <SafeAreaView className="flex-1 bg-ink" edges={["top"]}>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         <View className="flex-row items-center pt-1 mb-6">
-          <TouchableOpacity onPress={() => router.back()} className="w-11 h-11 rounded-full bg-white/10 items-center justify-center">
-            <Icon icon={ArrowLeft01Icon} size={22} color="#fff" />
+          <TouchableOpacity onPress={() => router.back()} className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
+            <Icon icon={ArrowLeft01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
           </TouchableOpacity>
-          <Text className="text-white text-[20px] font-inter-bold tracking-tight ml-3">Checkout</Text>
+          <Text className={`text-[20px] font-inter-bold tracking-tight ml-3 ${dark ? "text-white" : "text-ink"}`}>Checkout</Text>
         </View>
 
-        <Eyebrow dark>Dropoff</Eyebrow>
+        <Eyebrow>Dropoff</Eyebrow>
         <View className="mt-2.5">
           <TextField
             placeholder="Street, hostel, landmark…"
@@ -85,52 +88,61 @@ export default function Checkout() {
         </View>
 
         <View className="mt-7 mb-2.5">
-          <Eyebrow dark>Payment</Eyebrow>
+          <Eyebrow>Payment</Eyebrow>
         </View>
         {methods.map((m) => (
           <TouchableOpacity
             key={m.id}
-            onPress={() => setPay(m.id)}
+            onPress={() => {
+              setPay(m.id);
+              if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
+            }}
             activeOpacity={0.9}
-            className={`flex-row items-center px-5 py-4 rounded-[20px] mb-2 ${pay === m.id ? "bg-white" : "bg-white/[0.06] border border-white/10"}`}
+            className={`flex-row items-center px-5 py-4 rounded-[20px] mb-2 border ${
+              pay === m.id
+                ? dark
+                  ? "bg-white border-white"
+                  : "bg-ink border-ink"
+                : dark
+                  ? "bg-white/[0.06] border-white/10"
+                  : "bg-white border-border"
+            }`}
           >
-            <View className={`w-11 h-11 rounded-2xl items-center justify-center mr-3.5 ${pay === m.id ? "bg-ink" : "bg-white/10"}`}>
-              <Icon icon={m.icon} size={20} color={pay === m.id ? "#fff" : "rgba(255,255,255,0.7)"} />
+            <View className={`w-11 h-11 rounded-2xl items-center justify-center mr-3.5 ${pay === m.id ? (dark ? "bg-ink" : "bg-white") : dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
+              <Icon icon={m.icon} size={20} color={pay === m.id ? (dark ? "#fff" : "#0A0A0E") : dark ? "rgba(255,255,255,0.7)" : "rgba(10,10,14,0.6)"} />
             </View>
             <View className="flex-1">
-              <Text className={`text-[15px] font-inter-bold ${pay === m.id ? "text-ink" : "text-white"}`}>{m.label}</Text>
-              <Text className={`text-[12px] font-inter mt-0.5 ${pay === m.id ? "text-ink/55" : "text-white/45"}`}>{m.hint}</Text>
+              <Text className={`text-[15px] font-inter-bold ${pay === m.id ? (dark ? "text-ink" : "text-white") : dark ? "text-white" : "text-ink"}`}>{m.label}</Text>
+              <Text className={`text-[12px] font-inter mt-0.5 ${pay === m.id ? (dark ? "text-ink/55" : "text-white/55") : dark ? "text-white/45" : "text-ink/50"}`}>{m.hint}</Text>
             </View>
-            <View className={`w-5 h-5 rounded-full items-center justify-center ${pay === m.id ? "bg-ink" : "border-2 border-white/25"}`}>
-              {pay === m.id && <Text className="text-white text-[10px] font-inter-bold">✓</Text>}
+            <View className={`w-5 h-5 rounded-full items-center justify-center ${pay === m.id ? (dark ? "bg-ink" : "bg-white") : dark ? "border-2 border-white/25" : "border-2 border-ink/20"}`}>
+              {pay === m.id && <Text className={`text-[10px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>✓</Text>}
             </View>
           </TouchableOpacity>
         ))}
 
         <View className="mt-7 mb-2.5">
-          <Eyebrow dark>Summary</Eyebrow>
+          <Eyebrow>Summary</Eyebrow>
         </View>
         <View className="gap-2">
           {items.map((i) => (
             <View key={i.id} className="flex-row justify-between">
-              <Text className="text-white/60 text-[14px] font-inter">{i.name} × {i.quantity}</Text>
-              <Text className="text-white text-[14px] font-inter-semibold">₦{(i.price * i.quantity).toLocaleString()}</Text>
+              <Text className={`text-[14px] font-inter ${dark ? "text-white/60" : "text-ink/60"}`}>{i.name} × {i.quantity}</Text>
+              <Text className={`text-[14px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>₦{(i.price * i.quantity).toLocaleString()}</Text>
             </View>
           ))}
-          <View className="flex-row justify-between mt-2">
-            <Text className="text-white/60 text-[14px] font-inter">Delivery</Text>
-            <Text className="text-white text-[14px] font-inter-semibold">
-              {freeDelivery ? "Free" : "₦1,500"}
-            </Text>
+          <View className="flex-row justify-between mt-1">
+            <Text className={`text-[14px] font-inter ${dark ? "text-white/60" : "text-ink/60"}`}>Delivery</Text>
+            <Text className={`text-[14px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>{freeDelivery ? "Free" : "₦1,500"}</Text>
           </View>
-          <View className="flex-row justify-between mt-2 pt-3 border-t border-white/10">
-            <Text className="text-white text-[17px] font-inter-bold">Total</Text>
-            <Text className="text-white text-[17px] font-inter-bold">₦{total.toLocaleString()}</Text>
+          <View className={`flex-row justify-between mt-2 pt-3 border-t ${dark ? "border-white/10" : "border-ink/10"}`}>
+            <Text className={`text-[17px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Total</Text>
+            <Text className={`text-[17px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>₦{total.toLocaleString()}</Text>
           </View>
         </View>
 
         <View className="mt-6">
-          <AppButton title={pay === "paystack" ? "Pay now" : "Place order"} variant="white" loading={loading} onPress={place} />
+          <AppButton title={pay === "paystack" ? "Pay now" : "Place order"} variant={dark ? "white" : "ink"} loading={loading} onPress={place} />
         </View>
       </ScrollView>
     </SafeAreaView>

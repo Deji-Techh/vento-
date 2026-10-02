@@ -6,19 +6,21 @@ import Animated, {
   withRepeat,
   useReducedMotion,
 } from "react-native-reanimated";
+import { useTheme } from "../../contexts/ThemeContext";
 
 // Loading placeholder. Gentle opacity pulse; static when Reduced Motion is on.
 export function Skeleton({
   width,
   height,
   radius = 16,
-  dark = true,
+  dark: darkProp,
 }: {
   width: number | string;
   height: number;
   radius?: number;
   dark?: boolean;
 }) {
+  const dark = darkProp ?? useTheme().dark;
   const reduced = useReducedMotion();
   const opacity = useSharedValue(0.45);
 

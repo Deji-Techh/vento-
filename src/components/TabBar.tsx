@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeIn, SlideInDown, useReducedMotion } from "react-native-reanimated";
+import { useTheme } from "../contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 
 export interface BarItem {
@@ -87,13 +88,14 @@ function Pill({
 // on purpose — a glyph must never depend on what's scrolling behind it.
 export default function TabBar({
   tabs,
-  dark = true,
+  dark: darkProp,
   action,
 }: {
   tabs: BarItem[];
   dark?: boolean;
   action?: BarItem;
 }) {
+  const dark = darkProp ?? useTheme().dark;
   const pathname = usePathname();
   const router = useRouter();
   const insets = useSafeAreaInsets();

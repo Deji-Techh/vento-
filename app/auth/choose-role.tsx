@@ -3,7 +3,9 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import { AppButton } from "../../src/components/ui/AppButton";
+import { Enter } from "../../src/components/motion";
 import { Icon } from "../../src/components/ui/Icon";
 import { ShoppingBag02Icon, Store01Icon, DeliveryBox01Icon } from "../../src/components/icons";
 
@@ -15,6 +17,7 @@ const roles = [
 
 export default function ChooseRole() {
   const router = useRouter();
+  const { dark } = useTheme();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const handleContinue = async () => {
@@ -28,38 +31,53 @@ export default function ChooseRole() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-ink" edges={["top", "bottom"]}>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top", "bottom"]}>
       <View className="flex-1 px-6 pt-8">
-        <Text className="text-white/50 text-[11px] font-inter-bold tracking-[2px] uppercase text-center">Vento</Text>
-        <Text className="text-white text-[30px] font-inter-bold tracking-tight text-center mt-2">What brings you?</Text>
+        <Enter>
+          <Text className={`text-[11px] font-inter-bold tracking-[2px] uppercase text-center ${dark ? "text-white/50" : "text-ink/50"}`}>Vento</Text>
+          <Text className={`text-[30px] font-inter-bold tracking-tight text-center mt-2 ${dark ? "text-white" : "text-ink"}`}>What brings you?</Text>
+        </Enter>
 
         <View className="gap-3 mt-9">
-          {roles.map((r) => {
+          {roles.map((r, i) => {
             const active = selectedRole === r.id;
             return (
-              <TouchableOpacity
-                key={r.id}
-                onPress={() => setSelectedRole(r.id)}
-                activeOpacity={0.92}
-                className={`flex-row items-center p-5 rounded-[24px] ${active ? "bg-white" : "bg-white/[0.06] border border-white/10"}`}
-              >
-                <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-4 ${active ? "bg-ink" : "bg-white/10"}`}>
-                  <Icon icon={r.icon} size={22} color={active ? "#fff" : "rgba(255,255,255,0.6)"} />
-                </View>
-                <View className="flex-1">
-                  <Text className={`text-[17px] font-inter-bold tracking-tight ${active ? "text-ink" : "text-white"}`}>{r.label}</Text>
-                  <Text className={`text-[13px] font-inter mt-0.5 ${active ? "text-ink/60" : "text-white/50"}`}>{r.description}</Text>
-                </View>
-                <View className={`w-6 h-6 rounded-full items-center justify-center ${active ? "bg-ink" : "border-2 border-white/20"}`}>
-                  {active && <Text className="text-white text-[11px] font-inter-bold">✓</Text>}
-                </View>
-              </TouchableOpacity>
+              <Enter key={r.id} delay={60 + i * 50}>
+                <TouchableOpacity
+                  onPress={() => setSelectedRole(r.id)}
+                  activeOpacity={0.92}
+                  className={`flex-row items-center p-5 rounded-[24px] ${
+                    active
+                      ? dark
+                        ? "bg-white"
+                        : "bg-ink"
+                      : dark
+                        ? "bg-white/[0.06] border border-white/10"
+                        : "bg-white border border-border"
+                  }`}
+                >
+                  <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-4 ${active ? (dark ? "bg-ink" : "bg-white") : dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
+                    <Icon
+                      icon={r.icon}
+                      size={22}
+                      color={active ? (dark ? "#fff" : "#0A0A0E") : dark ? "rgba(255,255,255,0.6)" : "rgba(10,10,14,0.55)"}
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className={`text-[17px] font-inter-bold tracking-tight ${active ? (dark ? "text-ink" : "text-white") : dark ? "text-white" : "text-ink"}`}>{r.label}</Text>
+                    <Text className={`text-[13px] font-inter mt-0.5 ${active ? (dark ? "text-ink/60" : "text-white/60") : dark ? "text-white/50" : "text-ink/55"}`}>{r.description}</Text>
+                  </View>
+                  <View className={`w-6 h-6 rounded-full items-center justify-center ${active ? (dark ? "bg-ink" : "bg-white") : dark ? "border-2 border-white/20" : "border-2 border-ink/20"}`}>
+                    {active && <Text className={`text-[11px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>✓</Text>}
+                  </View>
+                </TouchableOpacity>
+              </Enter>
             );
           })}
         </View>
       </View>
       <View className="px-6 pb-2">
-        <AppButton title="Continue" variant="white" disabled={!selectedRole} onPress={handleContinue} />
+        <AppButton title="Continue" variant={dark ? "white" : "ink"} disabled={!selectedRole} onPress={handleContinue} />
       </View>
     </SafeAreaView>
   );

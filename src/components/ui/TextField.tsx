@@ -1,4 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { useTheme } from "../../contexts/ThemeContext";
 
 interface TextFieldProps {
   label?: string;
@@ -32,10 +33,11 @@ export function TextField({
   autoCapitalize = "sentences",
   autoComplete,
   onBlur,
-  dark = true,
+  dark: darkProp,
   multiline,
   numberOfLines,
 }: TextFieldProps) {
+  const dark = darkProp ?? useTheme().dark;
   const shell = dark ? "bg-white/[0.06] border-white/10" : "bg-ink/[0.04] border-ink/10";
   const text = dark ? "text-white" : "text-ink";
   const holder = dark ? "rgba(255,255,255,0.35)" : "rgba(10,10,14,0.35)";

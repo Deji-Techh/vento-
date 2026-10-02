@@ -5,9 +5,11 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCart } from "../../src/stores/cartStore";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
+import { Enter } from "../../src/components/motion";
 import { Icon } from "../../src/components/ui/Icon";
 import {
   ArrowLeft01Icon,
@@ -35,13 +37,19 @@ export default function FoodDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { addItem } = useCart();
+  const { dark } = useTheme();
+  const insets = useSafeAreaInsets();
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(0);
   const [fav, setFav] = useState(false);
 
   const product = products[id || ""] || { ...fallback, id: id || "default" };
-  const insets = useSafeAreaInsets();
   const total = ((product.price + (product.sizes[selectedSize]?.price || 0)) * quantity).toLocaleString();
+
+  const step = (d: number) => {
+    setQuantity(Math.max(1, quantity + d));
+    if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
+  };
 
   const handleAdd = () => {
     addItem({ id: product.id, name: product.name, price: product.price + (product.sizes[selectedSize]?.price || 0), image_url: product.image, seller_id: product.seller_id, seller_name: product.seller_name }, quantity);
@@ -52,12 +60,12 @@ export default function FoodDetails() {
   };
 
   return (
-    <View className="flex-1 bg-ink">
+    <View className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 210 }}>
         <View>
           <Image source={{ uri: product.image }} style={{ width: "100%", height: 400 }} contentFit="cover" transition={300} />
           <LinearGradient
-            colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0)", "rgba(10,10,14,0.9)"]}
+            colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0)", dark ? "rgba(10,10,14,0.9)" : "rgba(250,245,234,0.95)"]}
             locations={[0, 0.45, 1]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
@@ -83,56 +91,71 @@ export default function FoodDetails() {
         </View>
 
         <View className="px-6 pt-5">
-          <View className="flex-row items-center gap-1.5">
-            <Icon icon={MapPinIcon} size={13} color="rgba(255,255,255,0.5)" />
-            <Text className="text-white/50 text-[11px] font-inter-bold tracking-[2px] uppercase">
-              {product.seller_name} • {product.eta}
-            </Text>
-          </View>
-          <Text className="text-white text-[30px] font-inter-bold tracking-tight mt-2">{product.name}</Text>
-          <View className="flex-row items-center gap-1.5 mt-2.5">
-            <Icon icon={StarIcon} size={14} color="#fff" />
-            <Text className="text-white text-[13px] font-inter-bold">{product.rating}</Text>
-            <Text className="text-white/45 text-[13px] font-inter">• 200+ ratings</Text>
-          </View>
-          <Text className="text-white/55 text-[15px] font-inter leading-[23px] mt-3">{product.description}</Text>
+          <Enter>
+            <View className="flex-row items-center gap-1.5">
+              <Icon icon={MapPinIcon} size={13} color={dark ? "rgba(255,255,255,0.5)" : "rgba(10,10,14,0.5)"} />
+              <Text className={`text-[11px] font-inter-bold tracking-[2px] uppercase ${dark ? "text-white/50" : "text-ink/50"}`}>
+                {product.seller_name} • {product.eta}
+              </Text>
+            </View>
+            <Text className={`text-[30px] font-inter-bold tracking-tight mt-2 ${dark ? "text-white" : "text-ink"}`}>{product.name}</Text>
+            <View className="flex-row items-center gap-1.5 mt-2.5">
+              <Icon icon={StarIcon} size={14} color={dark ? "#fff" : "#0A0A0E"} />
+              <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{product.rating}</Text>
+              <Text className={`text-[13px] font-inter ${dark ? "text-white/45" : "text-ink/50"}`}>• 200+ ratings</Text>
+            </View>
+            <Text className={`text-[15px] font-inter leading-[23px] mt-3 ${dark ? "text-white/55" : "text-ink/60"}`}>{product.description}</Text>
+          </Enter>
 
-          <Text className="text-white text-[17px] font-inter-bold mt-8 mb-3">Size</Text>
-          <View className="gap-2.5">
-            {product.sizes.map((s: any, i: number) => (
-              <TouchableOpacity
-                key={i}
-                onPress={() => setSelectedSize(i)}
-                activeOpacity={0.9}
-                className={`flex-row items-center justify-between px-5 py-4 rounded-[20px] ${selectedSize === i ? "bg-white" : "bg-white/[0.06] border border-white/10"}`}
-              >
-                <Text className={`text-[15px] font-inter-bold ${selectedSize === i ? "text-ink" : "text-white"}`}>{s.label}</Text>
-                <View className="flex-row items-center gap-3">
-                  {s.price > 0 && <Text className={`text-[14px] font-inter ${selectedSize === i ? "text-ink/60" : "text-white/50"}`}>+₦{s.price.toLocaleString()}</Text>}
-                  <View className={`w-5 h-5 rounded-full items-center justify-center ${selectedSize === i ? "bg-ink" : "border-2 border-white/25"}`}>
-                    {selectedSize === i && <Text className="text-white text-[10px] font-inter-bold">✓</Text>}
+          <Enter delay={80}>
+            <Text className={`text-[17px] font-inter-bold mt-8 mb-3 ${dark ? "text-white" : "text-ink"}`}>Size</Text>
+            <View className="gap-2.5">
+              {product.sizes.map((s: any, i: number) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => {
+                    setSelectedSize(i);
+                    if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
+                  }}
+                  activeOpacity={0.9}
+                  className={`flex-row items-center justify-between px-5 py-4 rounded-[20px] border ${
+                    selectedSize === i
+                      ? dark
+                        ? "bg-white border-white"
+                        : "bg-ink border-ink"
+                      : dark
+                        ? "bg-white/[0.06] border-white/10"
+                        : "bg-white border-border"
+                  }`}
+                >
+                  <Text className={`text-[15px] font-inter-bold ${selectedSize === i ? (dark ? "text-ink" : "text-white") : dark ? "text-white" : "text-ink"}`}>{s.label}</Text>
+                  <View className="flex-row items-center gap-3">
+                    {s.price > 0 && <Text className={`text-[14px] font-inter ${selectedSize === i ? (dark ? "text-ink/60" : "text-white/60") : dark ? "text-white/50" : "text-ink/50"}`}>+₦{s.price.toLocaleString()}</Text>}
+                    <View className={`w-5 h-5 rounded-full items-center justify-center ${selectedSize === i ? (dark ? "bg-ink" : "bg-white") : dark ? "border-2 border-white/25" : "border-2 border-ink/20"}`}>
+                      {selectedSize === i && <Text className={`text-[10px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>✓</Text>}
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </Enter>
         </View>
       </ScrollView>
 
-      <View className="absolute bottom-0 w-full px-5 bg-ink border-t border-white/10 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
+      <View className={`absolute bottom-0 w-full px-5 pt-4 border-t ${dark ? "bg-ink border-white/10" : "bg-cream border-border"}`} style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
         <View className="flex-row items-center justify-between mb-3.5">
-          <View className="flex-row items-center bg-white/[0.07] rounded-full p-1">
-            <TouchableOpacity onPress={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 rounded-full items-center justify-center">
-              <Icon icon={MinusSignIcon} size={17} color="#fff" />
+          <View className={`flex-row items-center rounded-full p-1 ${dark ? "bg-white/[0.07]" : "bg-ink/[0.05]"}`}>
+            <TouchableOpacity onPress={() => step(-1)} className="w-10 h-10 rounded-full items-center justify-center">
+              <Icon icon={MinusSignIcon} size={17} color={dark ? "#fff" : "#0A0A0E"} />
             </TouchableOpacity>
-            <Text className="w-9 text-center font-inter-bold text-white text-[16px]">{quantity}</Text>
-            <TouchableOpacity onPress={() => setQuantity(quantity + 1)} className="w-10 h-10 rounded-full bg-white items-center justify-center">
-              <Icon icon={PlusSignIcon} size={18} color="#0A0A0E" />
+            <Text className={`w-9 text-center font-inter-bold text-[16px] ${dark ? "text-white" : "text-ink"}`}>{quantity}</Text>
+            <TouchableOpacity onPress={() => step(1)} className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
+              <Icon icon={PlusSignIcon} size={18} color={dark ? "#0A0A0E" : "#fff"} />
             </TouchableOpacity>
           </View>
-          <Text className="text-white text-[20px] font-inter-bold">₦{total}</Text>
+          <Text className={`text-[20px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>₦{total}</Text>
         </View>
-        <AppButton title="Add to bag" variant="white" onPress={handleAdd} />
+        <AppButton title="Add to bag" variant={dark ? "white" : "ink"} onPress={handleAdd} />
       </View>
     </View>
   );

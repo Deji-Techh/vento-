@@ -1,5 +1,4 @@
 import { Tabs } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import TabBar from "../../src/components/TabBar";
 import { ic, DashboardSquare01Icon, Store01Icon, ReceiptIcon, Wallet01Icon, UserIcon } from "../../src/components/icons";
 
@@ -13,11 +12,9 @@ const tabs = [
 
 export default function SellerLayout() {
   return (
-    <>
-      <StatusBar style="dark" />
-      <Tabs
+    <Tabs
       screenOptions={{ headerShown: false }}
-      tabBar={() => <TabBar tabs={tabs} dark={false} />}
+      tabBar={() => <TabBar tabs={tabs} />}
     >
       <Tabs.Screen name="dashboard" />
       <Tabs.Screen name="menu" />
@@ -27,6 +24,5 @@ export default function SellerLayout() {
       <Tabs.Screen name="verification" options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
-    </>
   );
 }

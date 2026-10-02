@@ -1,20 +1,22 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
+import { useTheme } from "../../contexts/ThemeContext";
 
-export function StoryRow({ items }: { items: { id: string; label: string; image: string }[] }) {
+export function StoryRow({ items, dark: darkProp }: { items: { id: string; label: string; image: string }[]; dark?: boolean }) {
+  const dark = darkProp ?? useTheme().dark;
   return (
     <View className="flex-row gap-4">
       {items.map((s, i) => (
         <View key={s.id} className="items-center w-[64px]">
           <View
             className={`w-[64px] h-[64px] rounded-full items-center justify-center ${
-              i === 0 ? "bg-ember" : "bg-white/15"
+              i === 0 ? "bg-ember" : dark ? "bg-white/15" : "bg-ink/10"
             }`}
             style={{ padding: 2.5 }}
           >
             <Image source={{ uri: s.image }} style={{ width: "100%", height: "100%", borderRadius: 999 }} contentFit="cover" />
           </View>
-          <Text className="text-white/60 text-[11px] font-inter-medium mt-1.5" numberOfLines={1}>
+          <Text className={`text-[11px] font-inter-medium mt-1.5 ${dark ? "text-white/60" : "text-ink/55"}`} numberOfLines={1}>
             {s.label}
           </Text>
         </View>
@@ -31,6 +33,7 @@ export function FoodSnapCard({
   rating = "4.5",
   onPress,
   onAdd,
+  dark: darkProp,
 }: {
   name: string;
   price: number;
@@ -39,12 +42,14 @@ export function FoodSnapCard({
   rating?: string | number;
   onPress?: () => void;
   onAdd?: () => void;
+  dark?: boolean;
 }) {
+  const dark = darkProp ?? useTheme().dark;
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.92}
-      className="w-[208px] mr-3 rounded-[24px] overflow-hidden bg-card-dark"
+      className={`w-[208px] mr-3 rounded-[24px] overflow-hidden ${dark ? "bg-card-dark" : "bg-white border border-border"}`}
     >
       <View>
         <Image source={{ uri: image }} style={{ width: "100%", height: 228, borderRadius: 24 }} contentFit="cover" />
@@ -55,21 +60,21 @@ export function FoodSnapCard({
         </View>
         <TouchableOpacity
           onPress={onAdd}
-          className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white items-center justify-center"
+          className={`absolute bottom-3 right-3 w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}
         >
-          <Text className="text-ink text-[20px] font-inter-bold leading-none -mt-0.5">+</Text>
+          <Text className={`text-[20px] font-inter-bold leading-none -mt-0.5 ${dark ? "text-ink" : "text-white"}`}>+</Text>
         </TouchableOpacity>
       </View>
       <View className="px-1.5 pt-2.5 pb-1">
-        <Text className="text-white text-[15px] font-inter-bold tracking-tight" numberOfLines={1}>
+        <Text className={`text-[15px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>
           {name}
         </Text>
         {meta ? (
-          <Text className="text-white/45 text-[12px] font-inter mt-0.5" numberOfLines={1}>
+          <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/45" : "text-ink/50"}`} numberOfLines={1}>
             {meta}
           </Text>
         ) : null}
-        <Text className="text-white text-[14px] font-inter-bold mt-1">₦{price.toLocaleString()}</Text>
+        <Text className={`text-[14px] font-inter-bold mt-1 ${dark ? "text-white" : "text-ink"}`}>₦{price.toLocaleString()}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -90,7 +95,8 @@ export function PromoBanner({ title, subtitle, cta, onPress }: { title: string; 
   );
 }
 
-export function EmptyState({ title, subtitle, dark }: { title: string; subtitle: string; dark?: boolean }) {
+export function EmptyState({ title, subtitle, dark: darkProp }: { title: string; subtitle: string; dark?: boolean }) {
+  const dark = darkProp ?? useTheme().dark;
   return (
     <View className={`rounded-[28px] p-8 items-center ${dark ? "bg-surface-dark-2" : "bg-white border border-border"}`}>
       <Text className={`font-inter-bold text-[17px] tracking-tight ${dark ? "text-white" : "text-ink"}`}>{title}</Text>

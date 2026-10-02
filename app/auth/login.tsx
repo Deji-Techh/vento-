@@ -3,8 +3,10 @@ import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollVie
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
+import { Enter } from "../../src/components/motion";
 import { toast } from "sonner-native";
 // DEV-BYPASS: remove this import with the bypass (see src/lib/devAuthBypass.ts)
 import { DEV_AUTH_BYPASS, inferDevRole } from "../../src/lib/devAuthBypass";
@@ -19,6 +21,7 @@ const mockUsers: Record<string, { id: string; role: string }> = {
 export default function Login() {
   const router = useRouter();
   const { signIn } = useAuth();
+  const { dark } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -61,74 +64,84 @@ export default function Login() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1 bg-ink">
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
       <SafeAreaView edges={["top"]} className="flex-1">
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View className="flex-1 px-6 pt-10 pb-8">
-            <View className="w-11 h-11 rounded-full bg-white items-center justify-center mb-8">
-              <Text className="text-ink text-lg font-inter-bold">V</Text>
-            </View>
-            <Text className="text-white text-[32px] font-inter-bold tracking-tight leading-[34px]">
-              Welcome back
-            </Text>
-            <Text className="text-white/55 text-[15px] font-inter mt-2 mb-8">
-              Dinner is 30 minutes away.
-            </Text>
+            <Enter>
+              <View className={`w-11 h-11 rounded-full items-center justify-center mb-8 ${dark ? "bg-white" : "bg-ink"}`}>
+                <Text className={`text-lg font-inter-bold ${dark ? "text-ink" : "text-white"}`}>V</Text>
+              </View>
+            </Enter>
+            <Enter delay={60}>
+              <Text className={`text-[32px] font-inter-bold tracking-tight leading-[34px] ${dark ? "text-white" : "text-ink"}`}>
+                Welcome back
+              </Text>
+              <Text className={`text-[15px] font-inter mt-2 mb-8 ${dark ? "text-white/55" : "text-ink/55"}`}>
+                Dinner is 30 minutes away.
+              </Text>
+            </Enter>
 
-            <TextField
-              label="Email"
-              value={email}
-              onChangeText={(v) => {
-                setEmail(v);
-                if (emailError) validateEmail(v);
-              }}
-              onBlur={() => validateEmail(email)}
-              placeholder="you@campus.edu"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              error={emailError}
-            />
-
-            <View className="mt-4">
+            <Enter delay={100}>
               <TextField
-                label="Password"
-                value={password}
-                onChangeText={setPassword}
-                placeholder="••••••••"
-                secure
-                showSecure={showPassword}
-                onToggleSecure={() => setShowPassword(!showPassword)}
-                autoComplete="current-password"
+                label="Email"
+                value={email}
+                onChangeText={(v) => {
+                  setEmail(v);
+                  if (emailError) validateEmail(v);
+                }}
+                onBlur={() => validateEmail(email)}
+                placeholder="you@campus.edu"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                error={emailError}
               />
-            </View>
+            </Enter>
+
+            <Enter delay={140}>
+              <View className="mt-4">
+                <TextField
+                  label="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="••••••••"
+                  secure
+                  showSecure={showPassword}
+                  onToggleSecure={() => setShowPassword(!showPassword)}
+                  autoComplete="current-password"
+                />
+              </View>
+            </Enter>
 
             <View className="flex-row justify-end mt-3 mb-7">
               <TouchableOpacity className="active:opacity-60">
-                <Text className="text-[14px] text-white font-inter-semibold">Forgot password?</Text>
+                <Text className={`text-[14px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>Forgot password?</Text>
               </TouchableOpacity>
             </View>
 
-            <AppButton title="Sign in" variant="white" loading={loading} onPress={handleLogin} />
+            <AppButton title="Sign in" variant={dark ? "white" : "ink"} loading={loading} onPress={handleLogin} />
 
             <View className="flex-row items-center my-7">
-              <View className="flex-1 h-px bg-white/10" />
-              <Text className="px-3 text-[11px] text-white/40 font-inter-bold tracking-[1px]">OR</Text>
-              <View className="flex-1 h-px bg-white/10" />
+              <View className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-ink/10"}`} />
+              <Text className={`px-3 text-[11px] font-inter-bold tracking-[1px] ${dark ? "text-white/40" : "text-ink/40"}`}>OR</Text>
+              <View className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-ink/10"}`} />
             </View>
 
             <View className="flex-row gap-3">
-              <TouchableOpacity className="flex-1 h-[52px] rounded-full bg-white/10 border border-white/15 items-center justify-center active:opacity-70">
-                <Text className="text-[14px] font-inter-bold text-white">Google</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="flex-1 h-[52px] rounded-full bg-white/10 border border-white/15 items-center justify-center active:opacity-70">
-                <Text className="text-[14px] font-inter-bold text-white">Apple</Text>
-              </TouchableOpacity>
+              {["Google", "Apple"].map((p) => (
+                <TouchableOpacity
+                  key={p}
+                  className={`flex-1 h-[52px] rounded-full border items-center justify-center active:opacity-70 ${dark ? "bg-white/10 border-white/15" : "bg-ink/[0.04] border-ink/10"}`}
+                >
+                  <Text className={`text-[14px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{p}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
             <TouchableOpacity onPress={() => router.push("/auth/signup")} className="items-center mt-8 active:opacity-60">
-              <Text className="text-[14px] font-inter text-white/55">
-                Need an account? <Text className="font-inter-bold text-white">Create one</Text>
+              <Text className={`text-[14px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
+                Need an account? <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Create one</Text>
               </Text>
             </TouchableOpacity>
           </View>

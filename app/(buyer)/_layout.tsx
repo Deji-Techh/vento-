@@ -18,7 +18,6 @@ export default function BuyerLayout() {
       tabBar={() => (
         <TabBar
           tabs={tabs}
-          dark
           action={{ icon: ic(ShoppingBag02Icon), label: "Bag", href: "/(buyer)/cart", badge: count }}
         />
       )}
@@ -28,6 +27,7 @@ export default function BuyerLayout() {
       <Tabs.Screen name="cart" />
       <Tabs.Screen name="profile" />
       <Tabs.Screen name="orders" options={{ href: null }} />
+      <Tabs.Screen name="notifications" options={{ href: null }} />
       <Tabs.Screen name="food-details" options={{ href: null }} />
       <Tabs.Screen name="track-delivery" options={{ href: null }} />
       <Tabs.Screen name="live-map" options={{ href: null }} />

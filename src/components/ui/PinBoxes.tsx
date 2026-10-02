@@ -2,9 +2,11 @@ import { View, Text, Pressable, Platform } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
+import { useTheme } from "../../contexts/ThemeContext";
 
 // Boxed handoff PIN. Big Inter numerals, tap-to-copy with toast confirm.
-export function PinBoxes({ value, dark = true }: { value: string; dark?: boolean }) {
+export function PinBoxes({ value, dark: darkProp }: { value: string; dark?: boolean }) {
+  const dark = darkProp ?? useTheme().dark;
   const digits = value.split("");
 
   const copy = async () => {

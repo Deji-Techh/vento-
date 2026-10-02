@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCart } from "../../src/stores/cartStore";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { Icon } from "../../src/components/ui/Icon";
@@ -17,6 +18,7 @@ import {
 } from "../../src/components/icons";
 import { SectionHeader, Eyebrow } from "../../src/components/ui/SectionHeader";
 import { StoryRow, PromoBanner } from "../../src/components/ui/Cards";
+import { Enter } from "../../src/components/motion";
 
 const smartFilters = ["All", "Under ₦2,000", "25 min or less", "4.6+ rated"] as const;
 
@@ -40,8 +42,13 @@ const popularItems = [
 export default function Browse() {
   const router = useRouter();
   const { addItem } = useCart();
+  const { dark } = useTheme();
   const [filter, setFilter] = useState<(typeof smartFilters)[number]>("All");
   const [query, setQuery] = useState("");
+
+  const buzz = () => {
+    if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
+  };
 
   const handleAdd = (item: (typeof popularItems)[number]) => {
     addItem({ id: item.id, name: item.name, price: item.price, image_url: item.image, seller_id: item.seller_id, seller_name: item.seller_name }, 1);
@@ -61,114 +68,123 @@ export default function Browse() {
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-ink" edges={["top"]}>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="px-5 pt-2 flex-row items-center justify-between">
-          <Text className="text-white text-[22px] font-inter-bold tracking-tight">Vento</Text>
+          <Text className={`text-[22px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Vento</Text>
           <View className="flex-row items-center gap-2.5">
             <TouchableOpacity
               onPress={() => router.push("/(buyer)/chat" as any)}
-              className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
+              className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}
             >
-              <Icon icon={BubbleChatIcon} size={18} color="#fff" />
+              <Icon icon={BubbleChatIcon} size={18} color={dark ? "#fff" : "#0A0A0E"} />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => toast("You're all caught up")}
-              className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
+              onPress={() => router.push("/(buyer)/notifications" as any)}
+              className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}
             >
-              <Icon icon={Notification01Icon} size={18} color="#fff" />
+              <Icon icon={Notification01Icon} size={18} color={dark ? "#fff" : "#0A0A0E"} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push("/(buyer)/profile" as any)} className="w-10 h-10 rounded-full bg-white items-center justify-center">
-              <Text className="text-ink font-inter-bold">C</Text>
+            <TouchableOpacity onPress={() => router.push("/(buyer)/profile" as any)} className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
+              <Text className={`font-inter-bold ${dark ? "text-ink" : "text-white"}`}>C</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Greeting + search */}
-        <View className="px-5 mt-5">
-          <Text className="text-white text-[28px] font-inter-bold tracking-tight leading-[30px]">
-            What are we{"\n"}eating today?
-          </Text>
-          <View className="flex-row items-center bg-white/[0.07] border border-white/10 rounded-full pl-4 pr-1.5 py-1.5 mt-4">
-            <Icon icon={Search01Icon} size={17} color="rgba(255,255,255,0.45)" />
-            <TextInput
-              placeholder="Jollof, suya, shawarma…"
-              placeholderTextColor="rgba(255,255,255,0.38)"
-              value={query}
-              onChangeText={setQuery}
-              className="flex-1 text-white text-[15px] font-inter ml-2"
-            />
-            {q ? (
-              <TouchableOpacity onPress={() => setQuery("")} className="bg-white/15 px-4 py-2.5 rounded-full">
-                <Text className="text-white text-[13px] font-inter-bold">Clear</Text>
-              </TouchableOpacity>
-            ) : (
-              <View className="bg-white px-4 py-2.5 rounded-full">
-                <Text className="text-ink text-[13px] font-inter-bold">Search</Text>
-              </View>
-            )}
+        <Enter>
+          <View className="px-5 mt-5">
+            <Text className={`text-[28px] font-inter-bold tracking-tight leading-[30px] ${dark ? "text-white" : "text-ink"}`}>
+              What are we{"\n"}eating today?
+            </Text>
+            <View className={`flex-row items-center rounded-full pl-4 pr-1.5 py-1.5 mt-4 border ${dark ? "bg-white/[0.07] border-white/10" : "bg-white border-border"}`}>
+              <Icon icon={Search01Icon} size={17} color={dark ? "rgba(255,255,255,0.45)" : "rgba(10,10,14,0.4)"} />
+              <TextInput
+                placeholder="Jollof, suya, shawarma…"
+                placeholderTextColor={dark ? "rgba(255,255,255,0.38)" : "rgba(10,10,14,0.35)"}
+                value={query}
+                onChangeText={setQuery}
+                className={`flex-1 text-[15px] font-inter ml-2 ${dark ? "text-white" : "text-ink"}`}
+              />
+              {q ? (
+                <TouchableOpacity onPress={() => setQuery("")} className={`px-4 py-2.5 rounded-full ${dark ? "bg-white/15" : "bg-ink/10"}`}>
+                  <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Clear</Text>
+                </TouchableOpacity>
+              ) : (
+                <View className={`px-4 py-2.5 rounded-full ${dark ? "bg-white" : "bg-ink"}`}>
+                  <Text className={`text-[13px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>Search</Text>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
+        </Enter>
 
         {/* Smart filters */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-5 pl-5" contentContainerStyle={{ paddingRight: 20 }}>
           {smartFilters.map((f) => (
             <TouchableOpacity
               key={f}
-              onPress={() => setFilter(f)}
-              className={`mr-2 px-5 py-2.5 rounded-full ${filter === f ? "bg-white" : "bg-white/[0.07]"}`}
+              onPress={() => {
+                buzz();
+                setFilter(f);
+              }}
+              className={`mr-2 px-5 py-2.5 rounded-full ${filter === f ? (dark ? "bg-white" : "bg-ink") : dark ? "bg-white/[0.07]" : "bg-ink/[0.05]"}`}
             >
-              <Text className={`text-[13px] font-inter-bold ${filter === f ? "text-ink" : "text-white/60"}`}>{f}</Text>
+              <Text className={`text-[13px] font-inter-bold ${filter === f ? (dark ? "text-ink" : "text-white") : dark ? "text-white/60" : "text-ink/55"}`}>{f}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
         {/* Featured hero */}
-        <View className="px-5 mt-5">
-          <TouchableOpacity
-            activeOpacity={0.94}
-            onPress={() => router.push(`/(buyer)/food-details?id=pop-3` as any)}
-            className="rounded-[28px] overflow-hidden"
-          >
-            <Image source={{ uri: "https://images.unsplash.com/photo-1544025162-d76694265947?w=900" }} style={{ width: "100%", height: 320 }} contentFit="cover" transition={300} />
-            <LinearGradient
-              colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.55)"]}
-              locations={[0.4, 1]}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 1 }}
-              style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-            />
-            <View className="absolute top-4 left-4">
-              <Eyebrow dark>Featured</Eyebrow>
-            </View>
-            <View className="absolute bottom-0 left-0 right-0 p-5">
-              <Text className="text-white text-[26px] font-inter-bold tracking-tight">Suya Platter</Text>
-              <Text className="text-white/70 text-[13px] font-inter mt-1">Fire-grilled. Yaji-dusted. Unmissable.</Text>
-              <View className="flex-row items-center justify-between mt-3.5">
-                <Text className="text-white/70 text-[12px] font-inter-semibold">Suya Spot • 20 min</Text>
-                <View className="bg-white px-5 py-2.5 rounded-full">
-                  <Text className="text-ink text-[13px] font-inter-bold">Order</Text>
+        <Enter delay={60}>
+          <View className="px-5 mt-5">
+            <TouchableOpacity
+              activeOpacity={0.94}
+              onPress={() => router.push(`/(buyer)/food-details?id=pop-3` as any)}
+              className="rounded-[28px] overflow-hidden"
+            >
+              <Image source={{ uri: "https://images.unsplash.com/photo-1544025162-d76694265947?w=900" }} style={{ width: "100%", height: 320 }} contentFit="cover" transition={300} />
+              <LinearGradient
+                colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.55)"]}
+                locations={[0.4, 1]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
+                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+              />
+              <View className="absolute top-4 left-4">
+                <Eyebrow dark>Featured</Eyebrow>
+              </View>
+              <View className="absolute bottom-0 left-0 right-0 p-5">
+                <Text className="text-white text-[26px] font-inter-bold tracking-tight">Suya Platter</Text>
+                <Text className="text-white/70 text-[13px] font-inter mt-1">Fire-grilled. Yaji-dusted. Unmissable.</Text>
+                <View className="flex-row items-center justify-between mt-3.5">
+                  <Text className="text-white/70 text-[12px] font-inter-semibold">Suya Spot • 20 min</Text>
+                  <View className="bg-white px-5 py-2.5 rounded-full">
+                    <Text className="text-ink text-[13px] font-inter-bold">Order</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        </View>
+            </TouchableOpacity>
+          </View>
+        </Enter>
 
         {/* Single ember moment */}
-        <View className="px-5 mt-4">
-          <PromoBanner
-            title="Midnight craving?"
-            subtitle="Hot food from kitchens still open near you."
-            cta="Order"
-            onPress={() => router.push(`/(buyer)/food-details?id=pop-3` as any)}
-          />
-        </View>
+        <Enter delay={100}>
+          <View className="px-5 mt-4">
+            <PromoBanner
+              title="Midnight craving?"
+              subtitle="Hot food from kitchens still open near you."
+              cta="Order"
+              onPress={() => router.push(`/(buyer)/food-details?id=pop-3` as any)}
+            />
+          </View>
+        </Enter>
 
         {/* Kitchens */}
         <View className="mt-7 pl-5">
           <View className="pr-5">
-            <SectionHeader title="Kitchens you follow" dark />
+            <SectionHeader title="Kitchens you follow" />
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
             <StoryRow items={stories} />
@@ -179,34 +195,37 @@ export default function Browse() {
         <View className="px-5 mt-7">
           <SectionHeader
             title={q || filter !== "All" ? `${visible.length} result${visible.length === 1 ? "" : "s"}` : "Nearby"}
-            dark
           />
           <View className="gap-2.5">
-            {visible.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                onPress={() => router.push(`/(buyer)/food-details?id=${item.id}` as any)}
-                activeOpacity={0.9}
-                className="flex-row items-center py-2"
-              >
-                <Image source={{ uri: item.image }} style={{ width: 76, height: 76, borderRadius: 20 }} contentFit="cover" transition={200} />
-                <View className="flex-1 ml-3.5">
-                  <Text className="text-white font-inter-bold text-[15px] tracking-tight" numberOfLines={1}>{item.name}</Text>
-                  <View className="flex-row items-center gap-1 mt-1">
-                    <Icon icon={StarIcon} size={12} color="rgba(255,255,255,0.55)" />
-                    <Text className="text-white/45 text-[12px] font-inter">{item.seller_name} • {item.eta} min • {item.rating}</Text>
+            {visible.map((item, i) => (
+              <Enter key={item.id} delay={Math.min(i * 40, 160)}>
+                <TouchableOpacity
+                  onPress={() => router.push(`/(buyer)/food-details?id=${item.id}` as any)}
+                  activeOpacity={0.9}
+                  className="flex-row items-center py-2"
+                >
+                  <Image source={{ uri: item.image }} style={{ width: 76, height: 76, borderRadius: 20 }} contentFit="cover" transition={200} />
+                  <View className="flex-1 ml-3.5">
+                    <Text className={`font-inter-bold text-[15px] tracking-tight ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>{item.name}</Text>
+                    <View className="flex-row items-center gap-1 mt-1">
+                      <Icon icon={StarIcon} size={12} color={dark ? "rgba(255,255,255,0.55)" : "rgba(10,10,14,0.5)"} />
+                      <Text className={`text-[12px] font-inter ${dark ? "text-white/45" : "text-ink/50"}`}>{item.seller_name} • {item.eta} min • {item.rating}</Text>
+                    </View>
+                    <Text className={`font-inter-bold text-[14px] mt-1 ${dark ? "text-white" : "text-ink"}`}>₦{item.price.toLocaleString()}</Text>
                   </View>
-                  <Text className="text-white font-inter-bold text-[14px] mt-1">₦{item.price.toLocaleString()}</Text>
-                </View>
-                <TouchableOpacity onPress={() => handleAdd(item)} className="w-10 h-10 rounded-full bg-white items-center justify-center">
-                  <Icon icon={PlusSignIcon} size={18} color="#0A0A0E" />
+                  <TouchableOpacity
+                    onPress={() => handleAdd(item)}
+                    className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}
+                  >
+                    <Icon icon={PlusSignIcon} size={18} color={dark ? "#0A0A0E" : "#fff"} />
+                  </TouchableOpacity>
                 </TouchableOpacity>
-              </TouchableOpacity>
+              </Enter>
             ))}
             {visible.length === 0 && (
               <View className="py-10 items-center">
-                <Text className="text-white text-[16px] font-inter-bold">Nothing matches</Text>
-                <Text className="text-white/50 text-[13px] font-inter mt-1">Try a different search or filter.</Text>
+                <Text className={`text-[16px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Nothing matches</Text>
+                <Text className={`text-[13px] font-inter mt-1 ${dark ? "text-white/50" : "text-ink/50"}`}>Try a different search or filter.</Text>
               </View>
             )}
           </View>

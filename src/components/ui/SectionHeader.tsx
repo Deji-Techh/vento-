@@ -1,6 +1,8 @@
 import { View, Text } from "react-native";
+import { useTheme } from "../../contexts/ThemeContext";
 
-export function Eyebrow({ children, dark }: { children: string; dark?: boolean }) {
+export function Eyebrow({ children, dark: darkProp }: { children: string; dark?: boolean }) {
+  const dark = darkProp ?? useTheme().dark;
   return (
     <Text
       className={`text-[11px] font-inter-bold tracking-[2px] uppercase ${dark ? "text-white/50" : "text-ink/50"}`}
@@ -13,12 +15,13 @@ export function Eyebrow({ children, dark }: { children: string; dark?: boolean }
 export function SectionHeader({
   title,
   action,
-  dark,
+  dark: darkProp,
 }: {
   title: string;
   action?: string;
   dark?: boolean;
 }) {
+  const dark = darkProp ?? useTheme().dark;
   return (
     <View className="flex-row items-end justify-between mb-3">
       <Text className={`text-[21px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>
@@ -44,12 +47,13 @@ export function RatingPill({ value }: { value: string | number }) {
 export function StatusChip({
   label,
   tone = "neutral",
-  dark,
+  dark: darkProp,
 }: {
   label: string;
   tone?: "neutral" | "success" | "warning" | "info" | "danger";
   dark?: boolean;
 }) {
+  const dark = darkProp ?? useTheme().dark;
   const bg: Record<string, string> = {
     neutral: dark ? "bg-white/10" : "bg-ink/5",
     success: "bg-success/15",
