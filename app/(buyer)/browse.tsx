@@ -92,9 +92,9 @@ export default function Browse() {
         {/* Greeting + search */}
         <Enter>
           <View className="px-5 mt-5">
-            <Text className={`text-[28px] font-inter-bold tracking-tight leading-[30px] ${dark ? "text-white" : "text-ink"}`}>
-              What are we{"\n"}eating today?
-            </Text>
+          <Text className={`text-[28px] font-display-bold tracking-tight leading-[30px] ${dark ? "text-white" : "text-ink"}`}>
+            What are we{"\n"}eating today?
+          </Text>
             <View className={`flex-row items-center rounded-full pl-4 pr-1.5 py-1.5 mt-4 border ${dark ? "bg-white/[0.07] border-white/10" : "bg-white border-border"}`}>
               <Icon icon={Search01Icon} size={17} color={dark ? "rgba(255,255,255,0.45)" : "rgba(10,10,14,0.4)"} />
               <TextInput

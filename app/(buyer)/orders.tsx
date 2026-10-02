@@ -45,7 +45,7 @@ export default function Orders() {
     <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <View className="px-6 pt-2 pb-2">
         <Eyebrow>Order history</Eyebrow>
-        <Text className={`text-[28px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>Orders</Text>
+        <Text className={`text-[28px] font-display-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>Orders</Text>
 
         <View className="flex-row gap-2 mt-4">
           {(["Ongoing", "History"] as const).map((t) => (

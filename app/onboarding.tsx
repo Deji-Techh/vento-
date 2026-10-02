@@ -99,7 +99,7 @@ export default function Onboarding() {
             <Text className="text-white/50 text-[11px] font-inter-bold tracking-[2px] uppercase">
               {slides[current].eyebrow}
             </Text>
-            <Text className="text-white text-[36px] font-inter-bold tracking-tight leading-[38px] mt-2">
+            <Text className="text-white text-[36px] font-display-bold tracking-tight leading-[38px] mt-2">
               {slides[current].title}
             </Text>
             <Text className="text-white/60 text-[15px] font-inter leading-[23px] mt-3 max-w-[300px]">
@@ -109,7 +109,7 @@ export default function Onboarding() {
               <AppButton
                 title={isLast ? "Get started" : "Continue"}
                 variant="white"
-                onPress={() => (isLast ? router.push("/auth/signup" as any) : goTo(current + 1))}
+                onPress={() => (isLast ? router.replace("/(buyer)/browse" as any) : goTo(current + 1))}
               />
             </View>
             <Pressable onPress={() => router.push("/auth/login" as any)} className="mt-4 items-center active:opacity-60">

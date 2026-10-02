@@ -1,10 +1,7 @@
-import { HugeiconsIcon } from "@hugeicons/react-native";
-
-// App-wide icon wrapper. Import glyphs from @hugeicons/core-free-icons
-// (via domain barrels when they land) and render through here so size,
-// color and stroke stay consistent. Free set = Stroke Rounded.
+// App-wide icon wrapper. Glyphs come from src/components/icons (Phosphor).
+// Size, color and stroke stay consistent everywhere.
 export function Icon({
-  icon,
+  icon: Glyph,
   size = 22,
   color = "#FFFFFF",
   strokeWidth = 1.8,
@@ -14,5 +11,5 @@ export function Icon({
   color?: string;
   strokeWidth?: number;
 }) {
-  return <HugeiconsIcon icon={icon} size={size} color={color} strokeWidth={strokeWidth} />;
+  return <Glyph size={size} color={color} weight={strokeWidth >= 2 ? "bold" : "regular"} />;
 }

@@ -35,7 +35,7 @@ export default function ChooseRole() {
       <View className="flex-1 px-6 pt-8">
         <Enter>
           <Text className={`text-[11px] font-inter-bold tracking-[2px] uppercase text-center ${dark ? "text-white/50" : "text-ink/50"}`}>Vento</Text>
-          <Text className={`text-[30px] font-inter-bold tracking-tight text-center mt-2 ${dark ? "text-white" : "text-ink"}`}>What brings you?</Text>
+          <Text className={`text-[30px] font-display-bold tracking-tight text-center mt-2 ${dark ? "text-white" : "text-ink"}`}>What brings you?</Text>
         </Enter>
 
         <View className="gap-3 mt-9">

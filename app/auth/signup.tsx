@@ -64,7 +64,7 @@ export default function Signup() {
               <Icon icon={ArrowLeft01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
             </TouchableOpacity>
             <Enter delay={40}>
-              <Text className={`text-[32px] font-inter-bold tracking-tight mt-6 ${dark ? "text-white" : "text-ink"}`}>Join Vento</Text>
+              <Text className={`text-[32px] font-display-bold tracking-tight mt-6 ${dark ? "text-white" : "text-ink"}`}>Join Vento</Text>
               <Text className={`text-[15px] font-inter mt-1 mb-7 ${dark ? "text-white/55" : "text-ink/55"}`}>Two minutes. Then dinner.</Text>
             </Enter>
 

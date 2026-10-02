@@ -21,7 +21,7 @@ const mockProfile = {
 
 export default function Profile() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const { dark } = useTheme();
   const [profile, setProfile] = useState<any>(null);
   const [editing, setEditing] = useState(false);
@@ -30,6 +30,10 @@ export default function Profile() {
   const [formData, setFormData] = useState({ name: "", phone: "" });
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     setTimeout(() => {
       setProfile(mockProfile);
       setFormData({ name: mockProfile.name, phone: mockProfile.phone });
@@ -56,7 +60,7 @@ export default function Profile() {
     router.replace("/onboarding");
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
         <View className="flex-1 px-6 pt-10 gap-4">
@@ -73,7 +77,27 @@ export default function Profile() {
     );
   }
 
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
+        <View className="flex-1 px-6 pt-10 pb-8 items-center justify-center">
+          <View className={`w-[88px] h-[88px] rounded-full items-center justify-center mb-6 ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
+            <Icon icon={UserIcon} size={34} color={dark ? "#fff" : "#0A0A0E"} />
+          </View>
+          <Text className={`text-[24px] font-inter-bold tracking-tight text-center ${dark ? "text-white" : "text-ink"}`}>
+            You're browsing{"\n"}as a guest
+          </Text>
+          <Text className={`text-[14px] font-inter mt-3 text-center leading-[21px] max-w-[260px] ${dark ? "text-white/55" : "text-ink/55"}`}>
+            Sign in to checkout, track orders and keep your bag in sync.
+          </Text>
+          <View className="w-full mt-8 gap-3">
+            <AppButton title="Sign in" variant={dark ? "white" : "ink"} onPress={() => router.push("/auth/login")} />
+            <AppButton title="Create account" variant={dark ? "ghost-dark" : "ghost-light"} onPress={() => router.push("/auth/signup")} />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>

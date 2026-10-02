@@ -98,7 +98,7 @@ export default function FoodDetails() {
                 {product.seller_name} • {product.eta}
               </Text>
             </View>
-            <Text className={`text-[30px] font-inter-bold tracking-tight mt-2 ${dark ? "text-white" : "text-ink"}`}>{product.name}</Text>
+            <Text className={`text-[30px] font-display-bold tracking-tight mt-2 ${dark ? "text-white" : "text-ink"}`}>{product.name}</Text>
             <View className="flex-row items-center gap-1.5 mt-2.5">
               <Icon icon={StarIcon} size={14} color={dark ? "#fff" : "#0A0A0E"} />
               <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{product.rating}</Text>

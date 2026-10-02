@@ -74,7 +74,7 @@ export default function Login() {
               </View>
             </Enter>
             <Enter delay={60}>
-              <Text className={`text-[32px] font-inter-bold tracking-tight leading-[34px] ${dark ? "text-white" : "text-ink"}`}>
+              <Text className={`text-[32px] font-display-bold tracking-tight leading-[34px] ${dark ? "text-white" : "text-ink"}`}>
                 Welcome back
               </Text>
               <Text className={`text-[15px] font-inter mt-2 mb-8 ${dark ? "text-white/55" : "text-ink/55"}`}>

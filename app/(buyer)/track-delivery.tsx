@@ -78,7 +78,7 @@ export default function TrackDelivery() {
         <Enter>
           <View className="items-start mb-6">
             <Eyebrow>Rider is nearby</Eyebrow>
-            <Text className={`text-[34px] font-inter-bold tracking-tight mt-2 leading-tight ${dark ? "text-white" : "text-ink"}`}>
+            <Text className={`text-[34px] font-display-bold tracking-tight mt-2 leading-tight ${dark ? "text-white" : "text-ink"}`}>
               Arriving in 3 min
             </Text>
             <Text className={`text-[14px] font-inter mt-1.5 ${dark ? "text-white/55" : "text-ink/55"}`}>Live GPS · 1 km away</Text>

@@ -76,7 +76,7 @@ export default function Notifications() {
           <TouchableOpacity onPress={() => router.back()} className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
             <Icon icon={ArrowLeft01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
           </TouchableOpacity>
-          <Text className={`text-[28px] font-inter-bold tracking-tight ml-3 ${dark ? "text-white" : "text-ink"}`}>
+          <Text className={`text-[28px] font-display-bold tracking-tight ml-3 ${dark ? "text-white" : "text-ink"}`}>
             Inbox{unreadCount > 0 ? ` · ${unreadCount}` : ""}
           </Text>
         </View>

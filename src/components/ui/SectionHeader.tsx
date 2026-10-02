@@ -24,7 +24,7 @@ export function SectionHeader({
   const dark = darkProp ?? useTheme().dark;
   return (
     <View className="flex-row items-end justify-between mb-3">
-      <Text className={`text-[21px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>
+      <Text className={`text-[21px] font-display-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>
         {title}
       </Text>
       {action ? (

@@ -1,32 +1,65 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-import Animated, { FadeIn, ZoomIn } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from "react-native-reanimated";
 
-// Logo reveal: V mark springs in, wordmark fades up, then hands off.
-// Short, skippable, no spinners.
+const WORD = "Vento";
+
+// Fast typewriter wordmark, then a quick zoom into the app.
 export default function Splash() {
   const router = useRouter();
+  const [count, setCount] = useState(0);
+  const done = count >= WORD.length;
+  const scale = useSharedValue(1);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const gone = useRef(false);
+
+  const go = () => {
+    if (gone.current) return;
+    gone.current = true;
+    router.replace("/onboarding");
+  };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace("/onboarding");
-    }, 2100);
-    return () => clearTimeout(timer);
-  }, []);
+    if (count < WORD.length) {
+      timers.current.push(setTimeout(() => setCount((c) => c + 1), 70));
+    } else {
+      timers.current.push(
+        setTimeout(() => {
+          scale.value = withTiming(1.1, { duration: 300, easing: Easing.out(Easing.quad) });
+        }, 200)
+      );
+      timers.current.push(setTimeout(go, 650));
+    }
+    const stash = timers.current;
+    return () => stash.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [count]);
 
-  const skip = () => router.replace("/onboarding");
+  const zoomStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
-    <Pressable onPress={skip} className="flex-1 items-center justify-center bg-ink">
-      <Animated.View entering={ZoomIn.springify().damping(18).stiffness(220)}>
-        <View className="w-[88px] h-[88px] rounded-[28px] bg-white items-center justify-center">
-          <Text className="text-ink text-4xl font-inter-bold">V</Text>
+    <Pressable onPress={go} className="flex-1 items-center justify-center bg-ink">
+      <Animated.View style={[{ alignItems: "center" }, zoomStyle]}>
+        <View className="flex-row items-center h-[46px]">
+          <Text className="text-white text-[40px] font-display-bold tracking-tight">
+            {WORD.slice(0, count)}
+          </Text>
+          {!done && <View className="w-[3px] h-[32px] bg-white/80 ml-1" />}
         </View>
-      </Animated.View>
-      <Animated.View entering={FadeIn.delay(160).duration(450)} className="items-center">
-        <Text className="text-white text-[30px] font-inter-bold tracking-tight mt-6">Vento</Text>
-        <Text className="text-white/50 text-[14px] font-inter mt-1">Good food, close by</Text>
+        {done && (
+          <Animated.View entering={FadeIn.duration(350)}>
+            <Text className="text-white/50 text-[14px] font-inter mt-2">Good food, close by</Text>
+          </Animated.View>
+        )}
       </Animated.View>
     </Pressable>
   );

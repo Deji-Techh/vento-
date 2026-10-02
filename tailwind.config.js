@@ -33,6 +33,9 @@ module.exports = {
         "inter-medium": ["Inter_500Medium", "ui-sans-serif", "system-ui", "sans-serif"],
         "inter-semibold": ["Inter_600SemiBold", "ui-sans-serif", "system-ui", "sans-serif"],
         "inter-bold": ["Inter_700Bold", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["SpaceGrotesk_500Medium", "ui-sans-serif", "system-ui", "sans-serif"],
+        "display-semibold": ["SpaceGrotesk_600SemiBold", "ui-sans-serif", "system-ui", "sans-serif"],
+        "display-bold": ["SpaceGrotesk_700Bold", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       borderRadius: {
         "4xl": "28px",

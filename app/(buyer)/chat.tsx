@@ -167,12 +167,12 @@ export default function Chat() {
             const next = messages[idx + 1];
             const groupedPrev = prev && prev.type === msg.type;
             const groupedNext = next && next.type === msg.type;
-            const gap = groupedNext ? "mb-[3px]" : "mb-4";
             if (msg.type === "sender") {
               return (
-                <Animated.View key={msg.id} entering={FadeIn.duration(200)} className={`flex-row justify-end ${gap}`}>
+                <View key={msg.id} className="flex-row justify-end" style={{ marginBottom: groupedNext ? 3 : 16 }}>
+                  <Animated.View entering={FadeIn.duration(200)} style={{ maxWidth: "78%" }}>
                   <View
-                    className={`px-4 pt-2.5 pb-1.5 max-w-[78%] ${dark ? "bg-white" : "bg-ink"} ${
+                    className={`px-4 pt-2.5 pb-1.5 ${dark ? "bg-white" : "bg-ink"} ${
                       groupedPrev && groupedNext
                         ? "rounded-[20px] rounded-br-[20px] rounded-tr-[6px]"
                         : groupedPrev
@@ -187,14 +187,16 @@ export default function Chat() {
                       <Text className={`text-[10px] font-inter-medium ${dark ? "text-ink/50" : "text-white/50"}`}>{msg.time}</Text>
                       <Icon icon={CheckCheckIcon} size={13} color={dark ? "rgba(10,10,14,0.5)" : "rgba(255,255,255,0.5)"} />
                     </View>
-                  </View>
-                </Animated.View>
+                    </View>
+                  </Animated.View>
+                </View>
               );
             }
             return (
-              <Animated.View key={msg.id} entering={FadeIn.duration(200)} className={`flex-row justify-start ${gap}`}>
+              <View key={msg.id} className="flex-row justify-start" style={{ marginBottom: groupedNext ? 3 : 16 }}>
+                <Animated.View entering={FadeIn.duration(200)} style={{ maxWidth: "78%" }}>
                 <View
-                  className={`px-4 pt-2.5 pb-1.5 max-w-[78%] ${dark ? "bg-white/[0.09]" : "bg-white border border-border"} ${
+                  className={`px-4 pt-2.5 pb-1.5 ${dark ? "bg-white/[0.09]" : "bg-white border border-border"} ${
                     groupedPrev && groupedNext
                       ? "rounded-[20px] rounded-bl-[20px] rounded-tl-[6px]"
                       : groupedPrev
@@ -208,8 +210,9 @@ export default function Chat() {
                   <View className="flex-row items-center justify-end mt-0.5">
                     <Text className={`text-[10px] font-inter ${dark ? "text-white/40" : "text-ink/40"}`}>{msg.time}</Text>
                   </View>
-                </View>
-              </Animated.View>
+                  </View>
+                </Animated.View>
+              </View>
             );
           })}
 
