@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { Eyebrow, SectionHeader, StatusChip } from "../../src/components/ui/SectionHeader";
+import { Icon } from "../../src/components/ui/Icon";
 import {
-  Users,
-  Store,
-  ShoppingBag,
-  Settings as SettingsIcon,
-} from "lucide-react-native";
+  UsersIcon,
+  Store01Icon,
+  ReceiptIcon,
+  Settings01Icon,
+  ShieldCheckIcon,
+  Wallet01Icon,
+  ChartLineIcon,
+} from "../../src/components/icons";
 
 const mockStats = {
   totalUsers: 156,
@@ -23,110 +24,117 @@ const mockStats = {
 export default function AdminSettings() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState(mockStats);
+  const [stats] = useState(mockStats);
 
   useEffect(() => {
-    setTimeout(() => {
-      setStats(mockStats);
+    const t = setTimeout(() => {
       setLoading(false);
     }, 800);
+    return () => clearTimeout(t);
   }, []);
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
-        <ActivityIndicator size="large" color="#1B1B8F" />
-      </View>
+      <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#1B1B8F" />
+        </View>
+      </SafeAreaView>
     );
   }
 
+  const overview = [
+    { label: "Total Users", value: stats.totalUsers, icon: UsersIcon, tint: "#1B1B8F" },
+    { label: "Total Sellers", value: stats.totalSellers, icon: Store01Icon, tint: "#12805C" },
+    { label: "Total Orders", value: stats.totalOrders, icon: ReceiptIcon, tint: "#1B1B8F" },
+    { label: "Delivery Agents", value: stats.totalAgents, icon: Settings01Icon, tint: "#1B1B8F" },
+  ];
+
   return (
-    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14" contentContainerStyle={{ paddingBottom: 120, gap: 16 }}>
-      <View>
-        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
-          Configuration
-        </Text>
-        <Text className="text-[28px] font-bold text-ink mt-1">Settings</Text>
-        <Text className="text-sm text-ink/55">Platform overview and configuration</Text>
-      </View>
+    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+      <ScrollView
+        className="flex-1 px-5"
+        contentContainerStyle={{ paddingBottom: 120, paddingTop: 12, gap: 16 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View>
+          <Eyebrow>Configuration</Eyebrow>
+          <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">
+            Settings
+          </Text>
+          <Text className="text-[13px] font-inter text-ink/55 mt-1">
+            {user?.email ? `${user.email} • ` : ""}Platform overview and configuration
+          </Text>
+        </View>
 
-      {/* Platform Stats white card */}
-      <View className="bg-white rounded-[28px] p-6 border border-[#E7E0D2]">
-        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-4">
-          Platform Overview
-        </Text>
-        <View className="gap-4">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-3">
-              <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-                <Users color="#1B1B8F" size={20} />
-              </View>
-              <Text className="text-ink font-semibold">Total Users</Text>
-            </View>
-            <Text className="font-bold text-lg text-ink">{stats.totalUsers}</Text>
+        {/* Platform stats */}
+        <View className="bg-white rounded-[28px] p-6 border border-border">
+          <View className="flex-row items-center gap-2 mb-4">
+            <Icon icon={ChartLineIcon} size={18} color="#1B1B8F" />
+            <Eyebrow>Platform overview</Eyebrow>
           </View>
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-3">
-              <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-                <Store color="#12805C" size={20} />
+          <View className="gap-4">
+            {overview.map((row) => (
+              <View key={row.label} className="flex-row items-center justify-between">
+                <View className="flex-row items-center gap-3">
+                  <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center">
+                    <Icon icon={row.icon} size={20} color={row.tint} />
+                  </View>
+                  <Text className="text-ink font-inter-semibold text-[14px]">
+                    {row.label}
+                  </Text>
+                </View>
+                <Text className="font-inter-bold text-[18px] text-ink">{row.value}</Text>
               </View>
-              <Text className="text-ink font-semibold">Total Sellers</Text>
-            </View>
-            <Text className="font-bold text-lg text-ink">{stats.totalSellers}</Text>
-          </View>
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-3">
-              <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-                <ShoppingBag color="#1B1B8F" size={20} />
-              </View>
-              <Text className="text-ink font-semibold">Total Orders</Text>
-            </View>
-            <Text className="font-bold text-lg text-ink">{stats.totalOrders}</Text>
-          </View>
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-3">
-              <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-                <SettingsIcon color="#1B1B8F" size={20} />
-              </View>
-              <Text className="text-ink font-semibold">Delivery Agents</Text>
-            </View>
-            <Text className="font-bold text-lg text-ink">{stats.totalAgents}</Text>
+            ))}
           </View>
         </View>
-      </View>
 
-      {/* Platform Settings */}
-      <View className="bg-white rounded-[28px] p-6 border border-[#E7E0D2]">
-        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-4">
-          Platform Configuration
-        </Text>
-        <View className="gap-3">
-          <View className="flex-row items-center justify-between bg-[#FAF5EA] border border-[#E7E0D2] rounded-full px-5 h-14">
-            <Text className="text-ink font-semibold text-sm">Delivery Fee</Text>
-            <Text className="font-bold text-ink text-sm">₦300 - ₦800</Text>
-          </View>
-          <View className="flex-row items-center justify-between bg-[#FAF5EA] border border-[#E7E0D2] rounded-full px-5 h-14">
-            <Text className="text-ink font-semibold text-sm">Platform Commission</Text>
-            <Text className="font-bold text-ink text-sm">10%</Text>
-          </View>
-          <View className="flex-row items-center justify-between bg-[#FAF5EA] border border-[#E7E0D2] rounded-full px-5 h-14">
-            <Text className="text-ink font-semibold text-sm">Auto-assign Orders</Text>
-            <View className="bg-[#E3F2E8] px-3 py-1.5 rounded-full">
-              <Text className="text-[11px] font-bold text-[#12805C]">
-                Enabled
-              </Text>
-            </View>
-          </View>
-          <View className="flex-row items-center justify-between bg-[#FAF5EA] border border-[#E7E0D2] rounded-full px-5 h-14">
-            <Text className="text-ink font-semibold text-sm">Maintenance Mode</Text>
-            <View className="bg-white border border-[#E7E0D2] px-3 py-1.5 rounded-full">
-              <Text className="text-[11px] font-bold text-ink/55">
-                Disabled
-              </Text>
+        {/* Platform configuration */}
+        <View>
+          <SectionHeader title="Platform configuration" />
+          <View className="bg-white rounded-[24px] p-6 border border-border">
+            <View className="gap-3">
+              <View className="flex-row items-center justify-between bg-cream border border-border rounded-full px-5 h-14">
+                <View className="flex-row items-center gap-2">
+                  <Icon icon={Wallet01Icon} size={16} color="#6E6A75" />
+                  <Text className="text-ink font-inter-semibold text-[14px]">
+                    Delivery Fee
+                  </Text>
+                </View>
+                <Text className="font-inter-bold text-ink text-[14px]">₦300 - ₦800</Text>
+              </View>
+              <View className="flex-row items-center justify-between bg-cream border border-border rounded-full px-5 h-14">
+                <View className="flex-row items-center gap-2">
+                  <Icon icon={ChartLineIcon} size={16} color="#6E6A75" />
+                  <Text className="text-ink font-inter-semibold text-[14px]">
+                    Platform Commission
+                  </Text>
+                </View>
+                <Text className="font-inter-bold text-ink text-[14px]">10%</Text>
+              </View>
+              <View className="flex-row items-center justify-between bg-cream border border-border rounded-full px-5 h-14">
+                <View className="flex-row items-center gap-2">
+                  <Icon icon={ShieldCheckIcon} size={16} color="#6E6A75" />
+                  <Text className="text-ink font-inter-semibold text-[14px]">
+                    Auto-assign Orders
+                  </Text>
+                </View>
+                <StatusChip label="Enabled" tone="success" />
+              </View>
+              <View className="flex-row items-center justify-between bg-cream border border-border rounded-full px-5 h-14">
+                <View className="flex-row items-center gap-2">
+                  <Icon icon={Settings01Icon} size={16} color="#6E6A75" />
+                  <Text className="text-ink font-inter-semibold text-[14px]">
+                    Maintenance Mode
+                  </Text>
+                </View>
+                <StatusChip label="Disabled" tone="neutral" />
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

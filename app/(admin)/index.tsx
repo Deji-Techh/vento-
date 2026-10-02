@@ -5,20 +5,26 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Alert,
+  Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/contexts/AuthContext";
-import {
-  Users,
-  Store,
-  ShoppingBag,
-  DollarSign,
-  Truck,
-  Check,
-  X,
-} from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
+import { Eyebrow, SectionHeader, StatusChip } from "../../src/components/ui/SectionHeader";
+import { Icon } from "../../src/components/ui/Icon";
+import {
+  DashboardSquare01Icon,
+  UsersIcon,
+  Store01Icon,
+  ReceiptIcon,
+  Clock01Icon,
+  CheckmarkCircle01Icon,
+  Delete02Icon,
+  DeliveryBox01Icon,
+} from "../../src/components/icons";
 
 const mockStats = {
   totalUsers: 156,
@@ -66,221 +72,223 @@ const activityLabels: Record<string, string> = {
   document_rejected: "Document Rejected",
 };
 
+function verificationTone(status: string): "warning" | "info" | "neutral" {
+  if (status === "documents_submitted") return "warning";
+  if (status === "pending") return "info";
+  return "neutral";
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState(mockStats);
+  const [stats] = useState(mockStats);
   const [pendingSellers, setPendingSellers] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
 
   useEffect(() => {
-    setTimeout(() => {
+    const t = setTimeout(() => {
       setPendingSellers(mockPendingSellers);
       setActivities(mockActivities);
       setLoading(false);
     }, 800);
+    return () => clearTimeout(t);
   }, []);
 
   const handleApproval = (sellerId: string, approve: boolean) => {
     setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId));
-    Alert.alert(
-      approve ? "Seller approved" : "Seller rejected",
-      `The seller has been ${approve ? "approved" : "rejected"} successfully.`
-    );
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(
+        approve
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Warning
+      ).catch(() => {});
+    }
+    if (approve) {
+      toast.success("Seller approved");
+    } else {
+      toast.success("Seller rejected");
+    }
   };
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
-        <ActivityIndicator size="large" color="#1B1B8F" />
-      </View>
+      <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#1B1B8F" />
+        </View>
+      </SafeAreaView>
     );
   }
 
+  const statCards = [
+    { label: "Total Users", value: stats.totalUsers, icon: UsersIcon, tint: "#1B1B8F" },
+    { label: "Total Sellers", value: stats.totalSellers, icon: Store01Icon, tint: "#12805C" },
+    { label: "Pending", value: stats.pendingSellers, icon: Clock01Icon, tint: "#1B1B8F" },
+    { label: "Total Orders", value: stats.totalOrders, icon: ReceiptIcon, tint: "#1B1B8F" },
+  ];
+
   return (
-    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14" contentContainerStyle={{ paddingBottom: 120, gap: 16 }}>
-      <View>
-        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
-          Platform
-        </Text>
-        <Text className="text-[28px] font-bold text-ink mt-1">Admin</Text>
-        <Text className="text-sm text-ink/55">Manage your Vento platform</Text>
-      </View>
-
-      {/* Summary hero — white */}
-      <View className="bg-white rounded-[28px] p-6 border border-[#E7E0D2]">
-        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">Platform at a glance</Text>
-        <Text className="text-2xl font-bold text-ink mt-2">
-          {stats.totalOrders} orders • {stats.totalUsers} users
-        </Text>
-        <View className="flex-row gap-2 mt-4">
-          <View className="px-3 py-1.5 rounded-full bg-[#FFF3D6]">
-            <Text className="text-xs font-bold text-[#8A5A00]">{stats.pendingSellers} pending</Text>
-          </View>
-          <View className="px-3 py-1.5 rounded-full bg-[#EDEDF7]">
-            <Text className="text-xs font-bold text-[#1B1B8F]">{stats.totalSellers} sellers</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Stats Grid white cards */}
-      <View className="flex-row flex-wrap gap-3">
-        <View className="bg-white rounded-[26px] p-5 border border-[#E7E0D2] flex-1 min-w-[45%]">
-          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
-            <Users color="#1B1B8F" size={20} />
-          </View>
-          <Text className="text-xs text-ink/55">Total Users</Text>
-          <Text className="text-xl font-bold text-ink mt-0.5">
-            {stats.totalUsers}
-          </Text>
-        </View>
-
-        <View className="bg-white rounded-[26px] p-5 border border-[#E7E0D2] flex-1 min-w-[45%]">
-          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
-            <Store color="#12805C" size={20} />
-          </View>
-          <Text className="text-xs text-ink/55">Total Sellers</Text>
-          <Text className="text-xl font-bold text-ink mt-0.5">
-            {stats.totalSellers}
-          </Text>
-        </View>
-
-        <View className="bg-white rounded-[26px] p-5 border border-[#E7E0D2] flex-1 min-w-[45%]">
-          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
-            <DollarSign color="#1B1B8F" size={20} />
-          </View>
-          <Text className="text-xs text-ink/55">Pending</Text>
-          <Text className="text-xl font-bold text-ink mt-0.5">
-            {stats.pendingSellers}
-          </Text>
-        </View>
-
-        <View className="bg-white rounded-[26px] p-5 border border-[#E7E0D2] flex-1 min-w-[45%]">
-          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
-            <ShoppingBag color="#1B1B8F" size={20} />
-          </View>
-          <Text className="text-xs text-ink/55">Total Orders</Text>
-          <Text className="text-xl font-bold text-ink mt-0.5">
-            {stats.totalOrders}
-          </Text>
-        </View>
-      </View>
-
-      {/* Quick Actions pill */}
-      <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-6">
-        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-4">Quick Actions</Text>
-        <AppButton title="Manage Delivery Agents" variant="ink" onPress={() => router.push("/(admin)/users" as any)} />
-      </View>
-
-      {/* Pending Sellers */}
-      {pendingSellers.length > 0 && (
+    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+      <ScrollView
+        className="flex-1 px-5"
+        contentContainerStyle={{ paddingBottom: 120, paddingTop: 12, gap: 16 }}
+        showsVerticalScrollIndicator={false}
+      >
         <View>
-          <Text className="text-lg font-bold text-ink mb-3">
-            Pending Seller Approvals
+          <Eyebrow>Platform</Eyebrow>
+          <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">
+            Admin
           </Text>
-          <View className="gap-4">
-            {pendingSellers.map((seller) => (
-              <View
-                key={seller.id}
-                className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]"
-              >
-                <View className="flex-row items-start justify-between mb-4 gap-2">
-                  <View className="flex-1">
-                    <View className="flex-row items-center gap-2 mb-1 flex-wrap">
-                      <Text className="font-bold text-ink">
+          <Text className="text-[13px] font-inter text-ink/55 mt-1">
+            {user?.email ? `${user.email} • ` : ""}Manage your Vento platform
+          </Text>
+        </View>
+
+        {/* Summary hero */}
+        <View className="bg-white rounded-[28px] p-6 border border-border">
+          <View className="flex-row items-center gap-2">
+            <Icon icon={DashboardSquare01Icon} size={18} color="#1B1B8F" />
+            <Eyebrow>Platform at a glance</Eyebrow>
+          </View>
+          <Text className="text-[22px] font-inter-bold text-ink tracking-tight mt-3">
+            {stats.totalOrders} orders • {stats.totalUsers} users
+          </Text>
+          <View className="flex-row gap-2 mt-4">
+            <StatusChip label={`${stats.pendingSellers} pending`} tone="warning" />
+            <StatusChip label={`${stats.totalSellers} sellers`} tone="info" />
+          </View>
+        </View>
+
+        {/* Stats grid */}
+        <View className="flex-row flex-wrap gap-3">
+          {statCards.map((s) => (
+            <View
+              key={s.label}
+              className="bg-white rounded-[24px] p-5 border border-border flex-1 min-w-[45%]"
+            >
+              <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center mb-2">
+                <Icon icon={s.icon} size={20} color={s.tint} />
+              </View>
+              <Text className="text-[12px] font-inter text-ink/55">{s.label}</Text>
+              <Text className="text-[20px] font-inter-bold text-ink mt-0.5">
+                {s.value}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Quick actions */}
+        <View className="bg-white rounded-[24px] border border-border p-6">
+          <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/50 mb-4">
+            Quick Actions
+          </Text>
+          <AppButton
+            title="Manage Delivery Agents"
+            variant="ink"
+            onPress={() => router.push("/(admin)/users" as any)}
+          />
+        </View>
+
+        {/* Pending sellers */}
+        {pendingSellers.length > 0 && (
+          <View>
+            <SectionHeader title="Pending approvals" action={`${pendingSellers.length}`} />
+            <View className="gap-3">
+              {pendingSellers.map((seller) => (
+                <View
+                  key={seller.id}
+                  className="bg-white rounded-[24px] p-6 border border-border"
+                >
+                  <View className="mb-4">
+                    <View className="flex-row items-center gap-2 mb-1.5 flex-wrap">
+                      <Text className="font-inter-bold text-[15px] text-ink">
                         {seller.store_name}
                       </Text>
-                      <View className="bg-[#FFF3D6] px-2.5 py-1 rounded-full">
-                        <Text className="text-[11px] font-bold text-[#8A5A00] capitalize">
-                          {seller.verification_status || "pending"}
-                        </Text>
-                      </View>
+                      <StatusChip
+                        label={(seller.verification_status || "pending").replaceAll("_", " ")}
+                        tone={verificationTone(seller.verification_status || "pending")}
+                      />
                     </View>
-                    <Text className="text-sm text-ink/55">
+                    <Text className="text-[13px] font-inter text-ink/55">
                       {seller.profiles?.name}{" "}
-                      {seller.profiles?.phone &&
-                        `• ${seller.profiles.phone}`}
+                      {seller.profiles?.phone && `• ${seller.profiles.phone}`}
                     </Text>
-                    {seller.description && (
-                      <Text className="text-sm text-ink/55 mt-1">
+                    {seller.description ? (
+                      <Text className="text-[13px] font-inter text-ink/55 mt-1">
                         {seller.description}
                       </Text>
-                    )}
+                    ) : null}
+                  </View>
+                  <View className="flex-row gap-2">
+                    <TouchableOpacity
+                      onPress={() => router.push("/(admin)/users" as any)}
+                      activeOpacity={0.85}
+                      className="flex-1 border border-border h-14 rounded-full items-center justify-center bg-white"
+                    >
+                      <Text className="text-ink font-inter-bold text-[14px]">View</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleApproval(seller.id, true)}
+                      activeOpacity={0.85}
+                      className="flex-1 bg-ink h-14 rounded-full items-center justify-center flex-row gap-1.5"
+                    >
+                      <Icon icon={CheckmarkCircle01Icon} size={15} color="#fff" />
+                      <Text className="text-white font-inter-bold text-[14px]">Approve</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleApproval(seller.id, false)}
+                      activeOpacity={0.85}
+                      className="flex-1 bg-white border border-border h-14 rounded-full items-center justify-center flex-row gap-1.5"
+                    >
+                      <Icon icon={Delete02Icon} size={15} color="#D92D20" />
+                      <Text className="text-ink font-inter-bold text-[14px]">Reject</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
-                <View className="flex-row gap-2">
-                  <TouchableOpacity
-                    onPress={() => router.push("/(admin)/users" as any)}
-                    className="flex-1 border border-[#E7E0D2] h-14 rounded-full items-center justify-center bg-white"
-                  >
-                    <Text className="text-ink font-bold text-sm">
-                      View
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleApproval(seller.id, true)}
-                    className="flex-1 bg-ink h-14 rounded-full items-center justify-center flex-row gap-1"
-                  >
-                    <Check color="#FFFFFF" size={14} />
-                    <Text className="text-white font-bold text-sm">
-                      Approve
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleApproval(seller.id, false)}
-                    className="flex-1 bg-white border border-[#E7E0D2] h-14 rounded-full items-center justify-center flex-row gap-1"
-                  >
-                    <X color="#C0361F" size={14} />
-                    <Text className="text-ink font-bold text-sm">
-                      Reject
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* Activity Log */}
-      <View>
-        <Text className="text-lg font-bold text-ink mb-3">
-          Recent Activity
-        </Text>
-        {activities.length === 0 ? (
-          <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
-            <Text className="text-ink/55">No recent activity</Text>
-          </View>
-        ) : (
-          <View className="gap-3">
-            {activities.map((activity) => (
-              <View
-                key={activity.id}
-                className="bg-white rounded-[26px] p-5 border border-[#E7E0D2]"
-              >
-                <View className="flex-row items-center gap-2 mb-1 flex-wrap">
-                  <Text className="text-sm font-bold text-ink">
-                    {activityLabels[activity.action_type] || activity.action_type}
-                  </Text>
-                  <View className="bg-[#FAF5EA] border border-[#E7E0D2] px-2.5 py-1 rounded-full">
-                    <Text className="text-[11px] font-bold text-ink">
-                      {activity.profiles?.name || "Admin"}
-                    </Text>
-                  </View>
-                </View>
-                <Text className="text-xs text-ink/55">
-                  {new Date(activity.created_at).toLocaleString()}
-                </Text>
-              </View>
-            ))}
+              ))}
+            </View>
           </View>
         )}
-        <View className="mt-3 flex-row items-center gap-2 opacity-60">
-          <Truck size={14} color="#6E6A75" />
-          <Text className="text-xs text-ink/55">Ops monitored in real-time</Text>
+
+        {/* Activity log */}
+        <View>
+          <SectionHeader title="Recent activity" />
+          {activities.length === 0 ? (
+            <View className="bg-white rounded-[24px] p-8 items-center border border-border">
+              <Text className="text-ink/55 font-inter text-[14px]">No recent activity</Text>
+            </View>
+          ) : (
+            <View className="gap-3">
+              {activities.map((activity) => (
+                <View
+                  key={activity.id}
+                  className="bg-white rounded-[24px] p-5 border border-border"
+                >
+                  <View className="flex-row items-center gap-2 mb-1 flex-wrap">
+                    <Text className="text-[14px] font-inter-bold text-ink">
+                      {activityLabels[activity.action_type] || activity.action_type}
+                    </Text>
+                    <StatusChip
+                      label={activity.profiles?.name || "Admin"}
+                      tone="neutral"
+                    />
+                  </View>
+                  <Text className="text-[12px] font-inter text-ink/55">
+                    {new Date(activity.created_at).toLocaleString()}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+          <View className="mt-3 flex-row items-center gap-2 opacity-60">
+            <Icon icon={DeliveryBox01Icon} size={14} color="#6E6A75" />
+            <Text className="text-[12px] font-inter text-ink/55">
+              Ops monitored in real-time
+            </Text>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

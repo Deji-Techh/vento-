@@ -1,27 +1,25 @@
 import { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Modal, ActivityIndicator, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
-import {
-  Eye,
-  EyeOff,
-  TrendingUp,
-  ShoppingBag,
-  HelpCircle,
-  Filter,
-  Landmark,
-  User,
-  X,
-} from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
+import { TextField } from "../../src/components/ui/TextField";
+import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
+import { Icon } from "../../src/components/ui/Icon";
+import {
+  EyeIcon,
+  EyeOffIcon,
+  ChartLineIcon,
+  Package01Icon,
+  BankIcon,
+  FilterIcon,
+  BubbleChatIcon,
+  ArrowLeft01Icon,
+  BanknoteIcon,
+  Wallet01Icon,
+} from "../../src/components/icons";
 
 const mockSellerInfo = {
   id: "seller-001",
@@ -69,10 +67,7 @@ export default function SellerEarnings() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showBalance, setShowBalance] = useState(true);
-  const [withdrawalForm, setWithdrawalForm] = useState({
-    amount: "",
-    method: "bank",
-  });
+  const [withdrawalForm, setWithdrawalForm] = useState({ amount: "", method: "bank" });
 
   useEffect(() => {
     setTimeout(() => {
@@ -86,10 +81,10 @@ export default function SellerEarnings() {
   const handleWithdrawal = () => {
     const amount = parseFloat(withdrawalForm.amount);
     if (isNaN(amount) || amount <= 0 || amount > availableBalance) {
-      Alert.alert("Error", "Invalid withdrawal amount");
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      toast.error("Enter a valid amount within balance");
       return;
     }
-
     const newWithdrawal = {
       id: `w-${Date.now()}`,
       amount: withdrawalForm.amount,
@@ -98,7 +93,8 @@ export default function SellerEarnings() {
       created_at: new Date().toISOString(),
     };
     setWithdrawals((prev) => [newWithdrawal, ...prev]);
-    Alert.alert("Success", "Withdrawal request submitted successfully!");
+    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    toast.success("Withdrawal request submitted");
     setDialogOpen(false);
     setWithdrawalForm({ amount: "", method: "bank" });
   };
@@ -131,28 +127,18 @@ export default function SellerEarnings() {
       status: w.status.toUpperCase(),
     })),
   ]
-    .sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    )
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 6);
 
   const formatDate = (date: string) => {
     const d = new Date(date);
     const now = new Date();
-    const diffDays = Math.floor(
-      (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
     if (diffDays === 0)
       return `Today, ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}`;
     if (diffDays === 1)
       return `Yesterday, ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}`;
-    return d.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
   };
 
   const weekStart = new Date();
@@ -160,61 +146,49 @@ export default function SellerEarnings() {
   const thisWeekEarnings = orders
     .filter((o) => new Date(o.created_at) >= weekStart)
     .reduce((sum, o) => sum + o.total_price, 0);
-  const thisWeekOrders = orders.filter(
-    (o) => new Date(o.created_at) >= weekStart
-  ).length;
+  const thisWeekOrders = orders.filter((o) => new Date(o.created_at) >= weekStart).length;
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
-        <ActivityIndicator size="large" color="#1B1B8F" />
-      </View>
+      <SafeAreaView className="flex-1 bg-cream items-center justify-center" edges={["top"]}>
+        <ActivityIndicator size="large" color="#0A0A0E" />
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-[#FAF5EA]">
-      {/* Header */}
-      <View className="px-5 pt-14 pb-4 flex-row items-center justify-between">
+    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+      <View className="px-5 pt-4 pb-4 flex-row items-center justify-between">
         <View>
-          <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
-            Payouts
-          </Text>
-          <Text className="text-[28px] font-bold text-ink mt-1">Earnings</Text>
-          <Text className="text-sm text-ink/55">Payouts and history</Text>
+          <Eyebrow>Payouts</Eyebrow>
+          <Text className="text-[28px] font-inter-bold text-ink mt-1 tracking-tight">Earnings</Text>
+          <Text className="text-[13px] font-inter text-ink/55">Payouts and history</Text>
         </View>
-        <TouchableOpacity className="w-12 h-12 rounded-full bg-white border border-[#E7E0D2] items-center justify-center">
-          <HelpCircle color="#0A0A0E" size={20} />
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => toast.success("Payouts settle in 1-3 business days")}
+          className="w-12 h-12 rounded-full bg-white border border-border items-center justify-center"
+        >
+          <Icon icon={BubbleChatIcon} size={20} color="#0A0A0E" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }}>
-        {/* Balance hero — white card */}
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         <View className="px-5">
-          <View className="bg-white rounded-[28px] p-6 border border-[#E7E0D2]">
+          <View className="bg-white rounded-[28px] p-6 border border-border">
             <View className="items-center">
               <View className="flex-row items-center gap-2 mb-2">
-                <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">Total Balance</Text>
-                <TouchableOpacity
-                  onPress={() => setShowBalance(!showBalance)}
-                >
-                  {showBalance ? (
-                    <Eye color="#1B1B8F" size={16} />
-                  ) : (
-                    <EyeOff color="#1B1B8F" size={16} />
-                  )}
+                <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55">Total balance</Text>
+                <TouchableOpacity onPress={() => setShowBalance(!showBalance)} activeOpacity={0.85}>
+                  <Icon icon={showBalance ? EyeIcon : EyeOffIcon} size={16} color="#1B1B8F" />
                 </TouchableOpacity>
               </View>
-              <Text className="text-4xl font-bold text-ink mb-3">
-                {showBalance
-                  ? `₦${availableBalance.toFixed(2)}`
-                  : "••••••"}
+              <Text className="text-4xl font-inter-bold text-ink mb-3 tracking-tight">
+                {showBalance ? `₦${availableBalance.toFixed(2)}` : "••••••"}
               </Text>
-              <View className="flex-row items-center gap-1.5 px-3 py-1.5 bg-[#FAF5EA] border border-[#E7E0D2] rounded-full">
-                <View className="w-2 h-2 bg-[#12805C] rounded-full" />
-                <Text className="text-xs font-bold text-ink">
-                  Available to withdraw
-                </Text>
+              <View className="flex-row items-center gap-1.5 px-3 py-1.5 bg-cream border border-border rounded-full">
+                <View className="w-2 h-2 bg-success rounded-full" />
+                <Text className="text-xs font-inter-bold text-ink">Available to withdraw</Text>
               </View>
             </View>
 
@@ -228,89 +202,66 @@ export default function SellerEarnings() {
             </View>
 
             {pendingWithdrawals > 0 && (
-              <Text className="text-center text-sm text-ink/55 mt-3">
-                +₦{pendingWithdrawals.toFixed(2)} Pending Clearance
+              <Text className="text-center text-[13px] font-inter text-ink/55 mt-3">
+                +₦{pendingWithdrawals.toFixed(2)} pending clearance
               </Text>
             )}
           </View>
         </View>
 
-        {/* Stats Cards */}
         <View className="px-5 mt-4 flex-row gap-3">
-          <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
+          <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
             <View className="flex-row items-center gap-2 mb-2">
-              <TrendingUp size={15} color="#1B1B8F" />
-              <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
-                This Week
-              </Text>
+              <Icon icon={ChartLineIcon} size={15} color="#1B1B8F" />
+              <Text className="text-[11px] font-inter-bold uppercase tracking-[1px] text-ink/55">This week</Text>
             </View>
-            <Text className="text-xl font-bold text-[#12805C]">
-              +₦{thisWeekEarnings.toFixed(2)}
-            </Text>
+            <Text className="text-xl font-inter-bold text-success">+₦{thisWeekEarnings.toFixed(2)}</Text>
           </View>
-          <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
+          <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
             <View className="flex-row items-center gap-2 mb-2">
-              <ShoppingBag size={15} color="#1B1B8F" />
-              <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">Orders</Text>
+              <Icon icon={Package01Icon} size={15} color="#1B1B8F" />
+              <Text className="text-[11px] font-inter-bold uppercase tracking-[1px] text-ink/55">Orders</Text>
             </View>
-            <Text className="text-xl font-bold text-ink">
-              {thisWeekOrders}
-            </Text>
+            <Text className="text-xl font-inter-bold text-ink">{thisWeekOrders}</Text>
           </View>
         </View>
 
-        {/* Recent Transactions */}
         <View className="px-5 mt-8">
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-bold text-ink">
-              Recent Transactions
-            </Text>
-            <TouchableOpacity className="flex-row items-center gap-1 bg-white border border-[#E7E0D2] px-3 h-10 rounded-full">
-              <Filter size={14} color="#1B1B8F" />
-              <Text className="text-sm font-bold text-[#1B1B8F]">
-                Filter
-              </Text>
+            <Text className="text-lg font-inter-bold text-ink tracking-tight">Recent transactions</Text>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => toast.success("Filters coming soon")}
+              className="flex-row items-center gap-1 bg-white border border-border px-3 h-10 rounded-full"
+            >
+              <Icon icon={FilterIcon} size={14} color="#1B1B8F" />
+              <Text className="text-[13px] font-inter-bold text-primary">Filter</Text>
             </TouchableOpacity>
           </View>
 
           {recentTransactions.length === 0 ? (
-            <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
-              <Text className="text-ink/55">No transactions yet</Text>
+            <View className="bg-white rounded-[24px] p-8 items-center border border-border">
+              <Text className="font-inter text-ink/55">No transactions yet</Text>
             </View>
           ) : (
             <View className="gap-3">
-              {recentTransactions.map((transaction) => (
-                <View
-                  key={transaction.id}
-                  className="bg-white rounded-[26px] p-4 flex-row items-center gap-3 border border-[#E7E0D2]"
-                >
-                  <View className="w-12 h-12 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-                    {transaction.type === "withdrawal" ? (
-                      <Landmark color="#1B1B8F" size={20} />
-                    ) : (
-                      <User color="#1B1B8F" size={20} />
-                    )}
+              {recentTransactions.map((t) => (
+                <View key={t.id} className="bg-white rounded-[24px] p-4 flex-row items-center gap-3 border border-border">
+                  <View className="w-12 h-12 rounded-full bg-cream border border-border items-center justify-center">
+                    <Icon icon={t.type === "withdrawal" ? BankIcon : Wallet01Icon} size={20} color="#1B1B8F" />
                   </View>
                   <View className="flex-1 min-w-0">
-                    <Text className="font-bold text-ink text-sm" numberOfLines={1}>
-                      {transaction.name}
+                    <Text className="font-inter-bold text-ink text-[13px]" numberOfLines={1}>
+                      {t.name}
                     </Text>
-                    <Text className="text-xs text-ink/55 mt-0.5">
-                      {formatDate(transaction.date)}
-                    </Text>
+                    <Text className="text-xs font-inter text-ink/55 mt-0.5">{formatDate(t.date)}</Text>
                   </View>
                   <View className="items-end">
-                    <Text
-                      className="font-bold"
-                      style={{ color: transaction.amount >= 0 ? "#12805C" : "#C0361F" }}
-                    >
-                      {transaction.amount >= 0 ? "+" : ""}₦
-                      {Math.abs(transaction.amount).toFixed(2)}
+                    <Text className="font-inter-bold" style={{ color: t.amount >= 0 ? "#12805C" : "#D92D20" }}>
+                      {t.amount >= 0 ? "+" : ""}₦{Math.abs(t.amount).toFixed(2)}
                     </Text>
-                    <View className="mt-1 px-2 py-0.5 rounded-full bg-[#FAF5EA] border border-[#E7E0D2]">
-                      <Text className="text-[10px] font-bold text-ink">
-                        {transaction.status}
-                      </Text>
+                    <View className="mt-1">
+                      <StatusChip label={t.status} tone={t.amount >= 0 ? "success" : "neutral"} />
                     </View>
                   </View>
                 </View>
@@ -318,93 +269,57 @@ export default function SellerEarnings() {
             </View>
           )}
 
-          <Text className="text-center text-xs text-ink/55 mt-6 px-6">
-            Earnings are updated in real-time. Payments to your bank account
-            typically take 1-3 business days.
-          </Text>
+          <View className="flex-row items-start gap-2 mt-6 px-2">
+            <Icon icon={BanknoteIcon} size={15} color="rgba(10,10,14,0.4)" />
+            <Text className="text-xs font-inter text-ink/55 flex-1">
+              Earnings update in real-time. Bank payouts typically take 1-3 business days.
+            </Text>
+          </View>
         </View>
       </ScrollView>
 
-      {/* Withdraw Modal */}
-      <Modal
-        visible={dialogOpen}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setDialogOpen(false)}
-      >
-        <View className="flex-1 bg-[#FAF5EA]">
-          <View className="flex-row items-center justify-between px-5 pt-6 pb-4">
-            <Text className="text-xl font-bold text-ink">Withdraw Funds</Text>
+      <Modal visible={dialogOpen} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setDialogOpen(false)}>
+        <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+          <View className="flex-row items-center justify-between px-5 pt-4 pb-4">
+            <Text className="text-xl font-inter-bold text-ink tracking-tight">Withdraw funds</Text>
             <TouchableOpacity
               onPress={() => setDialogOpen(false)}
-              className="w-10 h-10 rounded-full bg-white border border-[#E7E0D2] items-center justify-center"
+              activeOpacity={0.85}
+              className="w-10 h-10 rounded-full bg-white border border-border items-center justify-center"
             >
-              <X color="#0A0A0E" size={16} />
+              <Icon icon={ArrowLeft01Icon} size={16} color="#0A0A0E" />
             </TouchableOpacity>
           </View>
 
           <View className="flex-1 px-5 gap-4">
-            <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5">
-              <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
-                Amount (₦)
-              </Text>
-              <TextInput
-                value={withdrawalForm.amount}
-                onChangeText={(val) =>
-                  setWithdrawalForm({ ...withdrawalForm, amount: val })
-                }
-                placeholder="0.00"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="numeric"
-                className="mt-2 w-full h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
-              />
+            <View className="bg-white rounded-[24px] border border-border p-5">
+              <TextField label="Amount (₦)" value={withdrawalForm.amount} onChangeText={(v) => setWithdrawalForm({ ...withdrawalForm, amount: v })} placeholder="0.00" keyboardType="numeric" dark={false} />
             </View>
-            <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5">
-              <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
-                Method
-              </Text>
-              <View className="flex-row gap-2 mt-3">
+            <View className="bg-white rounded-[24px] border border-border p-5">
+              <Text className="text-ink text-[13px] font-inter-bold mb-2">Method</Text>
+              <View className="flex-row gap-2 mt-1">
                 <TouchableOpacity
-                  onPress={() =>
-                    setWithdrawalForm({ ...withdrawalForm, method: "bank" })
-                  }
-                  className={`flex-1 h-14 rounded-full items-center justify-center border ${
-                    withdrawalForm.method === "bank"
-                      ? "bg-ink border-ink"
-                      : "bg-white border-[#E7E0D2]"
+                  onPress={() => setWithdrawalForm({ ...withdrawalForm, method: "bank" })}
+                  activeOpacity={0.85}
+                  className={`flex-1 h-14 rounded-full flex-row items-center justify-center gap-2 border ${
+                    withdrawalForm.method === "bank" ? "bg-ink border-ink" : "bg-white border-border"
                   }`}
                 >
-                  <Text
-                    className={`font-bold text-sm ${
-                      withdrawalForm.method === "bank"
-                        ? "text-white"
-                        : "text-ink"
-                    }`}
-                  >
-                    Bank Transfer
+                  <Icon icon={BankIcon} size={16} color={withdrawalForm.method === "bank" ? "#fff" : "#0A0A0E"} />
+                  <Text className={`font-inter-bold text-[13px] ${withdrawalForm.method === "bank" ? "text-white" : "text-ink"}`}>
+                    Bank
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() =>
-                    setWithdrawalForm({
-                      ...withdrawalForm,
-                      method: "mobile_money",
-                    })
-                  }
-                  className={`flex-1 h-14 rounded-full items-center justify-center border ${
-                    withdrawalForm.method === "mobile_money"
-                      ? "bg-ink border-ink"
-                      : "bg-white border-[#E7E0D2]"
+                  onPress={() => setWithdrawalForm({ ...withdrawalForm, method: "mobile_money" })}
+                  activeOpacity={0.85}
+                  className={`flex-1 h-14 rounded-full flex-row items-center justify-center gap-2 border ${
+                    withdrawalForm.method === "mobile_money" ? "bg-ink border-ink" : "bg-white border-border"
                   }`}
                 >
-                  <Text
-                    className={`font-bold text-sm ${
-                      withdrawalForm.method === "mobile_money"
-                        ? "text-white"
-                        : "text-ink"
-                    }`}
-                  >
-                    Mobile Money
+                  <Icon icon={Wallet01Icon} size={16} color={withdrawalForm.method === "mobile_money" ? "#fff" : "#0A0A0E"} />
+                  <Text className={`font-inter-bold text-[13px] ${withdrawalForm.method === "mobile_money" ? "text-white" : "text-ink"}`}>
+                    Momo
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -413,8 +328,8 @@ export default function SellerEarnings() {
               <AppButton title="Submit Request" variant="ink" onPress={handleWithdrawal} />
             </View>
           </View>
-        </View>
+        </SafeAreaView>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }

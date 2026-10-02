@@ -10,12 +10,12 @@ export default function Splash() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/(buyer)/browse" as any);
+      router.replace("/onboarding");
     }, 2100);
     return () => clearTimeout(timer);
   }, []);
 
-  const skip = () => router.replace("/(buyer)/browse" as any);
+  const skip = () => router.replace("/onboarding");
 
   return (
     <Pressable onPress={skip} className="flex-1 items-center justify-center bg-ink">

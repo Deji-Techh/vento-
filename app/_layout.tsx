@@ -38,6 +38,7 @@ export default function RootLayout() {
       <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" />
         <Stack.Screen name="(buyer)" />
         <Stack.Screen name="(seller)" />
         <Stack.Screen name="(delivery)" />

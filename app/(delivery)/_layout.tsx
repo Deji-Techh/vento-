@@ -1,20 +1,20 @@
 import { Tabs } from "expo-router";
-import { LayoutDashboard, Package, Map, Wallet, User } from "lucide-react-native";
 import TabBar from "../../src/components/TabBar";
+import { ic, DashboardSquare01Icon, DeliveryBox01Icon, MapPinIcon, Wallet01Icon, UserIcon } from "../../src/components/icons";
 
 const tabs = [
-  { icon: LayoutDashboard, label: "Home", href: "/(delivery)/dashboard" },
-  { icon: Package, label: "Deliveries", href: "/(delivery)/tasks" },
-  { icon: Map, label: "Map", href: "/(delivery)/map" },
-  { icon: Wallet, label: "Earnings", href: "/(delivery)/earnings" },
-  { icon: User, label: "Account", href: "/(delivery)/profile" },
+  { icon: ic(DashboardSquare01Icon), label: "Home", href: "/(delivery)/dashboard" },
+  { icon: ic(DeliveryBox01Icon), label: "Deliveries", href: "/(delivery)/tasks" },
+  { icon: ic(MapPinIcon), label: "Map", href: "/(delivery)/map" },
+  { icon: ic(Wallet01Icon), label: "Earnings", href: "/(delivery)/earnings" },
+  { icon: ic(UserIcon), label: "Account", href: "/(delivery)/profile" },
 ];
 
 export default function DeliveryLayout() {
   return (
     <Tabs
       screenOptions={{ headerShown: false }}
-      tabBar={(props) => <TabBar tabs={tabs} dark={false} />}
+      tabBar={() => <TabBar tabs={tabs} dark={false} />}
     >
       <Tabs.Screen name="dashboard" />
       <Tabs.Screen name="tasks" />

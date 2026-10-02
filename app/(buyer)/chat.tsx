@@ -10,16 +10,16 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useAuth } from "../../src/contexts/AuthContext";
+import { Icon } from "../../src/components/ui/Icon";
 import {
-  ArrowLeft,
-  Video,
-  Phone,
-  Plus,
-  Lock,
-  CheckCheck,
-  Send,
-} from "lucide-react-native";
+  ArrowLeft01Icon,
+  Video01Icon,
+  PhoneIcon,
+  PlusSignIcon,
+  LockIcon,
+  CheckCheckIcon,
+  SentIcon,
+} from "../../src/components/icons";
 
 const mockMessages = [
   { id: "msg-1", type: "date", text: "Yesterday" },
@@ -33,14 +33,8 @@ const mockMessages = [
   { id: "msg-9", type: "sender", text: "Perfect! Add a Suya Platter to my order please.", time: "9:20 AM", read: true },
 ];
 
-const chatUser = {
-  name: "Tasty Bites",
-  initials: "TB",
-};
-
 export default function Chat() {
   const router = useRouter();
-  const { role } = useAuth();
   const [messages, setMessages] = useState(mockMessages);
   const [newMessage, setNewMessage] = useState("");
   const scrollViewRef = useRef<ScrollView>(null);
@@ -65,113 +59,86 @@ export default function Chat() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-ink" edges={["top", "left", "right"]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
-      >
-        {/* Header */}
-        <View className="flex-row items-center justify-between px-6 h-16 border-b border-white/10">
+    <SafeAreaView className="flex-1 bg-ink" edges={["top"]}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
+        <View className="flex-row items-center justify-between px-5 h-16 border-b border-white/10">
           <View className="flex-row items-center gap-3">
             <TouchableOpacity
               onPress={() => router.back()}
               activeOpacity={0.85}
-              className="w-10 h-10 rounded-full bg-white/10 border border-white/10 items-center justify-center"
+              className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
             >
-              <ArrowLeft color="#FFFFFF" size={20} />
+              <Icon icon={ArrowLeft01Icon} size={20} color="#fff" />
             </TouchableOpacity>
             <View className="flex-row items-center gap-3">
               <View className="w-11 h-11 rounded-full bg-white items-center justify-center">
-                <Text className="text-sm font-bold text-ink">
-                  {chatUser.initials}
-                </Text>
+                <Text className="text-[13px] font-inter-bold text-ink">TB</Text>
               </View>
               <View>
-                <Text className="text-[16px] font-bold text-white tracking-tight">
-                  {chatUser.name}
-                </Text>
+                <Text className="text-[16px] font-inter-bold text-white tracking-tight">Tasty Bites</Text>
                 <View className="flex-row items-center gap-1.5 mt-0.5">
-                  <View className="w-2 h-2 rounded-full bg-white" />
-                  <Text className="text-xs text-white/55">Online now</Text>
+                  <View className="w-2 h-2 rounded-full bg-success" />
+                  <Text className="text-[12px] font-inter text-white/55">Online now</Text>
                 </View>
               </View>
             </View>
           </View>
           <View className="flex-row items-center gap-2">
-            <TouchableOpacity
-              activeOpacity={0.85}
-              className="w-10 h-10 rounded-full bg-white/10 border border-white/10 items-center justify-center"
-            >
-              <Video color="#FFFFFF" size={18} />
+            <TouchableOpacity activeOpacity={0.85} className="w-10 h-10 rounded-full bg-white/10 items-center justify-center">
+              <Icon icon={Video01Icon} size={18} color="#fff" />
             </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.85}
-              className="w-10 h-10 rounded-full bg-white/10 border border-white/10 items-center justify-center"
-            >
-              <Phone color="#FFFFFF" size={18} />
+            <TouchableOpacity activeOpacity={0.85} className="w-10 h-10 rounded-full bg-white/10 items-center justify-center">
+              <Icon icon={PhoneIcon} size={18} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Chat thread */}
         <ScrollView
           ref={scrollViewRef}
-          className="flex-1 px-6 pt-5"
+          className="flex-1 px-5 pt-5"
           contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Encryption notice */}
           <View className="items-center mb-6">
             <View className="rounded-2xl px-4 py-3 items-center max-w-[90%] border border-white/10 bg-white/[0.06] flex-row gap-2">
-              <Lock color="rgba(255,255,255,0.45)" size={14} />
-              <Text className="text-[11px] text-white/55 leading-relaxed text-center flex-1">
+              <Icon icon={LockIcon} size={14} color="rgba(255,255,255,0.45)" />
+              <Text className="text-[11px] font-inter text-white/55 leading-relaxed text-center flex-1">
                 Messages and calls are end-to-end encrypted.
               </Text>
             </View>
           </View>
 
-          {/* Messages */}
-          {messages.map((msg) => {
+          {messages.map((msg: any) => {
             if (msg.type === "date") {
               return (
                 <View key={msg.id} className="items-center mb-4 mt-1">
                   <View className="bg-white/10 rounded-full px-4 py-1.5 border border-white/10">
-                    <Text className="text-[11px] font-bold uppercase tracking-[2px] text-white/50">
+                    <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-white/50">
                       {msg.text}
                     </Text>
                   </View>
                 </View>
               );
             }
-
             if (msg.type === "sender") {
               return (
                 <View key={msg.id} className="flex-row justify-end mb-2">
                   <View className="bg-white rounded-[20px] rounded-br-md px-4 py-3 max-w-[85%]">
-                    <Text className="text-[14px] text-ink font-medium mb-1 leading-snug">
-                      {msg.text}
-                    </Text>
+                    <Text className="text-[14px] font-inter-medium text-ink mb-1 leading-snug">{msg.text}</Text>
                     <View className="flex-row items-center justify-end gap-1">
-                      <Text className="text-[11px] text-ink/60 font-semibold">
-                        {msg.time}
-                      </Text>
-                      <CheckCheck color="rgba(10,10,14,0.6)" size={15} />
+                      <Text className="text-[11px] font-inter-semibold text-ink/60">{msg.time}</Text>
+                      <Icon icon={CheckCheckIcon} size={15} color="rgba(10,10,14,0.6)" />
                     </View>
                   </View>
                 </View>
               );
             }
-
             return (
               <View key={msg.id} className="flex-row justify-start mb-2">
                 <View className="bg-white/10 rounded-[20px] rounded-tl-md px-4 py-3 max-w-[85%]">
-                  <Text className="text-[14px] text-white mb-1 leading-snug">
-                    {msg.text}
-                  </Text>
+                  <Text className="text-[14px] font-inter text-white mb-1 leading-snug">{msg.text}</Text>
                   <View className="flex-row items-center justify-end">
-                    <Text className="text-[11px] text-white/45">
-                      {msg.time}
-                    </Text>
+                    <Text className="text-[11px] font-inter text-white/45">{msg.time}</Text>
                   </View>
                 </View>
               </View>
@@ -179,14 +146,10 @@ export default function Chat() {
           })}
         </ScrollView>
 
-        {/* Input bar */}
-        <View className="px-6 py-3 border-t border-white/10 bg-ink">
+        <View className="px-5 py-3 border-t border-white/10 bg-ink">
           <View className="flex-row items-center gap-2">
-            <TouchableOpacity
-              activeOpacity={0.85}
-              className="w-10 h-10 rounded-full bg-white/10 border border-white/10 items-center justify-center"
-            >
-              <Plus color="rgba(255,255,255,0.7)" size={20} />
+            <TouchableOpacity activeOpacity={0.85} className="w-10 h-10 rounded-full bg-white/10 items-center justify-center">
+              <Icon icon={PlusSignIcon} size={20} color="rgba(255,255,255,0.7)" />
             </TouchableOpacity>
             <View className="flex-1 bg-white/10 border border-white/10 rounded-full flex-row items-center px-4 h-[52px]">
               <TextInput
@@ -194,7 +157,7 @@ export default function Chat() {
                 onChangeText={setNewMessage}
                 placeholder="Message"
                 placeholderTextColor="rgba(255,255,255,0.35)"
-                className="flex-1 text-[15px] text-white"
+                className="flex-1 text-[15px] font-inter text-white"
                 onSubmitEditing={handleSend}
                 returnKeyType="send"
               />
@@ -204,7 +167,7 @@ export default function Chat() {
               activeOpacity={0.85}
               className="w-[52px] h-[52px] bg-white rounded-full items-center justify-center"
             >
-              <Send color="#0A0A0E" size={20} />
+              <Icon icon={SentIcon} size={20} color="#0A0A0E" />
             </TouchableOpacity>
           </View>
         </View>

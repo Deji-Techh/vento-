@@ -1,12 +1,12 @@
 import { Tabs } from "expo-router";
-import { Home, ReceiptText, ShoppingBag, User } from "lucide-react-native";
 import TabBar from "../../src/components/TabBar";
+import { ic, Home01Icon, ReceiptIcon, UserIcon, ShoppingBag02Icon } from "../../src/components/icons";
 import { useCart } from "../../src/stores/cartStore";
 
 const tabs = [
-  { icon: Home, label: "Home", href: "/(buyer)/browse" },
-  { icon: ReceiptText, label: "Orders", href: "/(buyer)/orders" },
-  { icon: User, label: "Account", href: "/(buyer)/profile" },
+  { icon: ic(Home01Icon), label: "Home", href: "/(buyer)/browse" },
+  { icon: ic(ReceiptIcon), label: "Orders", href: "/(buyer)/orders" },
+  { icon: ic(UserIcon), label: "Account", href: "/(buyer)/profile" },
 ];
 
 export default function BuyerLayout() {
@@ -19,7 +19,7 @@ export default function BuyerLayout() {
         <TabBar
           tabs={tabs}
           dark
-          action={{ icon: ShoppingBag, label: "Bag", href: "/(buyer)/cart", badge: count }}
+          action={{ icon: ic(ShoppingBag02Icon), label: "Bag", href: "/(buyer)/cart", badge: count }}
         />
       )}
     >

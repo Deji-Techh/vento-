@@ -1,14 +1,16 @@
-import { useState, Fragment } from "react";
+import { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppButton } from "../../src/components/ui/AppButton";
+import { Icon } from "../../src/components/ui/Icon";
+import { ShoppingBag02Icon, Store01Icon, DeliveryBox01Icon } from "../../src/components/icons";
 
 const roles = [
-  { id: "buyer", label: "Order food", description: "Hot meals, delivered fast.", mark: "◆" },
-  { id: "seller", label: "Sell food", description: "Your kitchen, more orders.", mark: "●" },
-  { id: "rider", label: "Deliver", description: "Earn on your schedule.", mark: "▲" },
+  { id: "buyer", label: "Order food", description: "Hot meals, delivered fast.", icon: ShoppingBag02Icon },
+  { id: "seller", label: "Sell food", description: "Your kitchen, more orders.", icon: Store01Icon },
+  { id: "rider", label: "Deliver", description: "Earn on your schedule.", icon: DeliveryBox01Icon },
 ];
 
 export default function ChooseRole() {
@@ -28,33 +30,30 @@ export default function ChooseRole() {
   return (
     <SafeAreaView className="flex-1 bg-ink" edges={["top", "bottom"]}>
       <View className="flex-1 px-6 pt-8">
-        <>
-          <Text className="text-white/50 text-[11px] font-bold tracking-[2px] uppercase text-center">Vento</Text>
-          <Text className="text-white text-[32px] font-bold tracking-tight text-center mt-2">What brings you?</Text>
-        </>
+        <Text className="text-white/50 text-[11px] font-inter-bold tracking-[2px] uppercase text-center">Vento</Text>
+        <Text className="text-white text-[30px] font-inter-bold tracking-tight text-center mt-2">What brings you?</Text>
 
         <View className="gap-3 mt-9">
-          {roles.map((r, i) => {
+          {roles.map((r) => {
             const active = selectedRole === r.id;
             return (
-              <Fragment key={r.id}>
-                <TouchableOpacity
-                  onPress={() => setSelectedRole(r.id)}
-                  activeOpacity={0.92}
-                  className={`flex-row items-center p-5 rounded-[24px] ${active ? "bg-white" : "bg-white/[0.06]"}`}
-                >
-                  <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-4 ${active ? "bg-ink" : "bg-white/10"}`}>
-                    <Text className={`text-lg ${active ? "text-white" : "text-white/50"}`}>{r.mark}</Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className={`text-[17px] font-bold tracking-tight ${active ? "text-ink" : "text-white"}`}>{r.label}</Text>
-                    <Text className={`text-[13px] mt-0.5 ${active ? "text-ink/60" : "text-white/50"}`}>{r.description}</Text>
-                  </View>
-                  <View className={`w-6 h-6 rounded-full items-center justify-center ${active ? "bg-ink" : "border-2 border-white/20"}`}>
-                    {active && <Text className="text-white text-[11px] font-bold">✓</Text>}
-                  </View>
-                </TouchableOpacity>
-              </Fragment>
+              <TouchableOpacity
+                key={r.id}
+                onPress={() => setSelectedRole(r.id)}
+                activeOpacity={0.92}
+                className={`flex-row items-center p-5 rounded-[24px] ${active ? "bg-white" : "bg-white/[0.06] border border-white/10"}`}
+              >
+                <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-4 ${active ? "bg-ink" : "bg-white/10"}`}>
+                  <Icon icon={r.icon} size={22} color={active ? "#fff" : "rgba(255,255,255,0.6)"} />
+                </View>
+                <View className="flex-1">
+                  <Text className={`text-[17px] font-inter-bold tracking-tight ${active ? "text-ink" : "text-white"}`}>{r.label}</Text>
+                  <Text className={`text-[13px] font-inter mt-0.5 ${active ? "text-ink/60" : "text-white/50"}`}>{r.description}</Text>
+                </View>
+                <View className={`w-6 h-6 rounded-full items-center justify-center ${active ? "bg-ink" : "border-2 border-white/20"}`}>
+                  {active && <Text className="text-white text-[11px] font-inter-bold">✓</Text>}
+                </View>
+              </TouchableOpacity>
             );
           })}
         </View>

@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { AppButton } from "../../src/components/ui/AppButton";
+import { TextField } from "../../src/components/ui/TextField";
+import { toast } from "sonner-native";
 // DEV-BYPASS: remove this import with the bypass (see src/lib/devAuthBypass.ts)
 import { DEV_AUTH_BYPASS, inferDevRole } from "../../src/lib/devAuthBypass";
 
@@ -38,6 +40,10 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!validateEmail(email)) return;
+    if (!password) {
+      toast.error("Enter your password");
+      return;
+    }
     setLoading(true);
     try {
       await signIn(email, password);
@@ -48,7 +54,7 @@ export default function Login() {
       else if (role === "delivery_agent") router.replace("/(delivery)/dashboard" as any);
       else router.replace("/(buyer)/browse" as any);
     } catch (error: any) {
-      Alert.alert("Login failed", error.message);
+      toast.error(error.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -59,85 +65,70 @@ export default function Login() {
       <SafeAreaView edges={["top"]} className="flex-1">
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View className="flex-1 px-6 pt-10 pb-8">
-            <>
-              <View className="w-11 h-11 rounded-full bg-white items-center justify-center mb-8">
-                <Text className="text-ink text-lg font-bold">V</Text>
-              </View>
-            </>
-            <>
-              <Text className="text-white text-[34px] font-bold tracking-tight leading-[36px]">Welcome back</Text>
-              <Text className="text-white/55 text-[16px] mt-2 mb-8">Dinner is 30 minutes away.</Text>
-            </>
+            <View className="w-11 h-11 rounded-full bg-white items-center justify-center mb-8">
+              <Text className="text-ink text-lg font-inter-bold">V</Text>
+            </View>
+            <Text className="text-white text-[32px] font-inter-bold tracking-tight leading-[34px]">
+              Welcome back
+            </Text>
+            <Text className="text-white/55 text-[15px] font-inter mt-2 mb-8">
+              Dinner is 30 minutes away.
+            </Text>
 
-            <>
-              <View>
-                <Text className="text-white text-[13px] font-bold mb-2">Email</Text>
-                <TextInput
-                  className={`w-full h-[56px] rounded-2xl border px-4 text-[16px] bg-white/[0.06] text-white ${emailError ? "border-[#FF8A80]" : "border-white/10"}`}
-                  placeholder="you@campus.edu"
-                  placeholderTextColor="rgba(255,255,255,0.35)"
-                  value={email}
-                  onChangeText={(v) => {
-                    setEmail(v);
-                    if (emailError) validateEmail(v);
-                  }}
-                  onBlur={() => validateEmail(email)}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                />
-                {emailError ? <Text className="text-[#FF8A80] text-xs mt-1.5">{emailError}</Text> : null}
-              </View>
-            </>
+            <TextField
+              label="Email"
+              value={email}
+              onChangeText={(v) => {
+                setEmail(v);
+                if (emailError) validateEmail(v);
+              }}
+              onBlur={() => validateEmail(email)}
+              placeholder="you@campus.edu"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              error={emailError}
+            />
 
-            <>
-              <View className="mt-4">
-                <Text className="text-white text-[13px] font-bold mb-2">Password</Text>
-                <View className="relative">
-                  <TextInput
-                    className="w-full h-[56px] rounded-2xl border border-white/10 px-4 pr-16 text-[16px] bg-white/[0.06] text-white"
-                    placeholder="••••••••"
-                    placeholderTextColor="rgba(255,255,255,0.35)"
-                    secureTextEntry={!showPassword}
-                    value={password}
-                    onChangeText={setPassword}
-                    autoComplete="current-password"
-                  />
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="absolute right-0 top-0 bottom-0 w-16 items-center justify-center">
-                    <Text className="text-white/45 text-[13px] font-bold">{showPassword ? "Hide" : "Show"}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </>
+            <View className="mt-4">
+              <TextField
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                placeholder="••••••••"
+                secure
+                showSecure={showPassword}
+                onToggleSecure={() => setShowPassword(!showPassword)}
+                autoComplete="current-password"
+              />
+            </View>
 
             <View className="flex-row justify-end mt-3 mb-7">
               <TouchableOpacity className="active:opacity-60">
-                <Text className="text-[14px] text-white font-semibold">Forgot password?</Text>
+                <Text className="text-[14px] text-white font-inter-semibold">Forgot password?</Text>
               </TouchableOpacity>
             </View>
 
-            <>
-              <AppButton title="Sign in" variant="white" loading={loading} onPress={handleLogin} />
-            </>
+            <AppButton title="Sign in" variant="white" loading={loading} onPress={handleLogin} />
 
             <View className="flex-row items-center my-7">
               <View className="flex-1 h-px bg-white/10" />
-              <Text className="px-3 text-[11px] text-white/40 font-bold tracking-[1px]">OR</Text>
+              <Text className="px-3 text-[11px] text-white/40 font-inter-bold tracking-[1px]">OR</Text>
               <View className="flex-1 h-px bg-white/10" />
             </View>
 
             <View className="flex-row gap-3">
               <TouchableOpacity className="flex-1 h-[52px] rounded-full bg-white/10 border border-white/15 items-center justify-center active:opacity-70">
-                <Text className="text-[14px] font-bold text-white">Google</Text>
+                <Text className="text-[14px] font-inter-bold text-white">Google</Text>
               </TouchableOpacity>
               <TouchableOpacity className="flex-1 h-[52px] rounded-full bg-white/10 border border-white/15 items-center justify-center active:opacity-70">
-                <Text className="text-[14px] font-bold text-white">Apple</Text>
+                <Text className="text-[14px] font-inter-bold text-white">Apple</Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity onPress={() => router.push("/auth/signup")} className="items-center mt-8 active:opacity-60">
-              <Text className="text-[14px] text-white/55">
-                Need an account? <Text className="font-bold text-white">Create one</Text>
+              <Text className="text-[14px] font-inter text-white/55">
+                Need an account? <Text className="font-inter-bold text-white">Create one</Text>
               </Text>
             </TouchableOpacity>
           </View>

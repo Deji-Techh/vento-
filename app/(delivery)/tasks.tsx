@@ -4,10 +4,18 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Alert,
   ActivityIndicator,
+  Platform,
 } from "react-native";
-import { Package, CheckCircle } from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
+import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
+import { Icon } from "../../src/components/ui/Icon";
+import {
+  Package01Icon,
+  CheckmarkCircle01Icon,
+  DeliveryBox01Icon,
+} from "../../src/components/icons";
 
 const mockActiveDeliveries = [
   {
@@ -54,23 +62,26 @@ const mockCompletedDeliveries = [
   },
 ];
 
-const statusChip: Record<string, string> = {
-  assigned: "bg-[#EDEDF7]",
-  heading_to_seller: "bg-[#E8EDFF]",
-  picked_up: "bg-[#FFF3D6]",
-  on_the_way: "bg-[#E8EDFF]",
-  delivered: "bg-[#E3F2E8]",
-  cancelled: "bg-[#FDE8E4]",
+type ChipTone = "neutral" | "success" | "warning" | "info" | "danger";
+
+const statusTone = (status: string): ChipTone => {
+  switch (status) {
+    case "delivered":
+      return "success";
+    case "picked_up":
+      return "warning";
+    case "heading_to_seller":
+    case "on_the_way":
+    case "assigned":
+      return "info";
+    case "cancelled":
+      return "danger";
+    default:
+      return "neutral";
+  }
 };
 
-const statusText: Record<string, string> = {
-  assigned: "#1B1B8F",
-  heading_to_seller: "#1B1B8F",
-  picked_up: "#8A5A00",
-  on_the_way: "#1B1B8F",
-  delivered: "#12805C",
-  cancelled: "#C0361F",
-};
+const statusLabel = (status: string) => status.replaceAll("_", " ");
 
 const getTimeAgo = (date: string) => {
   const minutes = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
@@ -100,7 +111,10 @@ export default function DeliveryTasks() {
         d.id === deliveryId ? { ...d, status: newStatus } : d
       )
     );
-    Alert.alert("Status updated", `Delivery marked as ${newStatus.replace("_", " ")}`);
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
+    toast.success(`Delivery marked as ${statusLabel(newStatus)}`);
   };
 
   const renderDeliveryCard = (delivery: any, showActions: boolean) => {
@@ -113,45 +127,36 @@ export default function DeliveryTasks() {
     return (
       <View
         key={delivery.id}
-        className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]"
+        className="bg-white rounded-[24px] p-6 border border-border"
       >
         <View className="flex-row items-start justify-between mb-3 gap-2">
           <View className="flex-1 flex-row items-center gap-2.5">
-            <View className="w-12 h-12 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-              <Package color="#1B1B8F" size={20} />
+            <View className="w-12 h-12 rounded-full bg-cream border border-border items-center justify-center">
+              <Icon icon={Package01Icon} size={20} color="#0A0A0E" />
             </View>
             <View className="flex-1">
-              <Text className="font-bold text-ink">
+              <Text className="font-inter-bold text-ink">
                 #{delivery.order_id.slice(0, 8)}
               </Text>
-              <Text className="text-xs text-ink/55 mt-0.5" numberOfLines={1}>
+              <Text className="text-[12px] font-inter text-ink/55 mt-0.5" numberOfLines={1}>
                 {itemNames.join(", ")}
               </Text>
             </View>
           </View>
-          <View
-            className={`px-2.5 py-1.5 rounded-full ${statusChip[delivery.status] || statusChip.assigned}`}
-          >
-            <Text
-              className="text-[11px] font-bold capitalize"
-              style={{ color: statusText[delivery.status] || statusText.assigned }}
-            >
-              {delivery.status.replaceAll("_", " ")}
-            </Text>
-          </View>
+          <StatusChip label={statusLabel(delivery.status)} tone={statusTone(delivery.status)} />
         </View>
 
-        <View className="flex-row items-center justify-between bg-[#FAF5EA] border border-[#E7E0D2] rounded-2xl px-4 py-3 mb-3">
-          <Text className="text-sm text-ink/55 flex-1" numberOfLines={1}>
+        <View className="flex-row items-center justify-between bg-cream border border-border rounded-[20px] px-4 py-3 mb-3">
+          <Text className="text-[13px] font-inter text-ink/55 flex-1" numberOfLines={1}>
             {order?.delivery_address}
           </Text>
-          <Text className="text-base font-bold text-[#1B1B8F] ml-2">
+          <Text className="text-[16px] font-inter-bold text-ink ml-2">
             ₦{delivery.delivery_fee}
           </Text>
         </View>
 
         <View className="flex-row items-center justify-between">
-          <Text className="text-xs text-ink/55">
+          <Text className="text-[12px] font-inter text-ink/55">
             {getTimeAgo(delivery.created_at)}
           </Text>
           {showActions && (
@@ -161,10 +166,11 @@ export default function DeliveryTasks() {
                   onPress={() =>
                     updateDeliveryStatus(delivery.id, "picked_up")
                   }
+                  activeOpacity={0.85}
                   className="bg-ink px-4 h-11 rounded-full flex-row items-center gap-1.5"
                 >
-                  <CheckCircle color="#FFFFFF" size={14} />
-                  <Text className="text-white text-xs font-bold">
+                  <Icon icon={CheckmarkCircle01Icon} size={14} color="#fff" />
+                  <Text className="text-white text-[12px] font-inter-bold">
                     Picked Up
                   </Text>
                 </TouchableOpacity>
@@ -174,10 +180,11 @@ export default function DeliveryTasks() {
                   onPress={() =>
                     updateDeliveryStatus(delivery.id, "delivered")
                   }
+                  activeOpacity={0.85}
                   className="bg-ink px-4 h-11 rounded-full flex-row items-center gap-1.5"
                 >
-                  <CheckCircle color="#FFFFFF" size={14} />
-                  <Text className="text-white text-xs font-bold">
+                  <Icon icon={CheckmarkCircle01Icon} size={14} color="#fff" />
+                  <Text className="text-white text-[12px] font-inter-bold">
                     Delivered
                   </Text>
                 </TouchableOpacity>
@@ -191,8 +198,8 @@ export default function DeliveryTasks() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
-        <ActivityIndicator size="large" color="#1B1B8F" />
+      <View className="flex-1 items-center justify-center bg-cream">
+        <ActivityIndicator size="large" color="#0A0A0E" />
       </View>
     );
   }
@@ -201,27 +208,26 @@ export default function DeliveryTasks() {
     activeTab === "active" ? activeDeliveries : completedDeliveries;
 
   return (
-    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14" contentContainerStyle={{ paddingBottom: 120 }}>
+    <ScrollView className="flex-1 bg-cream px-5 pt-14" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
       <View className="mb-6">
-        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
-          Tasks
-        </Text>
-        <Text className="text-[28px] font-bold text-ink mt-1">Deliveries</Text>
-        <Text className="text-sm text-ink/55 mt-1">
+        <Eyebrow>Tasks</Eyebrow>
+        <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">Deliveries</Text>
+        <Text className="text-[13px] font-inter text-ink/55 mt-1">
           Track and manage your delivery tasks
         </Text>
       </View>
 
-      {/* Tabs — pill buttons h-14 rounded-full */}
-      <View className="flex-row gap-2 mb-6 bg-white border border-[#E7E0D2] rounded-full p-1.5">
+      {/* Tabs */}
+      <View className="flex-row gap-2 mb-6 bg-white border border-border rounded-full p-1.5">
         <TouchableOpacity
           onPress={() => setActiveTab("active")}
+          activeOpacity={0.85}
           className={`flex-1 h-14 rounded-full items-center justify-center ${
             activeTab === "active" ? "bg-ink" : "bg-transparent"
           }`}
         >
           <Text
-            className={`font-bold text-sm ${
+            className={`font-inter-bold text-[13px] ${
               activeTab === "active" ? "text-white" : "text-ink"
             }`}
           >
@@ -230,12 +236,13 @@ export default function DeliveryTasks() {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setActiveTab("completed")}
+          activeOpacity={0.85}
           className={`flex-1 h-14 rounded-full items-center justify-center ${
             activeTab === "completed" ? "bg-ink" : "bg-transparent"
           }`}
         >
           <Text
-            className={`font-bold text-sm ${
+            className={`font-inter-bold text-[13px] ${
               activeTab === "completed" ? "text-white" : "text-ink"
             }`}
           >
@@ -246,11 +253,11 @@ export default function DeliveryTasks() {
 
       {/* Delivery List */}
       {displayDeliveries.length === 0 ? (
-        <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
-          <View className="w-16 h-16 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-            <Package color="#6E6A75" size={22} />
+        <View className="bg-white rounded-[24px] p-8 items-center border border-border">
+          <View className="w-16 h-16 rounded-full bg-cream border border-border items-center justify-center">
+            <Icon icon={DeliveryBox01Icon} size={22} color="rgba(10,10,14,0.4)" />
           </View>
-          <Text className="text-ink/55 mt-3 font-semibold">No deliveries found</Text>
+          <Text className="text-ink/55 mt-3 font-inter-semibold">No deliveries found</Text>
         </View>
       ) : (
         <View className="gap-4">

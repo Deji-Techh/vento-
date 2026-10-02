@@ -5,8 +5,19 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from "react-native";
-import { Navigation, RefreshCw, Map as MapIcon } from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
+import { AppButton } from "../../src/components/ui/AppButton";
+import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
+import { Icon } from "../../src/components/ui/Icon";
+import {
+  MapPinIcon,
+  Navigation01Icon,
+  RefreshIcon,
+  Package01Icon,
+} from "../../src/components/icons";
 
 const mockActiveDelivery = {
   id: "delivery-001",
@@ -14,6 +25,8 @@ const mockActiveDelivery = {
   status: "heading_to_seller",
   delivery_fee: 500,
 };
+
+const statusLabel = (status: string) => status.replaceAll("_", " ");
 
 export default function DeliveryMap() {
   const [loading, setLoading] = useState(true);
@@ -27,113 +40,118 @@ export default function DeliveryMap() {
     }, 800);
   }, []);
 
+  const toggleTracking = () => {
+    const next = !isTracking;
+    setIsTracking(next);
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    }
+    toast.success(next ? "Location tracking started" : "Location tracking stopped");
+  };
+
+  const refreshLocation = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    }
+    toast.success("Location refreshed");
+  };
+
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
-        <ActivityIndicator size="large" color="#1B1B8F" />
+      <View className="flex-1 items-center justify-center bg-cream">
+        <ActivityIndicator size="large" color="#0A0A0E" />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14" contentContainerStyle={{ paddingBottom: 120, gap: 16 }}>
+    <ScrollView className="flex-1 bg-cream px-5 pt-14" contentContainerStyle={{ paddingBottom: 120, gap: 16 }} showsVerticalScrollIndicator={false}>
       <View className="flex-row items-center justify-between">
         <View className="flex-1 pr-3">
-          <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
-            Route
-          </Text>
-          <Text className="text-[28px] font-bold text-ink mt-1">Live Map</Text>
-          <Text className="text-sm text-ink/55">
+          <Eyebrow>Route</Eyebrow>
+          <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">Live Map</Text>
+          <Text className="text-[13px] font-inter text-ink/55">
             Track your delivery route in real-time
           </Text>
         </View>
         <View className="flex-row items-center gap-2">
-          <View className={`px-3 py-1.5 rounded-full border ${isTracking ? "bg-[#E3F2E8] border-[#E3F2E8]" : "bg-white border-[#E7E0D2]"}`}>
-            <Text className="text-[11px] font-bold" style={{ color: isTracking ? "#12805C" : "#6E6A75" }}>
-              {isTracking ? "Tracking" : "Paused"}
-            </Text>
-          </View>
-          <TouchableOpacity className="w-11 h-11 rounded-full bg-white border border-[#E7E0D2] items-center justify-center">
-            <RefreshCw color="#0A0A0E" size={16} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Map Placeholder */}
-      <View className="bg-white rounded-[28px] overflow-hidden border border-[#E7E0D2]" style={{ height: 380 }}>
-        <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
-          <View className="w-16 h-16 rounded-full bg-white border border-[#E7E0D2] items-center justify-center mb-4">
-            <MapIcon color="#1B1B8F" size={22} />
-          </View>
-          <Text className="text-ink font-bold">Map View</Text>
-          <Text className="text-sm text-ink/55 mt-1">
-            Requires react-native-maps
-          </Text>
-        </View>
-      </View>
-
-      {/* Location Controls */}
-      <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
-        <View className="flex-row items-center gap-2 mb-3">
-          <View className="w-9 h-9 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-            <Navigation color="#1B1B8F" size={16} />
-          </View>
-          <Text className="font-bold text-ink">Location Tracking</Text>
-        </View>
-        <View className="flex-row items-center justify-between gap-3">
-          <View>
-            <Text className="text-sm font-bold text-ink">Your Location</Text>
-            <Text className="text-xs text-ink/55 mt-0.5">
-              6.4541, 3.3947
-            </Text>
-          </View>
+          <StatusChip label={isTracking ? "Tracking" : "Paused"} tone={isTracking ? "success" : "neutral"} />
           <TouchableOpacity
-            onPress={() => setIsTracking(!isTracking)}
-            className={`px-5 h-14 rounded-full items-center justify-center ${
-              isTracking ? "bg-white border border-[#E7E0D2]" : "bg-ink"
-            }`}
+            onPress={refreshLocation}
+            activeOpacity={0.85}
+            className="w-11 h-11 rounded-full bg-white border border-border items-center justify-center"
           >
-            <Text className={`text-sm font-bold ${isTracking ? "text-ink" : "text-white"}`}>
-              {isTracking ? "Stop Tracking" : "Start Tracking"}
-            </Text>
+            <Icon icon={RefreshIcon} size={16} color="#0A0A0E" />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Active Delivery Info */}
-      {activeDelivery ? (
-        <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
-          <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-3">
-            Active Delivery
+      {/* Map placeholder */}
+      <View className="bg-white rounded-[28px] overflow-hidden border border-border" style={{ height: 380 }}>
+        <View className="flex-1 items-center justify-center bg-cream px-8">
+          <View className="w-16 h-16 rounded-full bg-white border border-border items-center justify-center mb-4">
+            <Icon icon={MapPinIcon} size={22} color="#0A0A0E" />
+          </View>
+          <Text className="text-ink font-inter-bold">Map view</Text>
+          <Text className="text-[13px] font-inter text-ink/55 mt-1 text-center">
+            Live route preview will appear here when tracking starts
           </Text>
-          <View className="bg-[#FAF5EA] border border-[#E7E0D2] rounded-2xl p-4 gap-2.5">
+        </View>
+      </View>
+
+      {/* Location controls */}
+      <View className="bg-white rounded-[24px] p-6 border border-border">
+        <View className="flex-row items-center gap-2 mb-4">
+          <View className="w-9 h-9 rounded-full bg-cream border border-border items-center justify-center">
+            <Icon icon={Navigation01Icon} size={16} color="#0A0A0E" />
+          </View>
+          <Text className="font-inter-bold text-ink">Location tracking</Text>
+        </View>
+        <View className="mb-4">
+          <Text className="text-[13px] font-inter-bold text-ink">Your location</Text>
+          <Text className="text-[12px] font-inter text-ink/55 mt-0.5">
+            6.4541, 3.3947
+          </Text>
+        </View>
+        <AppButton
+          title={isTracking ? "Stop Tracking" : "Start Tracking"}
+          variant={isTracking ? "ghost-light" : "ink"}
+          onPress={toggleTracking}
+        />
+      </View>
+
+      {/* Active delivery info */}
+      {activeDelivery ? (
+        <View className="bg-white rounded-[24px] p-6 border border-border">
+          <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55 mb-3">
+            Active delivery
+          </Text>
+          <View className="bg-cream border border-border rounded-[20px] p-4 gap-2.5">
             <View className="flex-row justify-between">
-              <Text className="text-sm text-ink/55">Order ID</Text>
-              <Text className="text-sm font-bold text-ink">
+              <Text className="text-[13px] font-inter text-ink/55">Order ID</Text>
+              <Text className="text-[13px] font-inter-bold text-ink">
                 #{activeDelivery.order_id.slice(0, 8)}
               </Text>
             </View>
             <View className="flex-row justify-between items-center">
-              <Text className="text-sm text-ink/55">Status</Text>
-              <View className="bg-[#E8EDFF] px-2.5 py-1 rounded-full">
-                <Text className="text-[11px] font-bold text-[#1B1B8F] capitalize">
-                  {activeDelivery.status.replaceAll("_", " ")}
-                </Text>
-              </View>
+              <Text className="text-[13px] font-inter text-ink/55">Status</Text>
+              <StatusChip label={statusLabel(activeDelivery.status)} tone="info" />
             </View>
             <View className="flex-row justify-between">
-              <Text className="text-sm text-ink/55">Delivery Fee</Text>
-              <Text className="text-sm font-bold text-[#1B1B8F]">
+              <Text className="text-[13px] font-inter text-ink/55">Delivery fee</Text>
+              <Text className="text-[13px] font-inter-bold text-ink">
                 ₦{activeDelivery.delivery_fee}
               </Text>
             </View>
           </View>
         </View>
       ) : (
-        <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
-          <Navigation color="#6E6A75" size={22} />
-          <Text className="text-ink font-bold mt-3">No active delivery</Text>
-          <Text className="text-sm text-ink/55 mt-1">
+        <View className="bg-white rounded-[24px] p-8 items-center border border-border">
+          <View className="w-12 h-12 rounded-full bg-cream border border-border items-center justify-center">
+            <Icon icon={Package01Icon} size={20} color="rgba(10,10,14,0.4)" />
+          </View>
+          <Text className="text-ink font-inter-bold mt-3">No active delivery</Text>
+          <Text className="text-[13px] font-inter text-ink/55 mt-1 text-center">
             Start a delivery to see the route on the map
           </Text>
         </View>

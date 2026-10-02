@@ -14,6 +14,8 @@ interface TextFieldProps {
   autoComplete?: string;
   onBlur?: () => void;
   dark?: boolean;
+  multiline?: boolean;
+  numberOfLines?: number;
 }
 
 // Single-line field. 56px, 20px radius, Inter. Error state in soft red.
@@ -31,6 +33,8 @@ export function TextField({
   autoComplete,
   onBlur,
   dark = true,
+  multiline,
+  numberOfLines,
 }: TextFieldProps) {
   const shell = dark ? "bg-white/[0.06] border-white/10" : "bg-ink/[0.04] border-ink/10";
   const text = dark ? "text-white" : "text-ink";
@@ -42,7 +46,7 @@ export function TextField({
       {label ? <Text className={`${labelColor} text-[13px] font-inter-bold mb-2`}>{label}</Text> : null}
       <View className="relative">
         <TextInput
-          className={`w-full h-[56px] rounded-[20px] border px-4 text-[16px] font-inter ${shell} ${text} ${
+          className={`w-full ${multiline ? "min-h-[120px] py-4" : "h-[56px]"} rounded-[20px] border px-4 text-[16px] font-inter ${shell} ${text} ${
             error ? "border-[#FF8A80]" : ""
           } ${secure ? "pr-16" : ""}`}
           placeholder={placeholder}
@@ -54,6 +58,9 @@ export function TextField({
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           autoComplete={autoComplete as any}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          textAlignVertical={multiline ? "top" : "auto"}
         />
         {secure ? (
           <TouchableOpacity

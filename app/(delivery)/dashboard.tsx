@@ -5,18 +5,23 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
-  Alert,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { useAuth } from "../../src/contexts/AuthContext";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
+import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
+import { Icon } from "../../src/components/ui/Icon";
 import {
-  Package,
-  Wallet,
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  Navigation,
-} from "lucide-react-native";
+  Navigation01Icon,
+  Wallet01Icon,
+  Package01Icon,
+  Clock01Icon,
+  ChartLineIcon,
+  CheckmarkCircle01Icon,
+  DeliveryBox01Icon,
+} from "../../src/components/icons";
 
 const mockAgent = {
   id: "agent-001",
@@ -42,23 +47,26 @@ const mockActiveDeliveries = [
   },
 ];
 
-const statusChip: Record<string, string> = {
-  assigned: "bg-[#EDEDF7]",
-  heading_to_seller: "bg-[#E8EDFF]",
-  picked_up: "bg-[#FFF3D6]",
-  on_the_way: "bg-[#E8EDFF]",
-  delivered: "bg-[#E3F2E8]",
-  cancelled: "bg-[#FDE8E4]",
+type ChipTone = "neutral" | "success" | "warning" | "info" | "danger";
+
+const statusTone = (status: string): ChipTone => {
+  switch (status) {
+    case "delivered":
+      return "success";
+    case "picked_up":
+      return "warning";
+    case "heading_to_seller":
+    case "on_the_way":
+    case "assigned":
+      return "info";
+    case "cancelled":
+      return "danger";
+    default:
+      return "neutral";
+  }
 };
 
-const statusText: Record<string, string> = {
-  assigned: "#1B1B8F",
-  heading_to_seller: "#1B1B8F",
-  picked_up: "#8A5A00",
-  on_the_way: "#1B1B8F",
-  delivered: "#12805C",
-  cancelled: "#C0361F",
-};
+const statusLabel = (status: string) => status.replaceAll("_", " ");
 
 const getTimeAgo = (date: string) => {
   const minutes = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
@@ -66,6 +74,12 @@ const getTimeAgo = (date: string) => {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
+};
+
+const buzz = () => {
+  if (Platform.OS !== "web") {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+  }
 };
 
 export default function DeliveryDashboard() {
@@ -88,12 +102,16 @@ export default function DeliveryDashboard() {
     const newStatus = !isOnline;
     setIsOnline(newStatus);
     if (agent) setAgent({ ...agent, is_online: newStatus });
-    Alert.alert(
-      newStatus ? "You are now online" : "You are now offline",
-      newStatus
-        ? "You can receive new delivery assignments"
-        : "You won't receive new assignments"
-    );
+    buzz();
+    if (newStatus) {
+      toast.success("You are now online", {
+        description: "You can receive new delivery assignments",
+      });
+    } else {
+      toast.success("You are now offline", {
+        description: "You won't receive new assignments",
+      });
+    }
   };
 
   const updateDeliveryStatus = (deliveryId: string, newStatus: string) => {
@@ -102,46 +120,52 @@ export default function DeliveryDashboard() {
         d.id === deliveryId ? { ...d, status: newStatus } : d
       )
     );
-    Alert.alert("Status updated", `Delivery marked as ${newStatus.replace("_", " ")}`);
+    buzz();
+    toast.success(`Delivery marked as ${statusLabel(newStatus)}`);
   };
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
-        <ActivityIndicator size="large" color="#1B1B8F" />
+      <View className="flex-1 items-center justify-center bg-cream">
+        <ActivityIndicator size="large" color="#0A0A0E" />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-[#FAF5EA]" contentContainerStyle={{ paddingBottom: 120 }}>
-      {/* Status card — white */}
+    <ScrollView className="flex-1 bg-cream" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      {/* Availability hero */}
       <View className="px-5 pt-14">
-        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-3">
-          Rider Dashboard
+        <Eyebrow>Rider dashboard</Eyebrow>
+        <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">
+          Deliveries
         </Text>
-        <View className="bg-white rounded-[28px] p-6 border border-[#E7E0D2]">
+        <View className="bg-white rounded-[28px] p-6 border border-border mt-4">
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
-              <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">Availability</Text>
-              <Text className="text-2xl font-bold text-ink mt-1">Deliveries</Text>
+              <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55">
+                Availability
+              </Text>
               <View className="flex-row items-center mt-3">
-                <View className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border ${isOnline ? "bg-[#E3F2E8] border-[#E3F2E8]" : "bg-[#FAF5EA] border-[#E7E0D2]"}`}>
-                  <View className={`w-2 h-2 rounded-full ${isOnline ? "bg-[#12805C]" : "bg-[#B9B4C0]"}`} />
-                  <Text className="text-[11px] font-bold tracking-[1px] text-ink">
+                <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-ink/5">
+                  <View className={`w-2 h-2 rounded-full ${isOnline ? "bg-success" : "bg-ink/30"}`} />
+                  <Text className="text-[11px] font-inter-bold tracking-[1px] text-ink">
                     {isOnline ? "ONLINE" : "OFFLINE"}
                   </Text>
                 </View>
               </View>
+              <Text className="text-[13px] font-inter text-ink/55 mt-2">
+                {isOnline ? "You can receive new assignments" : "Go online to receive assignments"}
+              </Text>
             </View>
             <View className="items-center gap-2">
-              <View className="w-14 h-14 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-                <Navigation color="#1B1B8F" size={22} />
+              <View className="w-14 h-14 rounded-full bg-cream border border-border items-center justify-center">
+                <Icon icon={Navigation01Icon} size={22} color="#0A0A0E" />
               </View>
               <Switch
                 value={isOnline}
                 onValueChange={toggleOnlineStatus}
-                trackColor={{ true: "#1B1B8F", false: "#D8D2C4" }}
+                trackColor={{ true: "#0A0A0E", false: "#E7E0D2" }}
                 thumbColor="#FFFFFF"
               />
             </View>
@@ -149,60 +173,60 @@ export default function DeliveryDashboard() {
         </View>
       </View>
 
-      {/* 2x2 stat white cards */}
+      {/* 2x2 stat cards */}
       <View className="px-5 mt-4 flex-row gap-3">
-        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
-          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
-            <Wallet color="#1B1B8F" size={20} />
+        <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
+          <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center mb-2">
+            <Icon icon={Wallet01Icon} size={20} color="#0A0A0E" />
           </View>
-          <Text className="text-xs text-ink/55">Total Earnings</Text>
-          <Text className="text-lg font-bold text-ink mt-0.5">
+          <Text className="text-[12px] font-inter text-ink/55">Total earnings</Text>
+          <Text className="text-[18px] font-inter-bold text-ink mt-0.5">
             ₦{(agent?.total_earnings || 0).toLocaleString()}
           </Text>
         </View>
-        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
-          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
-            <Package color="#12805C" size={20} />
+        <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
+          <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center mb-2">
+            <Icon icon={Package01Icon} size={20} color="#12805C" />
           </View>
-          <Text className="text-xs text-ink/55">Completed</Text>
-          <Text className="text-lg font-bold text-ink mt-0.5">
+          <Text className="text-[12px] font-inter text-ink/55">Completed</Text>
+          <Text className="text-[18px] font-inter-bold text-ink mt-0.5">
             {agent?.completed_deliveries || 0}
           </Text>
         </View>
       </View>
       <View className="px-5 mt-3 flex-row gap-3">
-        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
-          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
-            <Clock color="#1B1B8F" size={20} />
+        <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
+          <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center mb-2">
+            <Icon icon={Clock01Icon} size={20} color="#0A0A0E" />
           </View>
-          <Text className="text-xs text-ink/55">Active</Text>
-          <Text className="text-lg font-bold text-ink mt-0.5">
+          <Text className="text-[12px] font-inter text-ink/55">Active</Text>
+          <Text className="text-[18px] font-inter-bold text-ink mt-0.5">
             {activeDeliveries.length}
           </Text>
         </View>
-        <View className="flex-1 bg-white rounded-[26px] p-5 border border-[#E7E0D2]">
-          <View className="w-11 h-11 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-2">
-            <TrendingUp color="#1B1B8F" size={20} />
+        <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
+          <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center mb-2">
+            <Icon icon={ChartLineIcon} size={20} color="#0A0A0E" />
           </View>
-          <Text className="text-xs text-ink/55">Status</Text>
-          <View className={`self-start mt-1.5 px-2.5 py-1 rounded-full ${agent?.is_active ? "bg-[#E3F2E8]" : "bg-[#FAF5EA] border border-[#E7E0D2]"}`}>
-            <Text className="text-[11px] font-bold" style={{ color: agent?.is_active ? "#12805C" : "#6E6A75" }}>
-              {agent?.is_active ? "Active" : "Inactive"}
-            </Text>
+          <Text className="text-[12px] font-inter text-ink/55">Status</Text>
+          <View className="mt-1.5 self-start">
+            <StatusChip label={agent?.is_active ? "Active" : "Inactive"} tone={agent?.is_active ? "success" : "neutral"} />
           </View>
         </View>
       </View>
 
-      {/* Active delivery white cards */}
+      {/* Active deliveries */}
       <View className="px-5 mt-8">
-        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-4">Active Deliveries</Text>
+        <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/55 mb-4">
+          Active deliveries
+        </Text>
         {activeDeliveries.length === 0 ? (
-          <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
-            <View className="w-16 h-16 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-              <Package color="#6E6A75" size={22} />
+          <View className="bg-white rounded-[24px] p-8 items-center border border-border">
+            <View className="w-16 h-16 rounded-full bg-cream border border-border items-center justify-center">
+              <Icon icon={DeliveryBox01Icon} size={22} color="rgba(10,10,14,0.4)" />
             </View>
-            <Text className="text-ink font-bold mt-3">No active deliveries</Text>
-            <Text className="text-sm text-ink/55 mt-1 text-center">
+            <Text className="text-ink font-inter-bold mt-3">No active deliveries</Text>
+            <Text className="text-[13px] font-inter text-ink/55 mt-1 text-center">
               {isOnline
                 ? "New deliveries will appear here when assigned"
                 : "Go online to receive delivery assignments"}
@@ -220,45 +244,36 @@ export default function DeliveryDashboard() {
               return (
                 <View
                   key={delivery.id}
-                  className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]"
+                  className="bg-white rounded-[24px] p-6 border border-border"
                 >
                   <View className="flex-row items-start justify-between mb-3 gap-2">
                     <View className="flex-1 flex-row items-center gap-2.5">
-                      <View className="w-12 h-12 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-                        <Package color="#1B1B8F" size={20} />
+                      <View className="w-12 h-12 rounded-full bg-cream border border-border items-center justify-center">
+                        <Icon icon={Package01Icon} size={20} color="#0A0A0E" />
                       </View>
                       <View className="flex-1">
-                        <Text className="font-bold text-ink">
+                        <Text className="font-inter-bold text-ink">
                           #{delivery.order_id.slice(0, 8)}
                         </Text>
-                        <Text className="text-xs text-ink/55 mt-0.5" numberOfLines={1}>
+                        <Text className="text-[12px] font-inter text-ink/55 mt-0.5" numberOfLines={1}>
                           {itemNames.join(", ")}
                         </Text>
                       </View>
                     </View>
-                    <View
-                      className={`px-2.5 py-1.5 rounded-full ${statusChip[delivery.status] || statusChip.assigned}`}
-                    >
-                      <Text
-                        className="text-[11px] font-bold capitalize"
-                        style={{ color: statusText[delivery.status] || statusText.assigned }}
-                      >
-                        {delivery.status.replaceAll("_", " ")}
-                      </Text>
-                    </View>
+                    <StatusChip label={statusLabel(delivery.status)} tone={statusTone(delivery.status)} />
                   </View>
 
-                  <View className="flex-row items-center justify-between bg-[#FAF5EA] border border-[#E7E0D2] rounded-2xl px-4 py-3 mb-3">
-                    <Text className="text-sm text-ink/55 flex-1" numberOfLines={1}>
+                  <View className="flex-row items-center justify-between bg-cream border border-border rounded-[20px] px-4 py-3 mb-3">
+                    <Text className="text-[13px] font-inter text-ink/55 flex-1" numberOfLines={1}>
                       {order?.delivery_address}
                     </Text>
-                    <Text className="text-base font-bold text-[#1B1B8F] ml-2">
+                    <Text className="text-[16px] font-inter-bold text-ink ml-2">
                       ₦{delivery.delivery_fee}
                     </Text>
                   </View>
 
                   <View className="flex-row items-center justify-between">
-                    <Text className="text-xs text-ink/55">
+                    <Text className="text-[12px] font-inter text-ink/55">
                       {getTimeAgo(delivery.created_at)}
                     </Text>
                     <View className="flex-row gap-2">
@@ -267,10 +282,11 @@ export default function DeliveryDashboard() {
                           onPress={() =>
                             updateDeliveryStatus(delivery.id, "picked_up")
                           }
+                          activeOpacity={0.85}
                           className="bg-ink px-4 h-11 rounded-full flex-row items-center gap-1.5"
                         >
-                          <CheckCircle color="#FFFFFF" size={14} />
-                          <Text className="text-white text-xs font-bold">
+                          <Icon icon={CheckmarkCircle01Icon} size={14} color="#fff" />
+                          <Text className="text-white text-[12px] font-inter-bold">
                             Picked Up
                           </Text>
                         </TouchableOpacity>
@@ -280,10 +296,11 @@ export default function DeliveryDashboard() {
                           onPress={() =>
                             updateDeliveryStatus(delivery.id, "delivered")
                           }
+                          activeOpacity={0.85}
                           className="bg-ink px-4 h-11 rounded-full flex-row items-center gap-1.5"
                         >
-                          <CheckCircle color="#FFFFFF" size={14} />
-                          <Text className="text-white text-xs font-bold">
+                          <Icon icon={CheckmarkCircle01Icon} size={14} color="#fff" />
+                          <Text className="text-white text-[12px] font-inter-bold">
                             Delivered
                           </Text>
                         </TouchableOpacity>

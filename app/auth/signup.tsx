@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { AppButton } from "../../src/components/ui/AppButton";
+import { TextField } from "../../src/components/ui/TextField";
+import { Icon } from "../../src/components/ui/Icon";
+import { ArrowLeft01Icon } from "../../src/components/icons";
+import { toast } from "sonner-native";
 
 export default function Signup() {
   const router = useRouter();
@@ -36,16 +40,14 @@ export default function Signup() {
     setLoading(true);
     try {
       await signUp({ email: formData.email, password: formData.password, firstName: formData.firstName, lastName: formData.lastName });
-      Alert.alert("Welcome to Vento", "Your account is ready.", [{ text: "OK", onPress: () => router.replace("/auth/choose-role") }]);
+      toast.success("Welcome to Vento");
+      router.replace("/auth/choose-role");
     } catch (error: any) {
-      Alert.alert("Signup failed", error.message);
+      toast.error(error.message || "Signup failed");
     } finally {
       setLoading(false);
     }
   };
-
-  const input = (bad: boolean) =>
-    `w-full h-[56px] rounded-2xl border px-4 text-[16px] bg-white/[0.06] text-white ${bad ? "border-[#FF8A80]" : "border-white/10"}`;
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1 bg-ink">
@@ -53,49 +55,51 @@ export default function Signup() {
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View className="flex-1 px-6 pt-6 pb-8">
             <TouchableOpacity onPress={() => router.back()} className="w-11 h-11 rounded-full bg-white/10 items-center justify-center active:opacity-70">
-              <Text className="text-lg text-white">←</Text>
+              <Icon icon={ArrowLeft01Icon} size={20} color="#fff" />
             </TouchableOpacity>
-            <>
-              <Text className="text-white text-[34px] font-bold tracking-tight mt-6">Join Vento</Text>
-              <Text className="text-white/55 text-[16px] mt-1 mb-7">Two minutes. Then dinner.</Text>
-            </>
+            <Text className="text-white text-[32px] font-inter-bold tracking-tight mt-6">Join Vento</Text>
+            <Text className="text-white/55 text-[15px] font-inter mt-1 mb-7">Two minutes. Then dinner.</Text>
 
-            <>
-              <View className="flex-row gap-3">
-                <View className="flex-1">
-                  <TextInput className={input(!!errors.firstName)} placeholder="First name" placeholderTextColor="rgba(255,255,255,0.35)" value={formData.firstName} onChangeText={(v) => handleChange("firstName", v)} />
-                </View>
-                <View className="flex-1">
-                  <TextInput className={input(!!errors.lastName)} placeholder="Last name" placeholderTextColor="rgba(255,255,255,0.35)" value={formData.lastName} onChangeText={(v) => handleChange("lastName", v)} />
-                </View>
+            <View className="flex-row gap-3">
+              <View className="flex-1">
+                <TextField placeholder="First name" value={formData.firstName} onChangeText={(v) => handleChange("firstName", v)} error={errors.firstName} />
               </View>
-              <View className="mt-3">
-                <TextInput className={input(!!errors.email)} placeholder="Email address" placeholderTextColor="rgba(255,255,255,0.35)" keyboardType="email-address" autoCapitalize="none" value={formData.email} onChangeText={(v) => handleChange("email", v)} />
+              <View className="flex-1">
+                <TextField placeholder="Last name" value={formData.lastName} onChangeText={(v) => handleChange("lastName", v)} error={errors.lastName} />
               </View>
-              <View className="mt-3 relative">
-                <TextInput className={`${input(!!errors.password)} pr-16`} placeholder="Password (8+ characters)" placeholderTextColor="rgba(255,255,255,0.35)" secureTextEntry={!showPassword} value={formData.password} onChangeText={(v) => handleChange("password", v)} />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="absolute right-0 top-0 bottom-0 w-16 items-center justify-center">
-                  <Text className="text-white/45 text-[13px] font-bold">{showPassword ? "Hide" : "Show"}</Text>
-                </TouchableOpacity>
-              </View>
-            </>
+            </View>
+            <View className="mt-3">
+              <TextField placeholder="Email address" keyboardType="email-address" autoCapitalize="none" value={formData.email} onChangeText={(v) => handleChange("email", v)} error={errors.email} />
+            </View>
+            <View className="mt-3">
+              <TextField
+                placeholder="Password (8+ characters)"
+                secure
+                showSecure={showPassword}
+                onToggleSecure={() => setShowPassword(!showPassword)}
+                value={formData.password}
+                onChangeText={(v) => handleChange("password", v)}
+                error={errors.password}
+              />
+            </View>
 
             <TouchableOpacity onPress={() => handleChange("terms", !formData.terms)} className="flex-row items-center mt-5 active:opacity-70">
               <View className={`w-6 h-6 rounded-full items-center justify-center ${formData.terms ? "bg-white" : "border-2 border-white/25"}`}>
-                {formData.terms && <Text className="text-ink text-xs font-bold">✓</Text>}
+                {formData.terms && <Text className="text-ink text-xs font-inter-bold">✓</Text>}
               </View>
-              <Text className="text-[13px] text-white/60 ml-3 flex-1">
-                I agree to the <Text className="font-bold text-white">Terms</Text> and <Text className="font-bold text-white">Privacy Policy</Text>
+              <Text className="text-[13px] font-inter text-white/60 ml-3 flex-1">
+                I agree to the <Text className="font-inter-bold text-white">Terms</Text> and <Text className="font-inter-bold text-white">Privacy Policy</Text>
               </Text>
             </TouchableOpacity>
+            {errors.terms ? <Text className="text-[#FF8A80] text-xs font-inter-medium mt-1.5">{errors.terms}</Text> : null}
 
             <View className="mt-7">
               <AppButton title="Create account" variant="white" loading={loading} onPress={handleSignup} />
             </View>
 
             <TouchableOpacity onPress={() => router.push("/auth/login")} className="items-center mt-6 active:opacity-60">
-              <Text className="text-[14px] text-white/55">
-                Have an account? <Text className="font-bold text-white">Log in</Text>
+              <Text className="text-[14px] font-inter text-white/55">
+                Have an account? <Text className="font-inter-bold text-white">Log in</Text>
               </Text>
             </TouchableOpacity>
           </View>

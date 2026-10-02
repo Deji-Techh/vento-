@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  Switch,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Modal, Switch, ActivityIndicator, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
-import { Plus, Edit, Trash2, X, Camera, UtensilsCrossed } from "lucide-react-native";
+import { Image } from "expo-image";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
+import { TextField } from "../../src/components/ui/TextField";
+import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
+import { Icon } from "../../src/components/ui/Icon";
+import {
+  PlusSignIcon,
+  Edit02Icon,
+  Delete02Icon,
+  Camera01Icon,
+  Package01Icon,
+  ArrowLeft01Icon,
+} from "../../src/components/icons";
 
 const categories = [
   { key: "lunch", label: "Meals" },
@@ -80,12 +83,19 @@ export default function MenuManagement() {
     }, 800);
   }, [profile]);
 
+  const buzz = (ok: boolean) => {
+    if (Platform.OS !== "web") {
+      if (ok) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      else Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+    }
+  };
+
   const handleSubmit = () => {
     if (!formData.name || !formData.price) {
-      Alert.alert("Error", "Please fill in all required fields");
+      buzz(false);
+      toast.error("Add a name and price");
       return;
     }
-
     if (editingItem) {
       setFoodItems((prev) =>
         prev.map((item) =>
@@ -103,7 +113,8 @@ export default function MenuManagement() {
             : item
         )
       );
-      Alert.alert("Success", "Food item updated successfully!");
+      buzz(true);
+      toast.success("Item updated");
     } else {
       const newItem = {
         id: `food-${Date.now()}`,
@@ -117,46 +128,28 @@ export default function MenuManagement() {
         created_at: new Date().toISOString(),
       };
       setFoodItems((prev) => [newItem, ...prev]);
-      Alert.alert("Success", "Food item added successfully!");
+      buzz(true);
+      toast.success("Item added to menu");
     }
-
     setDialogOpen(false);
     resetForm();
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
-          setFoodItems((prev) => prev.filter((item) => item.id !== id));
-          Alert.alert("Success", "Food item deleted successfully!");
-        },
-      },
-    ]);
+    setFoodItems((prev) => prev.filter((item) => item.id !== id));
+    buzz(true);
+    toast.success("Item deleted");
   };
 
   const resetForm = () => {
-    setFormData({
-      name: "",
-      description: "",
-      price: "",
-      category: "lunch",
-      prep_time: "15",
-      available: true,
-    });
+    setFormData({ name: "", description: "", price: "", category: "lunch", prep_time: "15", available: true });
     setImagePreview(null);
     setEditingItem(null);
   };
 
   const toggleAvailability = (item: any) => {
-    setFoodItems((prev) =>
-      prev.map((i) =>
-        i.id === item.id ? { ...i, available: !i.available } : i
-      )
-    );
+    setFoodItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, available: !i.available } : i)));
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   };
 
   const openEditDialog = (item: any) => {
@@ -180,108 +173,87 @@ export default function MenuManagement() {
 
   if (loading && foodItems.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
-        <ActivityIndicator size="large" color="#1B1B8F" />
-      </View>
+      <SafeAreaView className="flex-1 bg-cream items-center justify-center" edges={["top"]}>
+        <ActivityIndicator size="large" color="#0A0A0E" />
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-[#FAF5EA]">
-      {/* Header */}
-      <View className="px-5 pt-14 pb-4 flex-row items-center justify-between">
+    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+      <View className="px-5 pt-4 pb-4 flex-row items-center justify-between">
         <View>
-          <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
-            Catalogue
-          </Text>
-          <Text className="text-[28px] font-bold text-ink mt-1">My Menu</Text>
-          <Text className="text-sm text-ink/55">{foodItems.length} items</Text>
+          <Eyebrow>Catalogue</Eyebrow>
+          <Text className="text-[28px] font-inter-bold text-ink mt-1 tracking-tight">My Menu</Text>
+          <Text className="text-[13px] font-inter text-ink/55">{foodItems.length} items</Text>
         </View>
         <TouchableOpacity
           onPress={openAddDialog}
           activeOpacity={0.85}
           className="flex-row items-center gap-2 px-5 h-14 rounded-full bg-ink"
         >
-          <Plus color="#FFFFFF" size={18} />
-          <Text className="text-white font-bold text-sm">Add Item</Text>
+          <Icon icon={PlusSignIcon} size={18} color="#fff" />
+          <Text className="text-white font-inter-bold text-[13px]">Add item</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Menu Items Grid */}
-      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         {foodItems.length === 0 ? (
-          <View className="bg-white rounded-[28px] p-8 items-center border border-[#E7E0D2]">
-            <View className="w-16 h-16 mb-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center">
-              <UtensilsCrossed color="#1B1B8F" size={22} />
+          <View className="bg-white rounded-[28px] p-8 items-center border border-border">
+            <View className="w-16 h-16 mb-4 rounded-full bg-cream border border-border items-center justify-center">
+              <Icon icon={Package01Icon} size={22} color="#1B1B8F" />
             </View>
-            <Text className="font-bold text-ink mb-2">
-              No menu items yet
-            </Text>
-            <Text className="text-ink/55 mb-4">
-              Add your first item to start selling
-            </Text>
+            <Text className="font-inter-bold text-ink mb-2">No menu items yet</Text>
+            <Text className="font-inter text-ink/55 mb-4 text-[13px]">Add your first item to start selling</Text>
             <AppButton title="Add First Item" variant="ink" onPress={openAddDialog} />
           </View>
         ) : (
           <View className="flex-row flex-wrap gap-3">
             {foodItems.map((item) => (
-              <View
-                key={item.id}
-                className="w-[48%] bg-white rounded-[26px] overflow-hidden border border-[#E7E0D2]"
-              >
-                <View className="aspect-square bg-[#FAF5EA] relative">
+              <View key={item.id} className="w-[48%] bg-white rounded-[24px] overflow-hidden border border-border">
+                <View className="bg-cream relative" style={{ aspectRatio: 1 }}>
                   {item.image_url ? (
-                    <Image
-                      source={{ uri: item.image_url }}
-                      className="w-full h-full"
-                      resizeMode="cover"
-                    />
+                    <Image source={{ uri: item.image_url }} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={200} />
                   ) : (
                     <View className="w-full h-full items-center justify-center">
-                      <UtensilsCrossed color="#1B1B8F" size={22} />
+                      <Icon icon={Package01Icon} size={22} color="#1B1B8F" />
                     </View>
                   )}
                   <View className="absolute top-2 right-2 flex-row gap-1.5">
                     <TouchableOpacity
                       onPress={() => openEditDialog(item)}
-                      className="w-9 h-9 bg-white rounded-full items-center justify-center border border-[#E7E0D2]"
+                      activeOpacity={0.85}
+                      className="w-9 h-9 bg-white rounded-full items-center justify-center border border-border"
                     >
-                      <Edit color="#0A0A0E" size={15} />
+                      <Icon icon={Edit02Icon} size={15} color="#0A0A0E" />
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => handleDelete(item.id)}
-                      className="w-9 h-9 bg-white rounded-full items-center justify-center border border-[#E7E0D2]"
+                      activeOpacity={0.85}
+                      className="w-9 h-9 bg-white rounded-full items-center justify-center border border-border"
                     >
-                      <Trash2 color="#C0361F" size={15} />
+                      <Icon icon={Delete02Icon} size={15} color="#D92D20" />
                     </TouchableOpacity>
                   </View>
                   {!item.available && (
                     <View className="absolute inset-0 bg-black/40 items-center justify-center">
                       <View className="px-3 py-1.5 rounded-full bg-white">
-                        <Text className="text-ink text-xs font-bold">
-                          Unavailable
-                        </Text>
+                        <Text className="text-ink text-xs font-inter-bold">Unavailable</Text>
                       </View>
                     </View>
                   )}
                 </View>
                 <View className="p-3.5">
-                  <Text className="font-bold text-ink text-sm" numberOfLines={1}>
+                  <Text className="font-inter-bold text-ink text-[13px]" numberOfLines={1}>
                     {item.name}
                   </Text>
-                  <Text className="text-[#1B1B8F] font-bold mt-1">
-                    ₦{item.price.toFixed(2)}
-                  </Text>
+                  <Text className="text-primary font-inter-bold mt-1">₦{item.price.toFixed(2)}</Text>
                   <View className="flex-row items-center justify-between mt-2">
-                    <View className="px-2.5 py-1 rounded-full bg-[#FAF5EA] border border-[#E7E0D2]">
-                      <Text className="text-[11px] font-bold text-ink capitalize">
-                        {item.category}
-                      </Text>
-                    </View>
+                    <StatusChip label={item.category} tone="neutral" />
                     <Switch
                       value={item.available}
                       onValueChange={() => toggleAvailability(item)}
-                      trackColor={{ true: "#1B1B8F", false: "#D8D2C4" }}
+                      trackColor={{ true: "#0A0A0E", false: "#D8D2C4" }}
                     />
                   </View>
                 </View>
@@ -291,7 +263,6 @@ export default function MenuManagement() {
         )}
       </ScrollView>
 
-      {/* Add/Edit Modal */}
       <Modal
         visible={dialogOpen}
         animationType="slide"
@@ -301,81 +272,56 @@ export default function MenuManagement() {
           resetForm();
         }}
       >
-        <View className="flex-1 bg-[#FAF5EA]">
-          {/* Modal Header */}
-          <View className="flex-row items-center justify-between px-5 pt-6 pb-4">
-            <Text className="text-xl font-bold text-ink">
-              {editingItem ? "Edit Item" : "Add New Item"}
+        <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+          <View className="flex-row items-center justify-between px-5 pt-4 pb-4">
+            <Text className="text-xl font-inter-bold text-ink tracking-tight">
+              {editingItem ? "Edit item" : "Add new item"}
             </Text>
             <TouchableOpacity
               onPress={() => {
                 setDialogOpen(false);
                 resetForm();
               }}
-              className="w-10 h-10 rounded-full bg-white border border-[#E7E0D2] items-center justify-center"
+              activeOpacity={0.85}
+              className="w-10 h-10 rounded-full bg-white border border-border items-center justify-center"
             >
-              <X color="#0A0A0E" size={16} />
+              <Icon icon={ArrowLeft01Icon} size={16} color="#0A0A0E" />
             </TouchableOpacity>
           </View>
 
-          <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }}>
+          <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
             <View className="gap-4">
-              {/* Image Upload */}
-              <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-4">
-                <TouchableOpacity className="border-2 border-dashed rounded-[20px] p-6 items-center border-[#E7E0D2] bg-[#FAF5EA]">
-                  <View className="w-12 h-12 mb-3 rounded-full bg-white items-center justify-center border border-[#E7E0D2]">
-                    <Camera color="#1B1B8F" size={22} />
+              <View className="bg-white rounded-[24px] border border-border p-4">
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={() => toast.success("Photo picker coming soon")}
+                  className="border-2 border-dashed rounded-[20px] p-6 items-center border-border bg-cream"
+                >
+                  <View className="w-12 h-12 mb-3 rounded-full bg-white items-center justify-center border border-border">
+                    <Icon icon={Camera01Icon} size={22} color="#1B1B8F" />
                   </View>
-                  <Text className="font-bold text-ink">
-                    Upload Photo
-                  </Text>
-                  <Text className="text-sm text-ink/55">
-                    Tap to select from gallery
-                  </Text>
+                  <Text className="font-inter-bold text-ink">Upload photo</Text>
+                  <Text className="text-[13px] font-inter text-ink/55">Tap to select from gallery</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Food Name */}
-              <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5">
-                <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
-                  Food Name
-                </Text>
-                <TextInput
-                  value={formData.name}
-                  onChangeText={(val) =>
-                    setFormData({ ...formData, name: val })
-                  }
-                  placeholder="e.g. Spicy Ramen Bowl"
-                  placeholderTextColor="#9CA3AF"
-                  className="mt-2 w-full h-14 px-4 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] text-ink"
-                />
+              <View className="bg-white rounded-[24px] border border-border p-5">
+                <TextField label="Food name" value={formData.name} onChangeText={(v) => setFormData({ ...formData, name: v })} placeholder="e.g. Spicy Ramen Bowl" dark={false} />
               </View>
 
-              {/* Category */}
-              <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5">
-                <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
-                  Category
-                </Text>
-                <View className="flex-row flex-wrap gap-2 mt-3">
+              <View className="bg-white rounded-[24px] border border-border p-5">
+                <Text className="text-ink text-[13px] font-inter-bold mb-2">Category</Text>
+                <View className="flex-row flex-wrap gap-2 mt-1">
                   {categories.map((cat) => (
                     <TouchableOpacity
                       key={cat.key}
-                      onPress={() =>
-                        setFormData({ ...formData, category: cat.key })
-                      }
+                      onPress={() => setFormData({ ...formData, category: cat.key })}
+                      activeOpacity={0.85}
                       className={`px-4 h-11 justify-center rounded-full border ${
-                        formData.category === cat.key
-                          ? "bg-ink border-ink"
-                          : "bg-white border-[#E7E0D2]"
+                        formData.category === cat.key ? "bg-ink border-ink" : "bg-white border-border"
                       }`}
                     >
-                      <Text
-                        className={`text-sm font-bold ${
-                          formData.category === cat.key
-                            ? "text-white"
-                            : "text-ink"
-                        }`}
-                      >
+                      <Text className={`text-[13px] font-inter-bold ${formData.category === cat.key ? "text-white" : "text-ink"}`}>
                         {cat.label}
                       </Text>
                     </TouchableOpacity>
@@ -383,74 +329,31 @@ export default function MenuManagement() {
                 </View>
               </View>
 
-              {/* Price */}
-              <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5">
-                <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
-                  Price
-                </Text>
-                <View className="mt-2 flex-row items-center bg-[#FAF5EA] border border-[#E7E0D2] rounded-full h-14 px-4 gap-1">
-                  <Text className="text-ink/55 font-bold">₦</Text>
-                  <TextInput
-                    value={formData.price}
-                    onChangeText={(val) =>
-                      setFormData({ ...formData, price: val })
-                    }
-                    placeholder="0.00"
-                    placeholderTextColor="#9CA3AF"
-                    keyboardType="numeric"
-                    className="flex-1 text-ink"
-                  />
-                </View>
+              <View className="bg-white rounded-[24px] border border-border p-5">
+                <TextField label="Price (₦)" value={formData.price} onChangeText={(v) => setFormData({ ...formData, price: v })} placeholder="0.00" keyboardType="numeric" dark={false} />
               </View>
 
-              {/* Description */}
-              <View className="bg-white rounded-[26px] border border-[#E7E0D2] p-5">
-                <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">
-                  Description
-                </Text>
-                <TextInput
-                  value={formData.description}
-                  onChangeText={(val) =>
-                    setFormData({ ...formData, description: val })
-                  }
-                  placeholder="Describe ingredients, portion size, and any allergens..."
-                  placeholderTextColor="#9CA3AF"
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                  className="mt-2 w-full p-4 rounded-[20px] bg-[#FAF5EA] border border-[#E7E0D2] text-ink min-h-[96px]"
-                />
+              <View className="bg-white rounded-[24px] border border-border p-5">
+                <TextField label="Description" value={formData.description} onChangeText={(v) => setFormData({ ...formData, description: v })} placeholder="Ingredients, portion size, allergens..." dark={false} multiline numberOfLines={3} />
               </View>
 
-              {/* Available Now Toggle */}
-              <View className="flex-row items-center justify-between p-5 bg-white rounded-[26px] border border-[#E7E0D2]">
+              <View className="flex-row items-center justify-between p-5 bg-white rounded-[24px] border border-border">
                 <View>
-                  <Text className="font-bold text-ink">
-                    Available Now
-                  </Text>
-                  <Text className="text-sm text-ink/55">
-                    Show on menu immediately
-                  </Text>
+                  <Text className="font-inter-bold text-ink">Available now</Text>
+                  <Text className="text-[13px] font-inter text-ink/55">Show on menu immediately</Text>
                 </View>
                 <Switch
                   value={formData.available}
-                  onValueChange={(val) =>
-                    setFormData({ ...formData, available: val })
-                  }
-                  trackColor={{ true: "#1B1B8F", false: "#D8D2C4" }}
+                  onValueChange={(v) => setFormData({ ...formData, available: v })}
+                  trackColor={{ true: "#0A0A0E", false: "#D8D2C4" }}
                 />
               </View>
 
-              {/* Submit Button */}
-              <AppButton
-                title={editingItem ? "Update Item" : "Add to Menu"}
-                variant="ink"
-                onPress={handleSubmit}
-              />
+              <AppButton title={editingItem ? "Update Item" : "Add to Menu"} variant="ink" onPress={handleSubmit} />
             </View>
           </ScrollView>
-        </View>
+        </SafeAreaView>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }

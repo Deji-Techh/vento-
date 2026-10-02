@@ -1,20 +1,20 @@
 import { Tabs } from "expo-router";
-import { LayoutDashboard, Users, ShoppingBag, Settings, User } from "lucide-react-native";
 import TabBar from "../../src/components/TabBar";
+import { ic, DashboardSquare01Icon, UsersIcon, ReceiptIcon, Settings01Icon, UserIcon } from "../../src/components/icons";
 
 const tabs = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/(admin)" },
-  { icon: Users, label: "Users", href: "/(admin)/users" },
-  { icon: ShoppingBag, label: "Orders", href: "/(admin)/orders" },
-  { icon: Settings, label: "Settings", href: "/(admin)/settings" },
-  { icon: User, label: "Account", href: "/(admin)/profile" },
+  { icon: ic(DashboardSquare01Icon), label: "Dashboard", href: "/(admin)" },
+  { icon: ic(UsersIcon), label: "Users", href: "/(admin)/users" },
+  { icon: ic(ReceiptIcon), label: "Orders", href: "/(admin)/orders" },
+  { icon: ic(Settings01Icon), label: "Settings", href: "/(admin)/settings" },
+  { icon: ic(UserIcon), label: "Account", href: "/(admin)/profile" },
 ];
 
 export default function AdminLayout() {
   return (
     <Tabs
       screenOptions={{ headerShown: false }}
-      tabBar={(props) => <TabBar tabs={tabs} dark={false} />}
+      tabBar={() => <TabBar tabs={tabs} dark={false} />}
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="users" />

@@ -6,8 +6,19 @@ import {
   ScrollView,
   Modal,
   ActivityIndicator,
+  Platform,
 } from "react-native";
-import { Package, X, ChevronRight } from "lucide-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
+import { Eyebrow, SectionHeader, StatusChip } from "../../src/components/ui/SectionHeader";
+import { Icon } from "../../src/components/ui/Icon";
+import {
+  ReceiptIcon,
+  Package01Icon,
+  MapPinIcon,
+  CreditCardIcon,
+  Clock01Icon,
+} from "../../src/components/icons";
 
 const mockOrders = [
   {
@@ -54,28 +65,6 @@ const mockOrders = [
   },
 ];
 
-const statusChip: Record<string, string> = {
-  pending: "bg-[#EDEDF7]",
-  confirmed: "bg-[#E8EDFF]",
-  preparing: "bg-[#FFF3D6]",
-  ready_for_pickup: "bg-[#EDEDF7]",
-  assigned: "bg-[#E8EDFF]",
-  on_the_way: "bg-[#E8EDFF]",
-  delivered: "bg-[#E3F2E8]",
-  cancelled: "bg-[#FDE8E4]",
-};
-
-const statusText: Record<string, string> = {
-  pending: "#1B1B8F",
-  confirmed: "#1B1B8F",
-  preparing: "#8A5A00",
-  ready_for_pickup: "#1B1B8F",
-  assigned: "#1B1B8F",
-  on_the_way: "#1B1B8F",
-  delivered: "#12805C",
-  cancelled: "#C0361F",
-};
-
 const statusLabels: Record<string, string> = {
   pending: "Pending",
   confirmed: "Confirmed",
@@ -87,6 +76,25 @@ const statusLabels: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
+function statusTone(status: string): "success" | "warning" | "info" | "danger" | "neutral" {
+  switch (status) {
+    case "delivered":
+      return "success";
+    case "cancelled":
+      return "danger";
+    case "pending":
+    case "preparing":
+      return "warning";
+    case "confirmed":
+    case "assigned":
+    case "on_the_way":
+    case "ready_for_pickup":
+      return "info";
+    default:
+      return "neutral";
+  }
+}
+
 const tabs = ["All", "Pending", "Preparing", "On the Way", "Delivered"];
 
 export default function AdminOrders() {
@@ -96,10 +104,11 @@ export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   useEffect(() => {
-    setTimeout(() => {
+    const t = setTimeout(() => {
       setOrders(mockOrders);
       setLoading(false);
     }, 800);
+    return () => clearTimeout(t);
   }, []);
 
   const filteredOrders =
@@ -109,185 +118,228 @@ export default function AdminOrders() {
           (o) => o.status.toLowerCase().replace("_", " ") === activeTab.toLowerCase()
         );
 
+  const openOrder = (order: any) => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    }
+    setSelectedOrder(order);
+  };
+
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
-        <ActivityIndicator size="large" color="#1B1B8F" />
-      </View>
+      <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#1B1B8F" />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14" contentContainerStyle={{ paddingBottom: 120, gap: 16 }}>
-      <View>
-        <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55">
-          Oversight
-        </Text>
-        <Text className="text-[28px] font-bold text-ink mt-1">Orders</Text>
-        <Text className="text-sm text-ink/55">View and manage all platform orders</Text>
-      </View>
+    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+      <ScrollView
+        className="flex-1 px-5"
+        contentContainerStyle={{ paddingBottom: 120, paddingTop: 12, gap: 16 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View>
+          <Eyebrow>Oversight</Eyebrow>
+          <Text className="text-[28px] font-inter-bold text-ink tracking-tight mt-1">
+            Orders
+          </Text>
+          <Text className="text-[13px] font-inter text-ink/55 mt-1">
+            View and manage all platform orders
+          </Text>
+        </View>
 
-      {/* Filter Tabs — pill */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-        {tabs.map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            onPress={() => setActiveTab(tab)}
-            className={`px-5 h-12 justify-center rounded-full border ${
-              activeTab === tab ? "bg-ink border-ink" : "bg-white border-[#E7E0D2]"
-            }`}
-          >
-            <Text
-              className={`text-sm font-bold ${
-                activeTab === tab ? "text-white" : "text-ink"
+        {/* Filter tabs */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8 }}
+        >
+          {tabs.map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setActiveTab(tab)}
+              activeOpacity={0.85}
+              className={`px-5 h-12 justify-center rounded-full border ${
+                activeTab === tab ? "bg-ink border-ink" : "bg-white border-border"
               }`}
             >
-              {tab}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Order List */}
-      {filteredOrders.length === 0 ? (
-        <View className="bg-white rounded-[26px] p-8 items-center border border-[#E7E0D2]">
-          <Package color="#6E6A75" size={22} />
-          <Text className="text-ink/55 mt-3 font-semibold">No orders found</Text>
-        </View>
-      ) : (
-        <View className="gap-4">
-          {filteredOrders.map((order) => (
-            <TouchableOpacity
-              key={order.id}
-              onPress={() => setSelectedOrder(order)}
-              activeOpacity={0.9}
-              className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]"
-            >
-              <View className="flex-row items-center justify-between gap-2">
-                <View className="flex-1">
-                  <View className="flex-row items-center gap-2 mb-1.5 flex-wrap">
-                    <Text className="font-bold text-ink">
-                      #{order.id.slice(0, 8)}
-                    </Text>
-                    <View
-                      className={`px-2.5 py-1 rounded-full ${statusChip[order.status] || statusChip.pending}`}
-                    >
-                      <Text
-                        className="text-[11px] font-bold capitalize"
-                        style={{ color: statusText[order.status] || statusText.pending }}
-                      >
-                        {statusLabels[order.status] || order.status}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text className="text-sm text-ink/55">
-                    {order.buyer?.name} → {order.seller?.store_name}
-                  </Text>
-                  <Text className="text-xs text-ink/55 mt-1">
-                    {new Date(order.created_at).toLocaleString()}
-                  </Text>
-                </View>
-                <View className="items-end gap-1">
-                  <Text className="font-bold text-[#1B1B8F]">
-                    ₦{order.total_amount.toLocaleString()}
-                  </Text>
-                  <ChevronRight color="#6E6A75" size={16} />
-                </View>
-              </View>
+              <Text
+                className={`text-[14px] font-inter-bold ${
+                  activeTab === tab ? "text-white" : "text-ink"
+                }`}
+              >
+                {tab}
+              </Text>
             </TouchableOpacity>
           ))}
-        </View>
-      )}
+        </ScrollView>
 
-      {/* Order Detail Modal */}
-      <Modal
-        visible={!!selectedOrder}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setSelectedOrder(null)}
-      >
-        <View className="flex-1 bg-[#FAF5EA]">
-          <View className="flex-row items-center justify-between px-5 pt-6 pb-4">
-            <Text className="text-xl font-bold text-ink">Order Details</Text>
-            <TouchableOpacity
-              onPress={() => setSelectedOrder(null)}
-              className="w-10 h-10 rounded-full bg-white border border-[#E7E0D2] items-center justify-center"
-            >
-              <X color="#0A0A0E" size={16} />
-            </TouchableOpacity>
+        {/* Order list */}
+        {filteredOrders.length === 0 ? (
+          <View className="bg-white rounded-[24px] p-8 items-center border border-border">
+            <Icon icon={Package01Icon} size={22} color="#6E6A75" />
+            <Text className="text-ink/55 mt-3 font-inter-medium text-[14px]">
+              No orders found
+            </Text>
           </View>
-
-          {selectedOrder && (
-            <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40, gap: 16 }}>
-              <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
-                <View className="flex-row items-center gap-2 mb-3 flex-wrap">
-                  <Text className="text-lg font-bold text-ink">
-                    #{selectedOrder.id.slice(0, 8)}
-                  </Text>
-                  <View
-                    className={`px-2.5 py-1 rounded-full ${statusChip[selectedOrder.status] || statusChip.pending}`}
-                  >
-                    <Text
-                      className="text-[11px] font-bold capitalize"
-                      style={{ color: statusText[selectedOrder.status] || statusText.pending }}
-                    >
-                      {statusLabels[selectedOrder.status] || selectedOrder.status}
-                    </Text>
-                  </View>
-                </View>
-
-                <View className="bg-[#FAF5EA] border border-[#E7E0D2] rounded-2xl p-4 gap-2.5">
-                  <View className="flex-row justify-between">
-                    <Text className="text-sm text-ink/55">Buyer</Text>
-                    <Text className="text-sm font-bold text-ink">
-                      {selectedOrder.buyer?.name}
-                    </Text>
-                  </View>
-                  <View className="flex-row justify-between">
-                    <Text className="text-sm text-ink/55">Seller</Text>
-                    <Text className="text-sm font-bold text-ink">
-                      {selectedOrder.seller?.store_name}
-                    </Text>
-                  </View>
-                  <View className="flex-row justify-between gap-3">
-                    <Text className="text-sm text-ink/55">Delivery Address</Text>
-                    <Text className="text-sm font-bold text-ink text-right flex-1">
-                      {selectedOrder.delivery_address}
-                    </Text>
-                  </View>
-                  <View className="flex-row justify-between">
-                    <Text className="text-sm text-ink/55">Payment</Text>
-                    <Text className="text-sm font-bold text-ink capitalize">
-                      {selectedOrder.payment_method.replaceAll("_", " ")}
-                    </Text>
-                  </View>
-                  <View className="flex-row justify-between">
-                    <Text className="text-sm text-ink/55">Delivery Fee</Text>
-                    <Text className="text-sm font-bold text-ink">
-                      ₦{selectedOrder.delivery_fee.toLocaleString()}
-                    </Text>
-                  </View>
-                  <View className="border-t border-[#E7E0D2] pt-2.5 mt-1">
-                    <View className="flex-row justify-between">
-                      <Text className="font-bold text-ink">Total</Text>
-                      <Text className="font-bold text-[#1B1B8F]">
-                        ₦{selectedOrder.total_amount.toLocaleString()}
+        ) : (
+          <View>
+            <SectionHeader title="All orders" action={`${filteredOrders.length}`} />
+            <View className="gap-3">
+              {filteredOrders.map((order) => (
+                <TouchableOpacity
+                  key={order.id}
+                  onPress={() => openOrder(order)}
+                  activeOpacity={0.9}
+                  className="bg-white rounded-[24px] p-6 border border-border"
+                >
+                  <View className="flex-row items-center justify-between gap-2">
+                    <View className="flex-1">
+                      <View className="flex-row items-center gap-2 mb-1.5 flex-wrap">
+                        <Text className="font-inter-bold text-[15px] text-ink">
+                          #{order.id.slice(0, 8)}
+                        </Text>
+                        <StatusChip
+                          label={statusLabels[order.status] || order.status}
+                          tone={statusTone(order.status)}
+                        />
+                      </View>
+                      <Text className="text-[13px] font-inter text-ink/55">
+                        {order.buyer?.name} → {order.seller?.store_name}
                       </Text>
+                      <Text className="text-[12px] font-inter text-ink/55 mt-1">
+                        {new Date(order.created_at).toLocaleString()}
+                      </Text>
+                    </View>
+                    <View className="items-end gap-1">
+                      <Text className="font-inter-bold text-[15px] text-primary">
+                        ₦{order.total_amount.toLocaleString()}
+                      </Text>
+                      <Text className="text-ink/40 font-inter-bold">›</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Order detail modal */}
+        <Modal
+          visible={!!selectedOrder}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setSelectedOrder(null)}
+        >
+          <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+            <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
+              <View className="flex-1">
+                <Eyebrow>Order detail</Eyebrow>
+                <Text className="text-[20px] font-inter-bold text-ink tracking-tight mt-1">
+                  Order Details
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setSelectedOrder(null)}
+                activeOpacity={0.85}
+                className="w-11 h-11 rounded-full bg-white border border-border items-center justify-center"
+              >
+                <Text className="text-ink font-inter-bold">✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {selectedOrder && (
+              <ScrollView
+                className="flex-1 px-5"
+                contentContainerStyle={{ paddingBottom: 40, gap: 16 }}
+                showsVerticalScrollIndicator={false}
+              >
+                <View className="bg-white rounded-[24px] p-6 border border-border">
+                  <View className="flex-row items-center gap-2 mb-4 flex-wrap">
+                    <View className="w-11 h-11 rounded-full bg-cream border border-border items-center justify-center">
+                      <Icon icon={ReceiptIcon} size={20} color="#1B1B8F" />
+                    </View>
+                    <Text className="text-[18px] font-inter-bold text-ink">
+                      #{selectedOrder.id.slice(0, 8)}
+                    </Text>
+                    <StatusChip
+                      label={statusLabels[selectedOrder.status] || selectedOrder.status}
+                      tone={statusTone(selectedOrder.status)}
+                    />
+                  </View>
+
+                  <View className="bg-cream border border-border rounded-[20px] p-4 gap-3">
+                    <View className="flex-row justify-between">
+                      <Text className="text-[13px] font-inter text-ink/55">Buyer</Text>
+                      <Text className="text-[13px] font-inter-bold text-ink">
+                        {selectedOrder.buyer?.name}
+                      </Text>
+                    </View>
+                    <View className="flex-row justify-between">
+                      <Text className="text-[13px] font-inter text-ink/55">Seller</Text>
+                      <Text className="text-[13px] font-inter-bold text-ink">
+                        {selectedOrder.seller?.store_name}
+                      </Text>
+                    </View>
+                    <View className="flex-row justify-between gap-3">
+                      <View className="flex-row items-center gap-1.5">
+                        <Icon icon={MapPinIcon} size={14} color="#6E6A75" />
+                        <Text className="text-[13px] font-inter text-ink/55">
+                          Delivery Address
+                        </Text>
+                      </View>
+                      <Text className="text-[13px] font-inter-bold text-ink text-right flex-1">
+                        {selectedOrder.delivery_address}
+                      </Text>
+                    </View>
+                    <View className="flex-row justify-between">
+                      <View className="flex-row items-center gap-1.5">
+                        <Icon icon={CreditCardIcon} size={14} color="#6E6A75" />
+                        <Text className="text-[13px] font-inter text-ink/55">Payment</Text>
+                      </View>
+                      <Text className="text-[13px] font-inter-bold text-ink capitalize">
+                        {selectedOrder.payment_method.replaceAll("_", " ")}
+                      </Text>
+                    </View>
+                    <View className="flex-row justify-between">
+                      <Text className="text-[13px] font-inter text-ink/55">
+                        Delivery Fee
+                      </Text>
+                      <Text className="text-[13px] font-inter-bold text-ink">
+                        ₦{selectedOrder.delivery_fee.toLocaleString()}
+                      </Text>
+                    </View>
+                    <View className="border-t border-border pt-3 mt-1">
+                      <View className="flex-row justify-between">
+                        <Text className="font-inter-bold text-[14px] text-ink">Total</Text>
+                        <Text className="font-inter-bold text-[14px] text-primary">
+                          ₦{selectedOrder.total_amount.toLocaleString()}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
 
-              <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
-                <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-2">Timeline</Text>
-                <Text className="text-sm text-ink/55">
-                  Created: {new Date(selectedOrder.created_at).toLocaleString()}
-                </Text>
-              </View>
-            </ScrollView>
-          )}
-        </View>
-      </Modal>
-    </ScrollView>
+                <View className="bg-white rounded-[24px] p-6 border border-border">
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Icon icon={Clock01Icon} size={16} color="#6E6A75" />
+                    <Text className="text-[11px] font-inter-bold uppercase tracking-[2px] text-ink/50">
+                      Timeline
+                    </Text>
+                  </View>
+                  <Text className="text-[13px] font-inter text-ink/55">
+                    Created: {new Date(selectedOrder.created_at).toLocaleString()}
+                  </Text>
+                </View>
+              </ScrollView>
+            )}
+          </SafeAreaView>
+        </Modal>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

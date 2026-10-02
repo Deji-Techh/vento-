@@ -1,24 +1,22 @@
 import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/contexts/AuthContext";
-import {
-  User,
-  Mail,
-  Phone,
-  Edit2,
-  Shield,
-  LogOut,
-} from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
+import { TextField } from "../../src/components/ui/TextField";
+import { Eyebrow } from "../../src/components/ui/SectionHeader";
+import { Skeleton } from "../../src/components/ui/Skeleton";
+import { Icon } from "../../src/components/ui/Icon";
+import {
+  UserIcon,
+  PhoneIcon,
+  Edit02Icon,
+  Logout01Icon,
+  ShieldCheckIcon,
+} from "../../src/components/icons";
 
 const mockProfile = {
   id: "mock-admin-001",
@@ -35,30 +33,41 @@ export default function AdminProfile() {
   const [profile, setProfile] = useState<any>(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ name: "", phone: "" });
 
   useEffect(() => {
-    setTimeout(() => {
+    const t = setTimeout(() => {
       setProfile(mockProfile);
       setFormData({ name: mockProfile.name, phone: mockProfile.phone });
       setLoading(false);
     }, 800);
+    return () => clearTimeout(t);
   }, [user]);
 
   const handleUpdateProfile = async () => {
     try {
-      setLoading(true);
+      setSaving(true);
       await new Promise((resolve) => setTimeout(resolve, 800));
       setProfile((prev: any) => ({
         ...prev,
         name: formData.name,
         phone: formData.phone,
       }));
-      Alert.alert("Success", "Profile updated successfully");
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+          () => {}
+        );
+      }
+      toast.success("Profile updated");
       setEditing(false);
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to update profile");
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      }
+      toast.error(error.message || "Failed to update profile");
     } finally {
+      setSaving(false);
       setLoading(false);
     }
   };
@@ -70,124 +79,162 @@ export default function AdminProfile() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#FAF5EA]">
-        <ActivityIndicator size="large" color="#1B1B8F" />
-      </View>
+      <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+        <View className="flex-1 px-5 pt-10 gap-4">
+          <View className="items-center">
+            <Skeleton width={96} height={96} radius={48} dark={false} />
+            <View className="mt-3" />
+            <Skeleton width={180} height={24} radius={8} dark={false} />
+            <View className="mt-2" />
+            <Skeleton width={140} height={14} radius={6} dark={false} />
+          </View>
+          <Skeleton width="100%" height={90} radius={24} dark={false} />
+          <Skeleton width="100%" height={56} radius={28} dark={false} />
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (!profile) return null;
 
   return (
-    <ScrollView className="flex-1 bg-[#FAF5EA] px-5 pt-14" contentContainerStyle={{ paddingBottom: 120 }}>
-      <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-ink/55 mb-3">
-        Account
-      </Text>
-      {/* Profile Header — white */}
-      <View className="bg-white rounded-[28px] p-6 border border-[#E7E0D2] mb-4">
-        <View className="items-center">
-          <View className="w-24 h-24 rounded-full bg-[#FAF5EA] border border-[#E7E0D2] items-center justify-center mb-4">
-            <Text className="text-2xl text-ink font-bold">
-              {profile.name?.charAt(0) || "A"}
-            </Text>
-          </View>
-          <View className="flex-row items-center gap-2 mb-2">
-            <Text className="text-xl font-bold text-ink">{profile.name}</Text>
-            <View className="bg-[#EDEDF7] px-3 py-1.5 rounded-full flex-row items-center gap-1">
-              <Shield color="#1B1B8F" size={12} />
-              <Text className="text-[11px] text-[#1B1B8F] font-bold uppercase tracking-[0.5px]">Admin</Text>
+    <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
+      <ScrollView
+        className="flex-1 px-5"
+        contentContainerStyle={{ paddingBottom: 120, paddingTop: 12 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <Eyebrow>Account</Eyebrow>
+
+        {/* Profile header */}
+        <View className="bg-white rounded-[28px] p-6 border border-border mt-3 mb-4">
+          <View className="items-center">
+            <View className="w-24 h-24 rounded-full bg-cream border border-border items-center justify-center mb-4">
+              <Text className="text-[28px] text-ink font-inter-bold">
+                {profile.name?.charAt(0) || "A"}
+              </Text>
             </View>
-          </View>
-          <View className="flex-row items-center gap-2">
-            <Mail color="#6E6A75" size={16} />
-            <Text className="text-sm text-ink/55">
+            <View className="flex-row items-center gap-2 mb-2">
+              <Text className="text-[20px] font-inter-bold text-ink tracking-tight">
+                {profile.name}
+              </Text>
+              <View className="bg-primary/10 px-3 py-1.5 rounded-full flex-row items-center gap-1">
+                <Icon icon={ShieldCheckIcon} size={12} color="#1B1B8F" />
+                <Text className="text-[11px] text-primary font-inter-bold uppercase tracking-[0.5px]">
+                  Admin
+                </Text>
+              </View>
+            </View>
+            <Text className="text-[13px] font-inter text-ink/55">
               {user?.email || profile.email}
             </Text>
           </View>
         </View>
-      </View>
 
-      {/* Profile Details */}
-      <View className="bg-white rounded-[26px] p-6 border border-[#E7E0D2]">
-        <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-lg font-bold text-ink">Profile Details</Text>
-          {!editing && (
-            <TouchableOpacity
-              onPress={() => setEditing(true)}
-              className="flex-row items-center gap-1.5 bg-[#FAF5EA] border border-[#E7E0D2] px-3 h-10 rounded-full"
-            >
-              <Edit2 color="#1B1B8F" size={14} />
-              <Text className="text-sm text-[#1B1B8F] font-bold">Edit</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <View className="gap-4">
-          <View>
-            <View className="flex-row items-center gap-2 mb-2">
-              <User color="#6E6A75" size={15} />
-              <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">Name</Text>
-            </View>
-            <TextInput
-              value={formData.name}
-              onChangeText={(val) => setFormData({ ...formData, name: val })}
-              editable={editing}
-              className={`bg-[#FAF5EA] rounded-full px-4 h-14 text-sm text-ink border ${editing ? "border-[#1B1B8F]" : "border-[#E7E0D2]"}`}
-            />
-          </View>
-
-          <View>
-            <View className="flex-row items-center gap-2 mb-2">
-              <Mail color="#6E6A75" size={15} />
-              <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">Email</Text>
-            </View>
-            <TextInput
-              value={user?.email || profile.email}
-              editable={false}
-              className="bg-[#FAF5EA] border border-[#E7E0D2] rounded-full px-4 h-14 text-sm text-ink opacity-60"
-            />
-          </View>
-
-          <View>
-            <View className="flex-row items-center gap-2 mb-2">
-              <Phone color="#6E6A75" size={15} />
-              <Text className="text-[11px] font-bold uppercase tracking-[1px] text-ink/55">Phone Number</Text>
-            </View>
-            <TextInput
-              value={formData.phone}
-              onChangeText={(val) => setFormData({ ...formData, phone: val })}
-              editable={editing}
-              placeholder="Enter phone number"
-              placeholderTextColor="#9CA3AF"
-              className={`bg-[#FAF5EA] rounded-full px-4 h-14 text-sm text-ink border ${editing ? "border-[#1B1B8F]" : "border-[#E7E0D2]"}`}
-            />
-          </View>
-
-          {editing && (
-            <View className="gap-3 pt-2">
-              <AppButton title="Save Changes" variant="ink" onPress={handleUpdateProfile} />
+        {/* Profile details */}
+        <View className="bg-white rounded-[24px] p-6 border border-border">
+          <View className="flex-row items-center justify-between mb-6">
+            <Text className="text-[20px] font-inter-bold text-ink tracking-tight">
+              Profile details
+            </Text>
+            {!editing && (
               <TouchableOpacity
-                onPress={() => {
-                  setEditing(false);
-                  setFormData({ name: profile.name, phone: profile.phone });
-                }}
-                className="w-full border border-[#E7E0D2] h-14 rounded-full items-center justify-center bg-white"
+                onPress={() => setEditing(true)}
+                activeOpacity={0.85}
+                className="flex-row items-center gap-1.5 bg-cream border border-border px-4 py-2.5 rounded-full"
               >
-                <Text className="text-ink font-bold">Cancel</Text>
+                <Icon icon={Edit02Icon} size={14} color="#1B1B8F" />
+                <Text className="text-[13px] text-primary font-inter-bold">Edit</Text>
               </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      </View>
+            )}
+          </View>
 
-      {/* Sign Out */}
-      <TouchableOpacity
-        onPress={handleSignOut}
-        className="mt-4 bg-white rounded-[26px] p-4 border border-[#E7E0D2] items-center flex-row justify-center gap-2"
-      >
-        <LogOut size={16} color="#C0361F" />
-        <Text className="text-[#C0361F] font-bold">Sign Out</Text>
-      </TouchableOpacity>
-    </ScrollView>
+          <View className="gap-5">
+            <View>
+              <View className="flex-row items-center gap-2 mb-2">
+                <Icon icon={UserIcon} size={16} color="rgba(10,10,14,0.45)" />
+                <Text className="text-[11px] text-ink/50 font-inter-bold uppercase tracking-[2px]">
+                  Name
+                </Text>
+              </View>
+              {editing ? (
+                <TextField
+                  value={formData.name}
+                  onChangeText={(val) => setFormData({ ...formData, name: val })}
+                  placeholder="Enter full name"
+                  autoCapitalize="words"
+                  dark={false}
+                />
+              ) : (
+                <Text className="text-[16px] font-inter-semibold text-ink">
+                  {formData.name}
+                </Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-[11px] text-ink/50 font-inter-bold uppercase tracking-[2px] mb-2">
+                Email
+              </Text>
+              <Text className="text-[16px] font-inter-semibold text-ink/55">
+                {user?.email || profile.email}
+              </Text>
+            </View>
+
+            <View>
+              <View className="flex-row items-center gap-2 mb-2">
+                <Icon icon={PhoneIcon} size={16} color="rgba(10,10,14,0.45)" />
+                <Text className="text-[11px] text-ink/50 font-inter-bold uppercase tracking-[2px]">
+                  Phone number
+                </Text>
+              </View>
+              {editing ? (
+                <TextField
+                  value={formData.phone}
+                  onChangeText={(val) => setFormData({ ...formData, phone: val })}
+                  placeholder="Enter phone number"
+                  keyboardType="phone-pad"
+                  dark={false}
+                />
+              ) : (
+                <Text className="text-[16px] font-inter-semibold text-ink">
+                  {formData.phone || "—"}
+                </Text>
+              )}
+            </View>
+
+            {editing && (
+              <View className="gap-3 pt-2">
+                <AppButton
+                  title="Save Changes"
+                  variant="ink"
+                  loading={saving}
+                  disabled={saving}
+                  onPress={handleUpdateProfile}
+                />
+                <AppButton
+                  title="Cancel"
+                  variant="ghost-light"
+                  onPress={() => {
+                    setEditing(false);
+                    setFormData({ name: profile.name, phone: profile.phone });
+                  }}
+                />
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Sign out */}
+        <TouchableOpacity
+          onPress={handleSignOut}
+          activeOpacity={0.85}
+          className="mt-4 bg-white rounded-[24px] h-14 px-4 border border-border items-center flex-row justify-center gap-2"
+        >
+          <Icon icon={Logout01Icon} size={18} color="#D92D20" />
+          <Text className="text-destructive font-inter-bold text-[15px]">Sign Out</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
