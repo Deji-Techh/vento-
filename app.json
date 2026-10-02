@@ -22,6 +22,16 @@
       "bundler": "metro",
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-font"]
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e0474659-ef25-4ad3-b885-33caa26d247d"
+      }
+    },
+    "owner": "therealdejitech"
   }
 }
