@@ -200,17 +200,25 @@ export default function Chat() {
         </ScrollView>
 
         {/* Quick replies */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-5" contentContainerStyle={{ paddingRight: 20, paddingBottom: 10 }}>
-          {quickReplies.map((qr) => (
-            <TouchableOpacity
-              key={qr}
-              onPress={() => send(qr)}
-              className={`mr-2 px-4 py-2.5 rounded-full border ${dark ? "border-white/15 bg-white/[0.06]" : "border-ink/10 bg-white"}`}
-            >
-              <Text className={`text-[13px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>{qr}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <View style={{ height: 56, justifyContent: "center" }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="pl-5"
+            contentContainerStyle={{ alignItems: "center", paddingRight: 20 }}
+          >
+            {quickReplies.map((qr) => (
+              <TouchableOpacity
+                key={qr}
+                onPress={() => send(qr)}
+                style={{ alignSelf: "center" }}
+                className={`mr-2 px-4 py-2.5 rounded-full border ${dark ? "border-white/15 bg-white/[0.06]" : "border-ink/10 bg-white"}`}
+              >
+                <Text className={`text-[13px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>{qr}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
 
         {/* Input */}
         <View className={`px-5 py-3 border-t ${dark ? "border-white/10 bg-ink" : "border-ink/10 bg-cream"}`}>

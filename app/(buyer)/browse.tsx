@@ -86,9 +86,6 @@ export default function Browse() {
             >
               <Icon icon={Notification01Icon} size={18} color={dark ? "#fff" : "#0A0A0E"} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push("/(buyer)/profile" as any)} className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
-              <Text className={`font-inter-bold ${dark ? "text-ink" : "text-white"}`}>C</Text>
-            </TouchableOpacity>
           </View>
         </View>
 
