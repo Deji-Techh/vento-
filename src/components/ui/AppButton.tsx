@@ -30,7 +30,7 @@ export function AppButton({
   disabled,
 }: {
   title: string;
-  onPress?: () => void;
+  onPress?: (e?: any) => void;
   variant?: Variant;
   loading?: boolean;
   disabled?: boolean;
@@ -40,11 +40,11 @@ export function AppButton({
     transform: [{ scale: scale.value }],
   }));
 
-  const handlePress = () => {
+  const handlePress = (e: any) => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
-    onPress?.();
+    onPress?.(e);
   };
 
   return (

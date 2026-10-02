@@ -2,12 +2,17 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import { useTheme } from "../../contexts/ThemeContext";
 
-export function StoryRow({ items, dark: darkProp }: { items: { id: string; label: string; image: string }[]; dark?: boolean }) {
+export function StoryRow({ items, dark: darkProp, onPress }: { items: { id: string; label: string; image: string }[]; dark?: boolean; onPress?: (id: string) => void }) {
   const dark = darkProp ?? useTheme().dark;
   return (
     <View className="flex-row gap-4">
       {items.map((s, i) => (
-        <View key={s.id} className="items-center w-[64px]">
+        <TouchableOpacity
+          key={s.id}
+          onPress={() => onPress?.(s.id)}
+          activeOpacity={0.85}
+          className="items-center w-[64px]"
+        >
           <View
             className={`w-[64px] h-[64px] rounded-full items-center justify-center ${
               i === 0 ? "bg-ember" : dark ? "bg-white/15" : "bg-ink/10"
@@ -19,7 +24,7 @@ export function StoryRow({ items, dark: darkProp }: { items: { id: string; label
           <Text className={`text-[11px] font-inter-medium mt-1.5 ${dark ? "text-white/60" : "text-ink/55"}`} numberOfLines={1}>
             {s.label}
           </Text>
-        </View>
+        </TouchableOpacity>
       ))}
     </View>
   );

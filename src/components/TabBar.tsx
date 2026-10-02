@@ -3,7 +3,7 @@ import { usePathname, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated, { FadeIn, SlideInDown, useReducedMotion } from "react-native-reanimated";
+import Animated, { FadeIn, SlideInDown, ZoomIn, useReducedMotion } from "react-native-reanimated";
 import { useTheme } from "../contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 
@@ -54,6 +54,7 @@ function Pill({
   onPress: () => void;
 }) {
   const TabIcon = tab.icon;
+  const reduced = useReducedMotion();
   return (
     <Pressable onPress={onPress} style={styles.pillTouch}>
       <View
@@ -68,9 +69,13 @@ function Pill({
           strokeWidth={1.9}
         />
         {tab.badge != null && tab.badge > 0 && (
-          <View style={styles.badge}>
+          <Animated.View
+            key={tab.badge}
+            entering={reduced ? FadeIn.duration(150) : ZoomIn.springify().damping(16).stiffness(320)}
+            style={styles.badge}
+          >
             <Text style={styles.badgeText}>{tab.badge > 99 ? "99+" : tab.badge}</Text>
-          </View>
+          </Animated.View>
         )}
       </View>
       <Text
@@ -175,11 +180,15 @@ export default function TabBar({
         >
           <ActionIcon color={dark ? "#0A0A0E" : "#FFFFFF"} size={24} strokeWidth={2.2} />
           {action.badge != null && action.badge > 0 && (
-            <View style={styles.circleBadge}>
+            <Animated.View
+              key={action.badge}
+              entering={reduced ? FadeIn.duration(150) : ZoomIn.springify().damping(14).stiffness(320)}
+              style={styles.circleBadge}
+            >
               <Text style={styles.badgeText}>
                 {action.badge > 99 ? "99+" : action.badge}
               </Text>
-            </View>
+            </Animated.View>
           )}
         </TouchableOpacity>
       ) : null}

@@ -27,6 +27,7 @@ export default function BuyerLayout() {
       <Tabs.Screen name="cart" />
       <Tabs.Screen name="profile" />
       <Tabs.Screen name="orders" options={{ href: null }} />
+      <Tabs.Screen name="kitchen" options={{ href: null }} />
       <Tabs.Screen name="notifications" options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
       <Tabs.Screen name="food-details" options={{ href: null }} />

@@ -9,8 +9,9 @@ import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
 import { Eyebrow } from "../../src/components/ui/SectionHeader";
 import { Icon } from "../../src/components/ui/Icon";
-import { ArrowLeft01Icon, BanknoteIcon, CreditCardIcon } from "../../src/components/icons";
+import { ArrowLeft01Icon, BanknoteIcon, CreditCardIcon, CheckmarkCircle01Icon } from "../../src/components/icons";
 import { toast } from "sonner-native";
+import Animated, { ZoomIn, FadeIn } from "react-native-reanimated";
 
 export default function Checkout() {
   const router = useRouter();
@@ -21,10 +22,20 @@ export default function Checkout() {
   const [address, setAddress] = useState("");
   const [addressError, setAddressError] = useState("");
   const [notes, setNotes] = useState("");
+  const [placed, setPlaced] = useState(false);
 
   useEffect(() => {
     if (items.length === 0) router.replace("/(buyer)/cart" as any);
   }, [items.length]);
+
+  useEffect(() => {
+    if (!placed) return;
+    const t = setTimeout(() => {
+      clearCart();
+      router.replace("/(buyer)/orders" as any);
+    }, 1900);
+    return () => clearTimeout(t);
+  }, [placed]);
 
   const place = async () => {
     if (!address.trim()) {
@@ -34,9 +45,10 @@ export default function Checkout() {
     setLoading(true);
     try {
       await new Promise((r) => setTimeout(r, 1000));
-      clearCart();
-      toast.success("Order placed — the kitchen has it");
-      router.replace("/(buyer)/orders" as any);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
+      setPlaced(true);
     } catch (e: any) {
       toast.error(e.message || "Order failed");
     } finally {
@@ -145,6 +157,24 @@ export default function Checkout() {
           <AppButton title={pay === "paystack" ? "Pay now" : "Place order"} variant={dark ? "white" : "ink"} loading={loading} onPress={place} />
         </View>
       </ScrollView>
+
+      {placed && (
+        <Animated.View entering={FadeIn.duration(250)} className={`absolute inset-0 items-center justify-center ${dark ? "bg-ink" : "bg-cream"}`}>
+          <Animated.View entering={ZoomIn.springify().damping(15).stiffness(180)}>
+            <View className={`w-24 h-24 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
+              <Icon icon={CheckmarkCircle01Icon} size={44} color={dark ? "#0A0A0E" : "#fff"} />
+            </View>
+          </Animated.View>
+          <Animated.View entering={FadeIn.delay(150).duration(350)} className="items-center">
+            <Text className={`text-[28px] font-display-bold tracking-tight mt-6 ${dark ? "text-white" : "text-ink"}`}>
+              Order fired!
+            </Text>
+            <Text className={`text-[14px] font-inter mt-2 ${dark ? "text-white/55" : "text-ink/55"}`}>
+              The kitchen has it · ~30 min
+            </Text>
+          </Animated.View>
+        </Animated.View>
+      )}
     </SafeAreaView>
   );
 }

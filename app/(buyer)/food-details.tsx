@@ -6,6 +6,7 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCart } from "../../src/stores/cartStore";
 import { useTheme } from "../../src/contexts/ThemeContext";
+import { fireFromEvent } from "../../src/stores/flyStore";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
@@ -51,8 +52,9 @@ export default function FoodDetails() {
     if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
   };
 
-  const handleAdd = () => {
+  const handleAdd = (e?: any) => {
     addItem({ id: product.id, name: product.name, price: product.price + (product.sizes[selectedSize]?.price || 0), image_url: product.image, seller_id: product.seller_id, seller_name: product.seller_name }, quantity);
+    if (e) fireFromEvent(e);
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     }
@@ -155,7 +157,7 @@ export default function FoodDetails() {
           </View>
           <Text className={`text-[20px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>₦{total}</Text>
         </View>
-        <AppButton title="Add to bag" variant={dark ? "white" : "ink"} onPress={handleAdd} />
+        <AppButton title="Add to bag" variant={dark ? "white" : "ink"} onPress={(e) => handleAdd(e)} />
       </View>
     </View>
   );

@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "../src/contexts/AuthContext";
 import { ThemeProvider, useTheme } from "../src/contexts/ThemeContext";
 import { Toaster } from "sonner-native";
+import { FlyLayer } from "../src/components/FlyLayer";
 import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts,
@@ -35,6 +36,7 @@ function Shell() {
         <Stack.Screen name="(admin)" />
       </Stack>
       <Toaster position="bottom-center" offset={110} />
+      <FlyLayer />
     </>
   );
 }
