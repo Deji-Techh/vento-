@@ -2,19 +2,6 @@
 -- payouts, messaging, notifications, dish photo storage. Re-runnable.
 -- Run once in Supabase Dashboard → SQL Editor.
 
--- ── helpers ──────────────────────────────────────────────────────────────
-create or replace function public.is_admin()
-returns boolean
-language sql
-security definer
-set search_path = public
-stable as $$
-  select exists (
-    select 1 from public.profiles p
-    where p.id = auth.uid() and p.role = 'admin'
-  );
-$$;
-
 -- ── profiles ─────────────────────────────────────────────────────────────
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -49,6 +36,19 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- ── helpers (after tables: SQL functions validate bodies at creation) ────
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.role = 'admin'
+  );
+$$;
 
 -- ── sellers / kitchens ───────────────────────────────────────────────────
 create table if not exists public.sellers (
