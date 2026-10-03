@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Platform, FlatList, Dimensions, RefreshControl } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Platform, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
@@ -16,12 +16,12 @@ import {
   BubbleChatIcon,
   StarIcon,
   PlusSignIcon,
+  MapPinIcon,
+  Navigation01Icon,
 } from "../../src/components/icons";
 import { SectionHeader, Eyebrow } from "../../src/components/ui/SectionHeader";
 import { StoryRow, PromoBanner } from "../../src/components/ui/Cards";
 import { Enter } from "../../src/components/motion";
-
-const { width: WIN } = Dimensions.get("window");
 
 const moods = ["All", "Spicy", "Comfort", "Fresh", "Fast"] as const;
 
@@ -42,10 +42,10 @@ const popularItems = [
   { id: "pop-6", name: "Shawarma Wrap", image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300", price: 1200, rating: 4.3, eta: 18, mood: "Fast", seller_id: "seller-9", seller_name: "Shawarma Express" },
 ];
 
-const featured = [
-  { id: "pop-3", eyebrow: "Featured", title: "Suya Platter", sub: "Fire-grilled. Yaji-dusted. Unmissable.", meta: "Suya Spot • 20 min", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800" },
-  { id: "pop-5", eyebrow: "Loved tonight", title: "Burger Meal", sub: "Smashed patty, special sauce, fries.", meta: "Burger King • 22 min", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800" },
-  { id: "pop-1", eyebrow: "Crowd pleaser", title: "Pepperoni Pizza Slice", sub: "Stone-oven, molten mozzarella.", meta: "Pizzeria Delfina • 25 min", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800" },
+const reorderItems = [
+  { id: "pop-2", name: "Grilled Chicken Bowl", image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=300", price: 2200, seller_id: "seller-5", seller_name: "Grill House" },
+  { id: "pop-3", name: "Suya Platter", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=300", price: 3000, seller_id: "seller-6", seller_name: "Suya Spot" },
+  { id: "pop-6", name: "Shawarma Wrap", image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300", price: 1200, seller_id: "seller-9", seller_name: "Shawarma Express" },
 ];
 
 function timeLine() {
@@ -63,22 +63,17 @@ export default function Browse() {
   const { dark } = useTheme();
   const [mood, setMood] = useState<(typeof moods)[number]>("All");
   const [query, setQuery] = useState("");
-  const [hero, setHero] = useState(0);
+  const [focused, setFocused] = useState(false);
+  const [recents, setRecents] = useState<string[]>(["Suya", "Shawarma"]);
   const [refreshing, setRefreshing] = useState(false);
-  const heroRef = useRef<FlatList>(null);
-  const cardW = WIN - 40;
 
   useEffect(() => {
-    Image.prefetch([...featured.map((f) => f.image), ...stories.map((s) => s.image)]);
-    const t = setInterval(() => {
-      setHero((h) => {
-        const n = (h + 1) % featured.length;
-        heroRef.current?.scrollToOffset({ offset: n * cardW, animated: true });
-        return n;
-      });
-    }, 4500);
-    return () => clearInterval(t);
-  }, [cardW]);
+    Image.prefetch([
+      "https://images.unsplash.com/photo-1544025162-d76694265947?w=800",
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800",
+      ...stories.map((s) => s.image),
+    ]);
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -90,7 +85,7 @@ export default function Browse() {
     if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
   };
 
-  const handleAdd = (item: (typeof popularItems)[number], e?: any) => {
+  const handleAdd = (item: { id: string; name: string; price: number; image: string; seller_id: string; seller_name: string }, e?: any) => {
     addItem({ id: item.id, name: item.name, price: item.price, image_url: item.image, seller_id: item.seller_id, seller_name: item.seller_name }, 1);
     if (e) fireFromEvent(e);
     if (Platform.OS !== "web") {
@@ -100,6 +95,20 @@ export default function Browse() {
   };
 
   const q = query.trim().toLowerCase();
+  const suggestions = q
+    ? popularItems.filter((i) => `${i.name} ${i.seller_name}`.toLowerCase().includes(q)).slice(0, 3)
+    : [];
+  const kitchenHits = q
+    ? stories.filter((s) => s.label.toLowerCase().includes(q)).slice(0, 2)
+    : [];
+  const showSuggest = focused && (q.length > 0 || recents.length > 0);
+
+  const applySearch = (v: string) => {
+    setQuery(v);
+    setFocused(false);
+    if (v.trim() && !recents.includes(v.trim())) setRecents((r) => [v.trim(), ...r].slice(0, 4));
+  };
+
   const visible = popularItems.filter((i) => {
     if (q && !`${i.name} ${i.seller_name}`.toLowerCase().includes(q)) return false;
     if (mood !== "All" && i.mood !== mood) return false;
@@ -112,6 +121,7 @@ export default function Browse() {
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 130 }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -121,9 +131,15 @@ export default function Browse() {
           />
         }
       >
-        {/* Header */}
+        {/* Location header */}
         <View className="px-5 pt-2 flex-row items-center justify-between">
-          <Text className={`text-[22px] font-display-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Vento</Text>
+          <TouchableOpacity onPress={() => toast("Delivering to Campus Gate")} activeOpacity={0.8} className="flex-row items-center gap-1.5">
+            <Icon icon={MapPinIcon} size={18} color="#FF5A1F" />
+            <View>
+              <Text className={`text-[11px] font-inter-medium ${dark ? "text-white/50" : "text-ink/50"}`}>Deliver to</Text>
+              <Text className={`text-[15px] font-inter-bold -mt-0.5 ${dark ? "text-white" : "text-ink"}`}>Campus Gate ▾</Text>
+            </View>
+          </TouchableOpacity>
           <View className="flex-row items-center gap-2.5">
             <TouchableOpacity
               onPress={() => router.push("/(buyer)/chat" as any)}
@@ -140,9 +156,9 @@ export default function Browse() {
           </View>
         </View>
 
-        {/* Craving greeting */}
+        {/* Greeting + smart search */}
         <Enter>
-          <View className="px-5 mt-5">
+          <View className="px-5 mt-4">
             <Text className={`text-[11px] font-inter-bold tracking-[2px] uppercase ${dark ? "text-white/50" : "text-ink/50"}`}>
               {timeLine()}
             </Text>
@@ -156,6 +172,10 @@ export default function Browse() {
                 placeholderTextColor={dark ? "rgba(255,255,255,0.38)" : "rgba(10,10,14,0.35)"}
                 value={query}
                 onChangeText={setQuery}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setTimeout(() => setFocused(false), 150)}
+                onSubmitEditing={() => applySearch(query)}
+                returnKeyType="search"
                 className={`flex-1 text-[15px] font-inter ml-2 ${dark ? "text-white" : "text-ink"}`}
               />
               {q ? (
@@ -168,11 +188,59 @@ export default function Browse() {
                 </View>
               )}
             </View>
+
+            {showSuggest && (
+              <View className={`mt-2 rounded-[20px] border overflow-hidden ${dark ? "bg-surface-dark border-white/10" : "bg-white border-border"}`}>
+                {suggestions.map((s) => (
+                  <TouchableOpacity
+                    key={s.id}
+                    onPress={() => {
+                      applySearch(s.name);
+                      router.push(`/(buyer)/food-details?id=${s.id}` as any);
+                    }}
+                    className={`flex-row items-center gap-3 px-4 py-3 border-b ${dark ? "border-white/[0.07]" : "border-ink/[0.06]"}`}
+                  >
+                    <Icon icon={Search01Icon} size={15} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.35)"} />
+                    <Text className={`text-[14px] font-inter-medium flex-1 ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>{s.name}</Text>
+                    <Text className={`text-[12px] font-inter-bold ${dark ? "text-white/50" : "text-ink/50"}`}>₦{s.price.toLocaleString()}</Text>
+                  </TouchableOpacity>
+                ))}
+                {kitchenHits.map((k) => (
+                  <TouchableOpacity
+                    key={k.id}
+                    onPress={() => {
+                      setFocused(false);
+                      router.push(`/(buyer)/kitchen?id=${k.id}` as any);
+                    }}
+                    className={`flex-row items-center gap-3 px-4 py-3 border-b ${dark ? "border-white/[0.07]" : "border-ink/[0.06]"}`}
+                  >
+                    <Image source={{ uri: k.image }} style={{ width: 28, height: 28, borderRadius: 14 }} contentFit="cover" />
+                    <Text className={`text-[14px] font-inter-medium flex-1 ${dark ? "text-white" : "text-ink"}`}>{k.label}</Text>
+                    <Text className={`text-[11px] font-inter-bold uppercase tracking-[1px] ${dark ? "text-white/40" : "text-ink/40"}`}>Kitchen</Text>
+                  </TouchableOpacity>
+                ))}
+                {!q && recents.map((r) => (
+                  <TouchableOpacity
+                    key={r}
+                    onPress={() => applySearch(r)}
+                    className="flex-row items-center gap-3 px-4 py-3"
+                  >
+                    <Icon icon={Search01Icon} size={15} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.35)"} />
+                    <Text className={`text-[14px] font-inter flex-1 ${dark ? "text-white/70" : "text-ink/70"}`}>{r}</Text>
+                  </TouchableOpacity>
+                ))}
+                {q && suggestions.length === 0 && kitchenHits.length === 0 && (
+                  <View className="px-4 py-3.5 items-center">
+                    <Text className={`text-[13px] font-inter ${dark ? "text-white/50" : "text-ink/50"}`}>No matches — try “suya”</Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
         </Enter>
 
         {/* Moods */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-5 pl-5" contentContainerStyle={{ paddingRight: 20 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-4 pl-5" contentContainerStyle={{ paddingRight: 20 }}>
           {moods.map((m) => (
             <TouchableOpacity
               key={m}
@@ -193,60 +261,94 @@ export default function Browse() {
           ))}
         </ScrollView>
 
-        {/* Rotating featured */}
+        {/* Live order band */}
         <Enter delay={60}>
-          <View className="mt-5">
-            <FlatList
-              ref={heroRef}
-              data={featured}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(f) => f.id}
-              onMomentumScrollEnd={(e) => setHero(Math.round(e.nativeEvent.contentOffset.x / cardW))}
-              renderItem={({ item }) => (
-                <View style={{ width: cardW, marginLeft: 20 }}>
+          <View className="px-5 mt-5">
+            <TouchableOpacity
+              onPress={() => router.push("/(buyer)/track-delivery" as any)}
+              activeOpacity={0.92}
+              className={`rounded-[24px] p-4 flex-row items-center gap-3.5 border ${dark ? "bg-white/[0.05] border-white/10" : "bg-white border-border"}`}
+            >
+              <View className="w-12 h-12 rounded-2xl bg-success/15 items-center justify-center">
+                <Icon icon={Navigation01Icon} size={22} color="#0E9F6E" />
+              </View>
+              <View className="flex-1">
+                <View className="flex-row items-center gap-2">
+                  <Text className={`text-[15px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Grill House is on its way</Text>
+                </View>
+                <View className={`h-1 rounded-full overflow-hidden mt-2 ${dark ? "bg-white/10" : "bg-ink/10"}`}>
+                  <View className="h-full w-2/3 bg-success rounded-full" />
+                </View>
+                <Text className={`text-[12px] font-inter mt-1.5 ${dark ? "text-white/50" : "text-ink/50"}`}>Arriving in 3 min · Tap to track</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Enter>
+
+        {/* Bento hero */}
+        <Enter delay={80}>
+          <View className="px-5 mt-5">
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                activeOpacity={0.92}
+                onPress={() => router.push(`/(buyer)/food-details?id=pop-3` as any)}
+                className="rounded-[24px] overflow-hidden"
+                style={{ flex: 1.15, height: 300 }}
+              >
+                <Image source={{ uri: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800" }} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={200} cachePolicy="memory-disk" priority="high" />
+                <LinearGradient
+                  colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.6)"]}
+                  locations={[0.45, 1]}
+                  start={{ x: 0.5, y: 0 }}
+                  end={{ x: 0.5, y: 1 }}
+                  style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+                />
+                <View className="absolute top-3 left-3">
+                  <Eyebrow dark>Featured</Eyebrow>
+                </View>
+                <View className="absolute bottom-0 left-0 right-0 p-4">
+                  <Text className="text-white text-[20px] font-display-bold tracking-tight">Suya Platter</Text>
+                  <View className="flex-row items-center justify-between mt-1.5">
+                    <Text className="text-white/75 text-[13px] font-inter-bold">₦3,000</Text>
+                    <TouchableOpacity
+                      onPress={(e) => handleAdd(popularItems[2], e)}
+                      className="w-9 h-9 rounded-full bg-white items-center justify-center"
+                    >
+                      <Icon icon={PlusSignIcon} size={17} color="#0A0A0E" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableOpacity>
+              <View className="flex-1 gap-3">
+                {[
+                  { item: popularItems[4], tag: "4.6★" },
+                  { item: popularItems[0], tag: "FAST" },
+                ].map(({ item, tag }) => (
                   <TouchableOpacity
-                    activeOpacity={0.94}
+                    key={item.id}
+                    activeOpacity={0.92}
                     onPress={() => router.push(`/(buyer)/food-details?id=${item.id}` as any)}
-                    className="rounded-[28px] overflow-hidden"
+                    className="rounded-[24px] overflow-hidden"
+                    style={{ height: 144 }}
                   >
-                    <Image source={{ uri: item.image }} style={{ width: "100%", height: 300 }} contentFit="cover" transition={200} cachePolicy="memory-disk" priority="high" />
+                    <Image source={{ uri: item.image }} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={200} cachePolicy="memory-disk" />
                     <LinearGradient
-                      colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.55)"]}
+                      colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.6)"]}
                       locations={[0.4, 1]}
                       start={{ x: 0.5, y: 0 }}
                       end={{ x: 0.5, y: 1 }}
                       style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
                     />
-                    <View className="absolute top-4 left-4">
-                      <Eyebrow dark>{item.eyebrow}</Eyebrow>
+                    <View className="absolute top-2.5 left-2.5 bg-black/55 px-2 py-1 rounded-full">
+                      <Text className="text-white text-[10px] font-inter-bold">{tag}</Text>
                     </View>
-                    <View className="absolute bottom-0 left-0 right-0 p-5">
-                      <Text className="text-white text-[26px] font-display-bold tracking-tight">{item.title}</Text>
-                      <Text className="text-white/70 text-[13px] font-inter mt-1">{item.sub}</Text>
-                      <View className="flex-row items-center justify-between mt-3.5">
-                        <Text className="text-white/70 text-[12px] font-inter-semibold">{item.meta}</Text>
-                        <View className="bg-white px-5 py-2.5 rounded-full">
-                          <Text className="text-ink text-[13px] font-inter-bold">Order</Text>
-                        </View>
-                      </View>
+                    <View className="absolute bottom-0 left-0 right-0 p-3">
+                      <Text className="text-white text-[14px] font-display-bold tracking-tight" numberOfLines={1}>{item.name}</Text>
+                      <Text className="text-white/75 text-[12px] font-inter-bold mt-0.5">₦{item.price.toLocaleString()}</Text>
                     </View>
                   </TouchableOpacity>
-                </View>
-              )}
-            />
-            <View className="items-center mt-3 flex-row justify-center gap-1.5">
-              {featured.map((f, i) => (
-                <TouchableOpacity
-                  key={f.id}
-                  onPress={() => {
-                    setHero(i);
-                    heroRef.current?.scrollToOffset({ offset: i * cardW, animated: true });
-                  }}
-                  className={`h-1.5 rounded-full ${i === hero ? (dark ? "w-6 bg-white" : "w-6 bg-ink") : dark ? "w-1.5 bg-white/25" : "w-1.5 bg-ink/20"}`}
-                />
-              ))}
+                ))}
+              </View>
             </View>
           </View>
         </Enter>
@@ -273,7 +375,35 @@ export default function Browse() {
           </ScrollView>
         </View>
 
-        {/* Filtered list */}
+        {/* Order again */}
+        <View className="mt-7 pl-5">
+          <View className="pr-5">
+            <SectionHeader title="Order again" action="History" />
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20, gap: 12 }}>
+            {reorderItems.map((item) => (
+              <View key={item.id} className={`w-[160px] rounded-[20px] overflow-hidden border ${dark ? "bg-white/[0.04] border-white/10" : "bg-white border-border"}`}>
+                <TouchableOpacity onPress={() => router.push(`/(buyer)/food-details?id=${item.id}` as any)} activeOpacity={0.9}>
+                  <Image source={{ uri: item.image }} style={{ width: "100%", height: 100 }} contentFit="cover" transition={200} cachePolicy="memory-disk" />
+                </TouchableOpacity>
+                <View className="p-3">
+                  <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>{item.name}</Text>
+                  <View className="flex-row items-center justify-between mt-2">
+                    <Text className={`text-[13px] font-inter-bold ${dark ? "text-white/70" : "text-ink/70"}`}>₦{item.price.toLocaleString()}</Text>
+                    <TouchableOpacity
+                      onPress={(e) => handleAdd(item, e)}
+                      className={`px-3.5 py-2 rounded-full ${dark ? "bg-white" : "bg-ink"}`}
+                    >
+                      <Text className={`text-[12px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>Add</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Dish list */}
         <View className="px-5 mt-7">
           <SectionHeader
             title={q || mood !== "All" ? `${visible.length} craving${visible.length === 1 ? "" : "s"}` : "Nearby"}
