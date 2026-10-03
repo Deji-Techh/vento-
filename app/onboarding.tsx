@@ -4,6 +4,13 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import Animated, {
+  FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { AppButton } from "../src/components/ui/AppButton";
 
@@ -44,8 +51,20 @@ export default function Onboarding() {
     }
   };
 
+  const opacity = useSharedValue(1);
+  const fadeStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const exiting = useRef(false);
+
+  // Fade through ink before leaving — no hard cuts into the app.
+  const exitTo = (fn: () => void) => {
+    if (exiting.current) return;
+    exiting.current = true;
+    opacity.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.quad) });
+    setTimeout(fn, 300);
+  };
+
   return (
-    <View className="flex-1 bg-ink">
+    <Animated.View style={[{ flex: 1, backgroundColor: "#0A0A0E" }, fadeStyle]}>
       <FlatList
         ref={listRef}
         data={slides}
@@ -80,7 +99,7 @@ export default function Onboarding() {
           <View className="w-10 h-10 rounded-full bg-white items-center justify-center">
             <Text className="text-ink text-lg font-inter-bold">V</Text>
           </View>
-          <Pressable onPress={() => router.replace("/(buyer)/browse" as any)} className="active:opacity-60">
+          <Pressable onPress={() => exitTo(() => router.replace("/(buyer)/browse" as any))} className="active:opacity-60">
             <Text className="text-white text-[14px] font-inter-semibold">Skip</Text>
           </Pressable>
         </View>
@@ -98,23 +117,25 @@ export default function Onboarding() {
                 </Pressable>
               ))}
             </View>
-            <Text className="text-white/50 text-[11px] font-inter-bold tracking-[2px] uppercase">
-              {slides[current].eyebrow}
-            </Text>
-            <Text className="text-white text-[36px] font-display-bold tracking-tight leading-[38px] mt-2">
-              {slides[current].title}
-            </Text>
-            <Text className="text-white/60 text-[15px] font-inter leading-[23px] mt-3 max-w-[300px]">
-              {slides[current].description}
-            </Text>
+            <Animated.View key={current} entering={FadeIn.duration(320)}>
+              <Text className="text-white/50 text-[11px] font-inter-bold tracking-[2px] uppercase">
+                {slides[current].eyebrow}
+              </Text>
+              <Text className="text-white text-[36px] font-display-bold tracking-tight leading-[38px] mt-2">
+                {slides[current].title}
+              </Text>
+              <Text className="text-white/60 text-[15px] font-inter leading-[23px] mt-3 max-w-[300px]">
+                {slides[current].description}
+              </Text>
+            </Animated.View>
             <View className="mt-6">
               <AppButton
                 title={isLast ? "Get started" : "Continue"}
                 variant="white"
-                onPress={() => (isLast ? router.replace("/(buyer)/browse" as any) : goTo(current + 1))}
+                onPress={() => (isLast ? exitTo(() => router.replace("/(buyer)/browse" as any)) : goTo(current + 1))}
               />
             </View>
-            <Pressable onPress={() => router.push("/auth/login" as any)} className="mt-4 items-center active:opacity-60">
+            <Pressable onPress={() => exitTo(() => router.push("/auth/login" as any))} className="mt-4 items-center active:opacity-60">
               <Text className="text-white/60 text-[14px] font-inter-medium">
                 Have an account? <Text className="font-inter-bold text-white">Log in</Text>
               </Text>
@@ -122,6 +143,6 @@ export default function Onboarding() {
           </View>
         </SafeAreaView>
       </View>
-    </View>
+    </Animated.View>
   );
 }

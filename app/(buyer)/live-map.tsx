@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
+import { Enter } from "../../src/components/motion";
 import { Icon } from "../../src/components/ui/Icon";
 import {
   ArrowLeft01Icon,
@@ -94,7 +95,8 @@ export default function LiveMap() {
 
       <View className="flex-1" />
 
-      <View className={`w-full rounded-t-[32px] border-t border-x pb-8 z-50 ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}>
+      <Enter delay={80}>
+        <View className={`w-full rounded-t-[32px] border-t border-x pb-8 z-50 ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}>
         <View className="w-full items-center pt-4 pb-2">
           <View className={`w-12 h-1.5 rounded-full ${dark ? "bg-white/15" : "bg-ink/15"}`} />
         </View>
@@ -131,6 +133,7 @@ export default function LiveMap() {
           <AppButton title="Order Details" variant={dark ? "white" : "ink"} onPress={() => router.back()} />
         </View>
       </View>
+      </Enter>
     </View>
   );
 }
