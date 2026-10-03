@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase, SUPABASE_CONFIGURED } from "../lib/supabase";
 
 export type Role = "buyer" | "seller" | "delivery_agent" | "admin";
 
@@ -48,18 +48,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let alive = true;
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!alive) return;
-      const session = data.session;
-      if (session?.user) {
-        setUser({ id: session.user.id, email: session.user.email || "" });
-        const p = await fetchProfile(session.user.id);
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
         if (!alive) return;
-        setProfile(p);
-        setRole(p?.role || "buyer");
-      }
-      setLoading(false);
-    });
+        const session = data.session;
+        if (session?.user) {
+          setUser({ id: session.user.id, email: session.user.email || "" });
+          const p = await fetchProfile(session.user.id);
+          if (!alive) return;
+          setProfile(p);
+          setRole(p?.role || "buyer");
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        if (alive) setLoading(false);
+      });
 
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!alive) return;
@@ -83,6 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string): Promise<Role> => {
+    if (!SUPABASE_CONFIGURED) throw new Error("Backend not connected — try again later");
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
@@ -97,6 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (data: { email: string; password: string; firstName: string; lastName: string }) => {
+    if (!SUPABASE_CONFIGURED) throw new Error("Backend not connected — try again later");
     const name = `${data.firstName} ${data.lastName}`.trim();
     const { data: res, error } = await supabase.auth.signUp({
       email: data.email.trim().toLowerCase(),

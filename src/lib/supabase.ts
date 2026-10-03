@@ -5,11 +5,19 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabasePublishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
 
-if (!supabaseUrl || !supabasePublishableKey) {
+export const SUPABASE_CONFIGURED = Boolean(supabaseUrl && supabasePublishableKey);
+
+if (!SUPABASE_CONFIGURED) {
   console.warn("[supabase] Missing EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
 }
 
-export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
+// Placeholder keeps module init crash-free when env is missing (e.g. a
+// build without EAS env wired); every call then fails with a catchable
+// error instead of a red screen at startup.
+export const supabase = createClient(
+  supabaseUrl || "https://placeholder.supabase.co",
+  supabasePublishableKey || "placeholder-key",
+  {
   auth: {
     storage: localStorage,
     autoRefreshToken: true,
