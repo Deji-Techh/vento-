@@ -2,12 +2,14 @@ import { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
+import { supabase } from "../../src/lib/supabase";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { Enter } from "../../src/components/motion";
 import { Icon } from "../../src/components/ui/Icon";
 import { ShoppingBag02Icon, Store01Icon, DeliveryBox01Icon } from "../../src/components/icons";
+import { toast } from "sonner-native";
 
 const roles = [
   { id: "buyer", label: "Order food", description: "Hot meals, delivered fast.", icon: ShoppingBag02Icon },
@@ -17,17 +19,29 @@ const roles = [
 
 export default function ChooseRole() {
   const router = useRouter();
+  const { user, refreshProfile } = useAuth();
   const { dark } = useTheme();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const handleContinue = async () => {
-    if (!selectedRole) return;
-    const existing = await AsyncStorage.getItem("mock_user");
-    const parsed = existing ? JSON.parse(existing) : {};
-    await AsyncStorage.setItem("mock_user", JSON.stringify({ ...parsed, role: selectedRole }));
-    if (selectedRole === "buyer") router.replace("/(buyer)/browse" as any);
-    else if (selectedRole === "seller") router.replace("/(seller)/dashboard" as any);
-    else router.replace("/(delivery)/dashboard" as any);
+    if (!selectedRole || saving) return;
+    const role = selectedRole === "rider" ? "delivery_agent" : selectedRole;
+    setSaving(true);
+    try {
+      if (user) {
+        const { error } = await supabase.from("profiles").update({ role }).eq("id", user.id);
+        if (error) throw error;
+        await refreshProfile();
+      }
+      if (role === "buyer") router.replace("/(buyer)/browse" as any);
+      else if (role === "seller") router.replace("/(seller)/dashboard" as any);
+      else router.replace("/(delivery)/dashboard" as any);
+    } catch {
+      toast.error("Couldn't save your role — try again");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -77,7 +91,7 @@ export default function ChooseRole() {
         </View>
       </View>
       <View className="px-6 pb-2">
-        <AppButton title="Continue" variant={dark ? "white" : "ink"} disabled={!selectedRole} onPress={handleContinue} />
+        <AppButton title="Continue" variant={dark ? "white" : "ink"} disabled={!selectedRole} loading={saving} onPress={handleContinue} />
       </View>
     </SafeAreaView>
   );

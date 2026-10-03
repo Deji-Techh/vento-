@@ -105,6 +105,24 @@ export default function Signup() {
               <AppButton title="Create account" variant={dark ? "white" : "ink"} loading={loading} onPress={handleSignup} />
             </View>
 
+            <View className="flex-row items-center my-6">
+              <View className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-ink/10"}`} />
+              <Text className={`px-3 text-[11px] font-inter-bold tracking-[1px] ${dark ? "text-white/40" : "text-ink/40"}`}>OR</Text>
+              <View className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-ink/10"}`} />
+            </View>
+
+            <View className="flex-row gap-3">
+              {["Google", "Apple"].map((p) => (
+                <TouchableOpacity
+                  key={p}
+                  onPress={() => toast(`${p} sign-up comes with the full app build`)}
+                  className={`flex-1 h-[52px] rounded-full border items-center justify-center active:opacity-70 ${dark ? "bg-white/10 border-white/15" : "bg-ink/[0.04] border-ink/10"}`}
+                >
+                  <Text className={`text-[14px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{p}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             <TouchableOpacity onPress={() => router.push("/auth/login")} className="items-center mt-6 active:opacity-60">
               <Text className={`text-[14px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
                 Have an account? <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Log in</Text>

@@ -8,15 +8,6 @@ import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
 import { Enter } from "../../src/components/motion";
 import { toast } from "sonner-native";
-// DEV-BYPASS: remove this import with the bypass (see src/lib/devAuthBypass.ts)
-import { DEV_AUTH_BYPASS, inferDevRole } from "../../src/lib/devAuthBypass";
-
-const mockUsers: Record<string, { id: string; role: string }> = {
-  "admin@campus.edu": { id: "mock-admin-001", role: "admin" },
-  "ada@campus.edu": { id: "mock-seller-001", role: "seller" },
-  "chidi@campus.edu": { id: "mock-buyer-001", role: "buyer" },
-  "emeka@campus.edu": { id: "mock-agent-001", role: "delivery_agent" },
-};
 
 export default function Login() {
   const router = useRouter();
@@ -49,9 +40,7 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      await signIn(email, password);
-      // DEV-BYPASS: any email works — delete line to remove (falls back to map)
-      const role = DEV_AUTH_BYPASS ? inferDevRole(email) : mockUsers[email.toLowerCase()]?.role || "buyer";
+      const role = await signIn(email, password);
       if (role === "admin") router.replace("/(admin)" as any);
       else if (role === "seller") router.replace("/(seller)/dashboard" as any);
       else if (role === "delivery_agent") router.replace("/(delivery)/dashboard" as any);
@@ -115,7 +104,7 @@ export default function Login() {
             </Enter>
 
             <View className="flex-row justify-end mt-3 mb-7">
-              <TouchableOpacity className="active:opacity-60">
+              <TouchableOpacity onPress={() => router.push("/auth/forgot")} className="active:opacity-60">
                 <Text className={`text-[14px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>Forgot password?</Text>
               </TouchableOpacity>
             </View>
@@ -138,6 +127,7 @@ export default function Login() {
               {["Google", "Apple"].map((p) => (
                 <TouchableOpacity
                   key={p}
+                  onPress={() => toast(`${p} sign-in comes with the full app build`)}
                   className={`flex-1 h-[52px] rounded-full border items-center justify-center active:opacity-70 ${dark ? "bg-white/10 border-white/15" : "bg-ink/[0.04] border-ink/10"}`}
                 >
                   <Text className={`text-[14px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{p}</Text>

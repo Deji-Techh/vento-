@@ -1,163 +1,128 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-// DEV-BYPASS: remove this import with the bypass (see src/lib/devAuthBypass.ts)
-import { DEV_AUTH_BYPASS, makeDevSession } from "../lib/devAuthBypass";
+import { supabase } from "../lib/supabase";
 
-interface MockUser {
+export type Role = "buyer" | "seller" | "delivery_agent" | "admin";
+
+interface Profile {
   id: string;
   email: string;
-  [key: string]: any;
+  name: string;
+  phone: string | null;
+  role: Role;
+  avatar_url: string | null;
 }
 
 interface AuthContextType {
-  user: MockUser | null;
-  profile: any | null;
-  role: string | null;
+  user: { id: string; email: string } | null;
+  profile: Profile | null;
+  role: Role | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (data: any) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<Role>;
+  signUp: (data: { email: string; password: string; firstName: string; lastName: string }) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const MOCK_PROFILES: Record<string, any> = {
-  "mock-admin-001": {
-    id: "mock-admin-001",
-    name: "Admin User",
-    email: "admin@campus.edu",
-    phone: "+2348000000001",
-    avatar_url: null,
-    role: "admin",
-  },
-  "mock-seller-001": {
-    id: "mock-seller-001",
-    name: "Chef Ada",
-    email: "ada@campus.edu",
-    phone: "+2348000000002",
-    avatar_url: null,
-    role: "seller",
-    sellers: {
-      id: "seller-001",
-      store_name: "Ada's Kitchen",
-      description: "Authentic Nigerian cuisine",
-      total_earnings: 125000,
-      completed_deliveries: 0,
-      approved: true,
-      verification_status: "verified",
-    },
-  },
-  "mock-buyer-001": {
-    id: "mock-buyer-001",
-    name: "Chidi Okonkwo",
-    email: "chidi@campus.edu",
-    phone: "+2348000000003",
-    avatar_url: null,
-    role: "buyer",
-  },
-  "mock-agent-001": {
-    id: "mock-agent-001",
-    name: "Emeka Rider",
-    email: "emeka@campus.edu",
-    phone: "+2348000000004",
-    avatar_url: null,
-    role: "delivery_agent",
-    delivery_agents: {
-      id: "agent-001",
-      is_active: true,
-      is_online: false,
-      total_earnings: 45000,
-      completed_deliveries: 23,
-    },
-  },
-};
+function friendly(error: any): string {
+  const msg = error?.message || "";
+  if (/invalid login credentials/i.test(msg)) return "Wrong email or password";
+  if (/user already registered|already exists/i.test(msg)) return "Account exists — log in instead";
+  if (/password should be/i.test(msg)) return msg;
+  if (/network|fetch|connection/i.test(msg)) return "Check your connection and try again";
+  return msg || "Something went wrong";
+}
 
-const MOCK_USERS: Record<string, { id: string; role: string }> = {
-  "admin@campus.edu": { id: "mock-admin-001", role: "admin" },
-  "ada@campus.edu": { id: "mock-seller-001", role: "seller" },
-  "chidi@campus.edu": { id: "mock-buyer-001", role: "buyer" },
-  "emeka@campus.edu": { id: "mock-agent-001", role: "delivery_agent" },
-};
+async function fetchProfile(userId: string): Promise<Profile | null> {
+  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  if (error) return null;
+  return data as Profile;
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<MockUser | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [user, setUser] = useState<{ id: string; email: string } | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [role, setRole] = useState<Role | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const stored = await AsyncStorage.getItem("mock_user");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          setUser(parsed);
-          const p = MOCK_PROFILES[parsed.id];
-          setProfile(p || null);
-          setRole(p?.role || null);
-        }
-      } catch (e) {
-        console.error("Failed to load user", e);
+    let alive = true;
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!alive) return;
+      const session = data.session;
+      if (session?.user) {
+        setUser({ id: session.user.id, email: session.user.email || "" });
+        const p = await fetchProfile(session.user.id);
+        if (!alive) return;
+        setProfile(p);
+        setRole(p?.role || "buyer");
       }
       setLoading(false);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!alive) return;
+      if (session?.user) {
+        setUser({ id: session.user.id, email: session.user.email || "" });
+        const p = await fetchProfile(session.user.id);
+        if (!alive) return;
+        setProfile(p);
+        setRole(p?.role || "buyer");
+      } else {
+        setUser(null);
+        setProfile(null);
+        setRole(null);
+      }
+    });
+
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
     };
-    loadUser();
   }, []);
 
-  const signIn = async (email: string, _password: string) => {
-    // DEV-BYPASS: accept ANY credentials locally — delete block to remove
-    if (DEV_AUTH_BYPASS) {
-      const { userData, role: devRole, profile: devProfile } = makeDevSession(email);
-      await AsyncStorage.setItem("mock_user", JSON.stringify(userData));
-      setUser(userData);
-      setProfile(devProfile);
-      setRole(devRole);
-      return;
-    }
-    await new Promise((r) => setTimeout(r, 1000));
-    const mockUser = MOCK_USERS[email.toLowerCase()];
-    const id = mockUser?.id || `mock-user-${Date.now()}`;
-    const userData = { id, email };
-    await AsyncStorage.setItem("mock_user", JSON.stringify(userData));
-    setUser(userData);
-    const p = MOCK_PROFILES[id];
-    setProfile(p || null);
-    setRole(p?.role || "buyer");
+  const signIn = async (email: string, password: string): Promise<Role> => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    if (error) throw new Error(friendly(error));
+    const p = data.user ? await fetchProfile(data.user.id) : null;
+    const r = p?.role || "buyer";
+    if (data.user) setUser({ id: data.user.id, email: data.user.email || "" });
+    setProfile(p);
+    setRole(r);
+    return r;
   };
 
-  const signUp = async (data: any) => {
-    // DEV-BYPASS: accept ANY signup data locally — delete block to remove
-    if (DEV_AUTH_BYPASS) {
-      const { userData, role: devRole, profile: devProfile } = makeDevSession(
-        data.email,
-        data.firstName ? `${data.firstName} ${data.lastName || ""}`.trim() : undefined
-      );
-      await AsyncStorage.setItem("mock_user", JSON.stringify(userData));
-      setUser(userData);
-      // New signups go through choose-role; keep a buyer-leaning local profile
-      setProfile({ ...devProfile, name: `${data.firstName} ${data.lastName}`.trim() || devProfile.name });
-      setRole(devRole === "buyer" ? "buyer" : devRole);
-      return;
-    }
-    await new Promise((r) => setTimeout(r, 1000));
-    const id = `mock-user-${Date.now()}`;
-    const userData = { id, email: data.email };
-    await AsyncStorage.setItem("mock_user", JSON.stringify(userData));
-    setUser(userData);
-    setProfile({
-      id,
-      name: `${data.firstName} ${data.lastName}`,
-      email: data.email,
-      phone: data.phone || null,
-      avatar_url: null,
-      role: "buyer",
+  const signUp = async (data: { email: string; password: string; firstName: string; lastName: string }) => {
+    const name = `${data.firstName} ${data.lastName}`.trim();
+    const { data: res, error } = await supabase.auth.signUp({
+      email: data.email.trim().toLowerCase(),
+      password: data.password,
+      options: { data: { name, role: "buyer" } },
     });
-    setRole("buyer");
+    if (error) throw new Error(friendly(error));
+    if (res.user && !res.session) {
+      throw new Error("Check your email to confirm your account");
+    }
+    // Ensure a profile row exists even if the trigger lags.
+    if (res.user) {
+      const existing = await fetchProfile(res.user.id);
+      if (!existing) {
+        await supabase.from("profiles").insert({
+          id: res.user.id,
+          email: data.email.trim().toLowerCase(),
+          name,
+          role: "buyer",
+        });
+      }
+    }
   };
 
   const signOut = async () => {
-    await AsyncStorage.removeItem("mock_user");
+    await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
     setRole(null);
@@ -165,8 +130,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshProfile = async () => {
     if (user) {
-      const p = MOCK_PROFILES[user.id];
-      setProfile(p || null);
+      const p = await fetchProfile(user.id);
+      setProfile(p);
       setRole(p?.role || null);
     }
   };
