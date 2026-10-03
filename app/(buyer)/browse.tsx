@@ -34,18 +34,18 @@ const stories = [
 ];
 
 const popularItems = [
-  { id: "pop-1", name: "Pepperoni Pizza Slice", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600", price: 1500, rating: 4.5, eta: 25, mood: "Comfort", seller_id: "seller-4", seller_name: "Pizzeria Delfina" },
-  { id: "pop-2", name: "Grilled Chicken Bowl", image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600", price: 2200, rating: 4.7, eta: 30, mood: "Fresh", seller_id: "seller-5", seller_name: "Grill House" },
-  { id: "pop-3", name: "Suya Platter", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=600", price: 3000, rating: 4.8, eta: 20, mood: "Spicy", seller_id: "seller-6", seller_name: "Suya Spot" },
-  { id: "pop-4", name: "Fish & Chips", image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=600", price: 2800, rating: 4.4, eta: 35, mood: "Comfort", seller_id: "seller-7", seller_name: "Ocean Basket" },
-  { id: "pop-5", name: "Burger Meal", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600", price: 1800, rating: 4.6, eta: 22, mood: "Comfort", seller_id: "seller-8", seller_name: "Burger King" },
-  { id: "pop-6", name: "Shawarma Wrap", image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=600", price: 1200, rating: 4.3, eta: 18, mood: "Fast", seller_id: "seller-9", seller_name: "Shawarma Express" },
+  { id: "pop-1", name: "Pepperoni Pizza Slice", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300", price: 1500, rating: 4.5, eta: 25, mood: "Comfort", seller_id: "seller-4", seller_name: "Pizzeria Delfina" },
+  { id: "pop-2", name: "Grilled Chicken Bowl", image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=300", price: 2200, rating: 4.7, eta: 30, mood: "Fresh", seller_id: "seller-5", seller_name: "Grill House" },
+  { id: "pop-3", name: "Suya Platter", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=300", price: 3000, rating: 4.8, eta: 20, mood: "Spicy", seller_id: "seller-6", seller_name: "Suya Spot" },
+  { id: "pop-4", name: "Fish & Chips", image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=300", price: 2800, rating: 4.4, eta: 35, mood: "Comfort", seller_id: "seller-7", seller_name: "Ocean Basket" },
+  { id: "pop-5", name: "Burger Meal", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300", price: 1800, rating: 4.6, eta: 22, mood: "Comfort", seller_id: "seller-8", seller_name: "Burger King" },
+  { id: "pop-6", name: "Shawarma Wrap", image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300", price: 1200, rating: 4.3, eta: 18, mood: "Fast", seller_id: "seller-9", seller_name: "Shawarma Express" },
 ];
 
 const featured = [
-  { id: "pop-3", eyebrow: "Featured", title: "Suya Platter", sub: "Fire-grilled. Yaji-dusted. Unmissable.", meta: "Suya Spot • 20 min", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=900" },
-  { id: "pop-5", eyebrow: "Loved tonight", title: "Burger Meal", sub: "Smashed patty, special sauce, fries.", meta: "Burger King • 22 min", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900" },
-  { id: "pop-1", eyebrow: "Crowd pleaser", title: "Pepperoni Pizza Slice", sub: "Stone-oven, molten mozzarella.", meta: "Pizzeria Delfina • 25 min", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=900" },
+  { id: "pop-3", eyebrow: "Featured", title: "Suya Platter", sub: "Fire-grilled. Yaji-dusted. Unmissable.", meta: "Suya Spot • 20 min", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800" },
+  { id: "pop-5", eyebrow: "Loved tonight", title: "Burger Meal", sub: "Smashed patty, special sauce, fries.", meta: "Burger King • 22 min", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800" },
+  { id: "pop-1", eyebrow: "Crowd pleaser", title: "Pepperoni Pizza Slice", sub: "Stone-oven, molten mozzarella.", meta: "Pizzeria Delfina • 25 min", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800" },
 ];
 
 function timeLine() {
@@ -69,6 +69,7 @@ export default function Browse() {
   const cardW = WIN - 40;
 
   useEffect(() => {
+    Image.prefetch([...featured.map((f) => f.image), ...stories.map((s) => s.image)]);
     const t = setInterval(() => {
       setHero((h) => {
         const n = (h + 1) % featured.length;
@@ -210,7 +211,7 @@ export default function Browse() {
                     onPress={() => router.push(`/(buyer)/food-details?id=${item.id}` as any)}
                     className="rounded-[28px] overflow-hidden"
                   >
-                    <Image source={{ uri: item.image }} style={{ width: "100%", height: 300 }} contentFit="cover" transition={300} />
+                    <Image source={{ uri: item.image }} style={{ width: "100%", height: 300 }} contentFit="cover" transition={200} cachePolicy="memory-disk" priority="high" />
                     <LinearGradient
                       colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.55)"]}
                       locations={[0.4, 1]}
@@ -285,7 +286,7 @@ export default function Browse() {
                   activeOpacity={0.9}
                   className="flex-row items-center py-2"
                 >
-                  <Image source={{ uri: item.image }} style={{ width: 76, height: 76, borderRadius: 20 }} contentFit="cover" transition={200} />
+                  <Image source={{ uri: item.image }} style={{ width: 76, height: 76, borderRadius: 20, backgroundColor: dark ? "rgba(255,255,255,0.06)" : "rgba(10,10,14,0.05)" }} contentFit="cover" transition={200} cachePolicy="memory-disk" />
                   <View className="flex-1 ml-3.5">
                     <Text className={`font-inter-bold text-[15px] tracking-tight ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>{item.name}</Text>
                     <View className="flex-row items-center gap-1 mt-1">

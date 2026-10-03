@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
+import { supabase } from "../../src/lib/supabase";
 import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
@@ -20,54 +21,41 @@ import {
   PhoneIcon,
   Edit02Icon,
   Logout01Icon,
-  Package01Icon,
-  ChartLineIcon,
-  BanknoteIcon,
   Settings01Icon,
 } from "../../src/components/icons";
 
-const mockProfile = {
-  id: "mock-agent-001",
-  name: "Emeka Rider",
-  email: "emeka@campus.edu",
-  phone: "+2348000000004",
-  avatar_url: null,
-  role: "delivery_agent",
-};
-
-const mockStats = {
-  totalDeliveries: 23,
-  completedDeliveries: 21,
-  totalEarnings: 45000,
-};
-
 export default function DeliveryProfile() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading, profile: authProfile, refreshProfile } = useAuth();
   const { dark } = useTheme();
-  const [profile, setProfile] = useState<any>(null);
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ name: "", phone: "" });
 
   useEffect(() => {
-    setTimeout(() => {
-      setProfile(mockProfile);
-      setFormData({ name: mockProfile.name, phone: mockProfile.phone });
-      setLoading(false);
-    }, 800);
-  }, [user]);
+    if (!authLoading && !user) router.replace("/onboarding" as any);
+  }, [authLoading, user]);
+
+  useEffect(() => {
+    if (authProfile) {
+      setFormData({ name: authProfile.name || "", phone: authProfile.phone || "" });
+    }
+  }, [authProfile]);
 
   const handleUpdateProfile = async () => {
+    if (!user) return;
+    if (!formData.name.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
     try {
       setSaving(true);
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setProfile((prev: any) => ({
-        ...prev,
-        name: formData.name,
-        phone: formData.phone,
-      }));
+      const { error } = await supabase
+        .from("profiles")
+        .update({ name: formData.name.trim(), phone: formData.phone.trim() || null })
+        .eq("id", user.id);
+      if (error) throw error;
+      await refreshProfile();
       toast.success("Profile updated");
       setEditing(false);
     } catch (error: any) {
@@ -82,7 +70,7 @@ export default function DeliveryProfile() {
     router.replace("/onboarding" as any);
   };
 
-  if (loading) {
+  if (authLoading || (user && !authProfile)) {
     return (
       <View className={`flex-1 items-center justify-center ${dark ? "bg-ink" : "bg-cream"}`}>
         <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
@@ -90,7 +78,9 @@ export default function DeliveryProfile() {
     );
   }
 
-  if (!profile) return null;
+  if (!user) return null;
+
+  const profile = authProfile!;
 
   return (
     <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
@@ -120,37 +110,6 @@ export default function DeliveryProfile() {
           <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
             {user?.email || profile.email}
           </Text>
-        </View>
-      </View>
-
-      {/* Stats cards */}
-      <View className="flex-row gap-3 mb-4">
-        <View className={`flex-1 rounded-[24px] p-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
-          <View className={`w-10 h-10 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-            <Icon icon={Package01Icon} size={18} color={dark ? "#FFFFFF" : "#0A0A0E"} />
-          </View>
-          <Text className={`text-[20px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
-            {mockStats.totalDeliveries}
-          </Text>
-          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Deliveries</Text>
-        </View>
-        <View className={`flex-1 rounded-[24px] p-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
-          <View className={`w-10 h-10 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-            <Icon icon={ChartLineIcon} size={18} color="#12805C" />
-          </View>
-          <Text className={`text-[20px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
-            {mockStats.completedDeliveries}
-          </Text>
-          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Completed</Text>
-        </View>
-        <View className={`flex-1 rounded-[24px] p-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
-          <View className={`w-10 h-10 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-            <Icon icon={BanknoteIcon} size={18} color={dark ? "#FFFFFF" : "#0A0A0E"} />
-          </View>
-          <Text className={`text-[16px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
-            ₦{mockStats.totalEarnings.toLocaleString()}
-          </Text>
-          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Earnings</Text>
         </View>
       </View>
 
@@ -214,7 +173,7 @@ export default function DeliveryProfile() {
               <TouchableOpacity
                 onPress={() => {
                   setEditing(false);
-                  setFormData({ name: profile.name, phone: profile.phone });
+                  setFormData({ name: profile.name, phone: profile.phone || "" });
                 }}
                 activeOpacity={0.85}
                 className={`w-full border h-14 rounded-full items-center justify-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}

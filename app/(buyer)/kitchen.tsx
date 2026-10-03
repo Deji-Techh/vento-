@@ -21,48 +21,48 @@ import {
 
 const kitchens: Record<string, any> = {
   s1: {
-    name: "Tasty Bites", image: "https://images.unsplash.com/photo-1562967914-608f82629710?w=900",
+    name: "Tasty Bites", image: "https://images.unsplash.com/photo-1562967914-608f82629710?w=800",
     rating: 4.6, eta: "25 min", tags: ["Fast food", "Chicken"], about: "Crispy chicken, loaded fries and all-day breakfast, two minutes from Main Gate.",
     items: [
-      { id: "k1-1", name: "Chicken & Chips", price: 2500, image: "https://images.unsplash.com/photo-1562967914-608f82629710?w=600", rating: 4.5 },
-      { id: "k1-2", name: "Burger Meal", price: 1800, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600", rating: 4.6 },
-      { id: "k1-3", name: "Fish & Chips", price: 2800, image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=600", rating: 4.4 },
-      { id: "k1-4", name: "Shawarma Wrap", price: 1200, image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=600", rating: 4.3 },
+      { id: "k1-1", name: "Chicken & Chips", price: 2500, image: "https://images.unsplash.com/photo-1562967914-608f82629710?w=300", rating: 4.5 },
+      { id: "k1-2", name: "Burger Meal", price: 1800, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300", rating: 4.6 },
+      { id: "k1-3", name: "Fish & Chips", price: 2800, image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=300", rating: 4.4 },
+      { id: "k1-4", name: "Shawarma Wrap", price: 1200, image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300", rating: 4.3 },
     ],
   },
   s2: {
-    name: "Mama Cass", image: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=900",
+    name: "Mama Cass", image: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=800",
     rating: 4.7, eta: "30 min", tags: ["Local", "Rice"], about: "Party jollof, smoky ofada and Sunday-style combos, cooked fresh every morning.",
     items: [
-      { id: "k2-1", name: "Jollof Rice Combo", price: 1800, image: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=600", rating: 4.6 },
-      { id: "k2-2", name: "Grilled Chicken Bowl", price: 2200, image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600", rating: 4.7 },
-      { id: "k2-3", name: "Pepperoni Pizza Slice", price: 1500, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600", rating: 4.5 },
+      { id: "k2-1", name: "Jollof Rice Combo", price: 1800, image: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=300", rating: 4.6 },
+      { id: "k2-2", name: "Grilled Chicken Bowl", price: 2200, image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=300", rating: 4.7 },
+      { id: "k2-3", name: "Pepperoni Pizza Slice", price: 1500, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300", rating: 4.5 },
     ],
   },
   s3: {
-    name: "Fresh Mart", image: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=900",
+    name: "Fresh Mart", image: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=800",
     rating: 4.5, eta: "20 min", tags: ["Groceries", "Fresh"], about: "Farm fruit, smoothies and daily essentials delivered in minutes.",
     items: [
-      { id: "k3-1", name: "Fresh Fruit Bowl", price: 1500, image: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=600", rating: 4.5 },
-      { id: "k3-2", name: "Grilled Chicken Bowl", price: 2200, image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600", rating: 4.7 },
+      { id: "k3-1", name: "Fresh Fruit Bowl", price: 1500, image: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=300", rating: 4.5 },
+      { id: "k3-2", name: "Grilled Chicken Bowl", price: 2200, image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=300", rating: 4.7 },
     ],
   },
   s4: {
-    name: "Grill House", image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=900",
+    name: "Grill House", image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=800",
     rating: 4.8, eta: "30 min", tags: ["Grills", "BBQ"], about: "Char-grilled chicken, turkey and fish with house pepper sauce.",
     items: [
-      { id: "k4-1", name: "Grilled Chicken Bowl", price: 2200, image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600", rating: 4.7 },
-      { id: "k4-2", name: "Suya Platter", price: 3000, image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=600", rating: 4.8 },
-      { id: "k4-3", name: "Fish & Chips", price: 2800, image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=600", rating: 4.4 },
+      { id: "k4-1", name: "Grilled Chicken Bowl", price: 2200, image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=300", rating: 4.7 },
+      { id: "k4-2", name: "Suya Platter", price: 3000, image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=300", rating: 4.8 },
+      { id: "k4-3", name: "Fish & Chips", price: 2800, image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=300", rating: 4.4 },
     ],
   },
   s5: {
-    name: "Suya Spot", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=900",
+    name: "Suya Spot", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800",
     rating: 4.9, eta: "20 min", tags: ["Suya", "Late night"], about: "Yaji-dusted suya off open flames, till 2 AM every night.",
     items: [
-      { id: "k5-1", name: "Suya Platter", price: 3000, image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=600", rating: 4.8 },
-      { id: "k5-2", name: "Shawarma Wrap", price: 1200, image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=600", rating: 4.3 },
-      { id: "k5-3", name: "Grilled Chicken Bowl", price: 2200, image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600", rating: 4.7 },
+      { id: "k5-1", name: "Suya Platter", price: 3000, image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=300", rating: 4.8 },
+      { id: "k5-2", name: "Shawarma Wrap", price: 1200, image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300", rating: 4.3 },
+      { id: "k5-3", name: "Grilled Chicken Bowl", price: 2200, image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=300", rating: 4.7 },
     ],
   },
 };
@@ -95,7 +95,7 @@ export default function Kitchen() {
     <View className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 130 }}>
         <View>
-          <Image source={{ uri: kitchen.image }} style={{ width: "100%", height: 300 }} contentFit="cover" transition={300} />
+          <Image source={{ uri: kitchen.image }} style={{ width: "100%", height: 300 }} contentFit="cover" transition={200} cachePolicy="memory-disk" priority="high" />
           <LinearGradient
             colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0)", dark ? "rgba(10,10,14,0.92)" : "rgba(250,245,234,0.95)"]}
             locations={[0, 0.45, 1]}
@@ -159,7 +159,7 @@ export default function Kitchen() {
             {kitchen.items.map((item: any, i: number) => (
               <Enter key={item.id} delay={Math.min(i * 40, 120)}>
                 <View className="flex-row items-center py-2">
-                  <Image source={{ uri: item.image }} style={{ width: 76, height: 76, borderRadius: 20 }} contentFit="cover" transition={200} />
+                  <Image source={{ uri: item.image }} style={{ width: 76, height: 76, borderRadius: 20, backgroundColor: dark ? "rgba(255,255,255,0.06)" : "rgba(10,10,14,0.05)" }} contentFit="cover" transition={200} cachePolicy="memory-disk" />
                   <View className="flex-1 ml-3.5">
                     <Text className={`font-inter-bold text-[15px] tracking-tight ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>{item.name}</Text>
                     <View className="flex-row items-center gap-1 mt-1">

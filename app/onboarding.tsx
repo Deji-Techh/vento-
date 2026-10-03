@@ -14,19 +14,19 @@ const slides = [
     eyebrow: "01 — Discover",
     title: "Good food,\nclose by.",
     description: "Kitchens around campus, curated daily. No endless menus — just what hits.",
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=900",
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800",
   },
   {
     eyebrow: "02 — Track",
     title: "Watch it\ncome to you.",
     description: "Live progress, honest ETAs, and a secure PIN handoff at your door.",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900",
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800",
   },
   {
     eyebrow: "03 — Control",
     title: "You call\nthe swaps.",
     description: "Something out of stock? Approve a smart alternative before we charge you.",
-    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=900",
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
   },
 ];
 
@@ -60,7 +60,9 @@ export default function Onboarding() {
               source={{ uri: item.image }}
               style={{ width, height: "100%" }}
               contentFit="cover"
-              transition={400}
+              transition={200}
+              cachePolicy="memory-disk"
+              priority="high"
             />
             <LinearGradient
               colors={["rgba(10,10,14,0)", "rgba(10,10,14,0.55)", "#0A0A0E"]}

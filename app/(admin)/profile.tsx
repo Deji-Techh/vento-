@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
+import { supabase } from "../../src/lib/supabase";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
@@ -19,43 +20,38 @@ import {
   ShieldCheckIcon,
 } from "../../src/components/icons";
 
-const mockProfile = {
-  id: "mock-admin-001",
-  name: "Admin Vento",
-  email: "admin@vento.com",
-  phone: "+2348000000001",
-  avatar_url: null,
-  role: "admin",
-};
-
 export default function AdminProfile() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading, profile: authProfile, refreshProfile } = useAuth();
   const { dark } = useTheme();
-  const [profile, setProfile] = useState<any>(null);
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ name: "", phone: "" });
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      setProfile(mockProfile);
-      setFormData({ name: mockProfile.name, phone: mockProfile.phone });
-      setLoading(false);
-    }, 800);
-    return () => clearTimeout(t);
-  }, [user]);
+    if (!authLoading && !user) router.replace("/onboarding" as any);
+  }, [authLoading, user]);
+
+  useEffect(() => {
+    if (authProfile) {
+      setFormData({ name: authProfile.name || "", phone: authProfile.phone || "" });
+    }
+  }, [authProfile]);
 
   const handleUpdateProfile = async () => {
+    if (!user) return;
+    if (!formData.name.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
     try {
       setSaving(true);
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setProfile((prev: any) => ({
-        ...prev,
-        name: formData.name,
-        phone: formData.phone,
-      }));
+      const { error } = await supabase
+        .from("profiles")
+        .update({ name: formData.name.trim(), phone: formData.phone.trim() || null })
+        .eq("id", user.id);
+      if (error) throw error;
+      await refreshProfile();
       if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
           () => {}
@@ -70,7 +66,6 @@ export default function AdminProfile() {
       toast.error(error.message || "Failed to update profile");
     } finally {
       setSaving(false);
-      setLoading(false);
     }
   };
 
@@ -79,7 +74,7 @@ export default function AdminProfile() {
     router.replace("/onboarding" as any);
   };
 
-  if (loading) {
+  if (authLoading || (user && !authProfile)) {
     return (
       <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
         <View className="flex-1 px-5 pt-10 gap-4">
@@ -97,7 +92,9 @@ export default function AdminProfile() {
     );
   }
 
-  if (!profile) return null;
+  if (!user) return null;
+
+  const profile = authProfile!;
 
   return (
     <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
@@ -217,7 +214,7 @@ export default function AdminProfile() {
                   variant={dark ? "ghost-dark" : "ghost-light"}
                   onPress={() => {
                     setEditing(false);
-                    setFormData({ name: profile.name, phone: profile.phone });
+                    setFormData({ name: profile.name, phone: profile.phone || "" });
                   }}
                 />
               </View>

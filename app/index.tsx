@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
+import { Image } from "expo-image";
 import Animated, {
   FadeIn,
   useSharedValue,
@@ -27,6 +28,12 @@ export default function Splash() {
   };
 
   useEffect(() => {
+    // Warm the onboarding photos while the wordmark types.
+    Image.prefetch([
+      "https://images.unsplash.com/photo-1544025162-d76694265947?w=800",
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800",
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
+    ]);
     if (count < WORD.length) {
       timers.current.push(setTimeout(() => setCount((c) => c + 1), 70));
     } else {

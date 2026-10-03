@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
+import { supabase } from "../../src/lib/supabase";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { Eyebrow } from "../../src/components/ui/SectionHeader";
 import { Skeleton } from "../../src/components/ui/Skeleton";
@@ -11,41 +12,34 @@ import { Icon } from "../../src/components/ui/Icon";
 import { UserIcon, PhoneIcon, Edit02Icon, Logout01Icon, Settings01Icon } from "../../src/components/icons";
 import { toast } from "sonner-native";
 
-const mockProfile = {
-  id: "mock-buyer-001",
-  name: "Chidi Okonkwo",
-  email: "chidi@campus.edu",
-  phone: "+2348000000003",
-  role: "buyer",
-};
-
 export default function Profile() {
   const router = useRouter();
-  const { user, signOut, loading: authLoading } = useAuth();
+  const { user, signOut, loading: authLoading, profile: authProfile, refreshProfile } = useAuth();
   const { dark } = useTheme();
-  const [profile, setProfile] = useState<any>(null);
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ name: "", phone: "" });
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
+    if (authProfile) {
+      setFormData({ name: authProfile.name || "", phone: authProfile.phone || "" });
     }
-    setTimeout(() => {
-      setProfile(mockProfile);
-      setFormData({ name: mockProfile.name, phone: mockProfile.phone });
-      setLoading(false);
-    }, 800);
-  }, [user]);
+  }, [authProfile]);
 
   const handleUpdateProfile = async () => {
+    if (!user) return;
+    if (!formData.name.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
     try {
       setSaving(true);
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setProfile((prev: any) => ({ ...prev, name: formData.name, phone: formData.phone }));
+      const { error } = await supabase
+        .from("profiles")
+        .update({ name: formData.name.trim(), phone: formData.phone.trim() || null })
+        .eq("id", user.id);
+      if (error) throw error;
+      await refreshProfile();
       toast.success("Profile updated");
       setEditing(false);
     } catch (error: any) {
@@ -60,7 +54,7 @@ export default function Profile() {
     router.replace("/onboarding");
   };
 
-  if (authLoading || loading) {
+  if (authLoading || (user && !authProfile)) {
     return (
       <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
         <View className="flex-1 px-6 pt-10 gap-4">
@@ -77,7 +71,7 @@ export default function Profile() {
     );
   }
 
-  if (!profile) {
+  if (!user) {
     return (
       <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
         <View className="flex-1 px-6 pt-10 pb-8 items-center justify-center">
@@ -98,6 +92,8 @@ export default function Profile() {
       </SafeAreaView>
     );
   }
+
+  const profile = authProfile!;
 
   return (
     <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
@@ -179,7 +175,7 @@ export default function Profile() {
                 <TouchableOpacity
                   onPress={() => {
                     setEditing(false);
-                    setFormData({ name: profile.name, phone: profile.phone });
+                    setFormData({ name: profile.name, phone: profile.phone || "" });
                   }}
                   activeOpacity={0.85}
                   className={`w-full h-14 rounded-full items-center justify-center border ${dark ? "border-white/15 bg-white/10" : "border-ink/10 bg-ink/[0.04]"}`}
