@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase, SUPABASE_CONFIGURED } from "../lib/supabase";
+import { markOnboardingSeen } from "../lib/firstRun";
 
 export type Role = "buyer" | "seller" | "delivery_agent" | "admin";
 
@@ -99,6 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (data.user) setUser({ id: data.user.id, email: data.user.email || "" });
     setProfile(p);
     setRole(r);
+    markOnboardingSeen();
     return r;
   };
 
@@ -126,6 +128,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     }
+    markOnboardingSeen();
   };
 
   const signOut = async () => {

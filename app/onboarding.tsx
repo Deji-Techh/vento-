@@ -13,6 +13,7 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { AppButton } from "../src/components/ui/AppButton";
+import { markOnboardingSeen } from "../src/lib/firstRun";
 
 const { width } = Dimensions.get("window");
 
@@ -64,6 +65,7 @@ export default function Onboarding() {
   const exitTo = (fn: () => void) => {
     if (exiting.current) return;
     exiting.current = true;
+    markOnboardingSeen();
     opacity.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.quad) });
     setTimeout(fn, 300);
   };
