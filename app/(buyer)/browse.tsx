@@ -133,11 +133,11 @@ export default function Browse() {
         {/* Greeting + header actions on one row */}
         <Enter>
           <View className="px-5 mt-2">
-            <View className="flex-row items-start justify-between gap-3">
-            <Text className={`text-[30px] font-display-bold tracking-tight leading-[32px] flex-1 ${dark ? "text-white" : "text-ink"}`}>
-              {greeting()}
-            </Text>
-              <View className="flex-row items-center gap-2.5 pt-1">
+            <View className="flex-row items-center justify-between gap-3">
+              <Text className={`text-[30px] font-display-bold tracking-tight leading-[32px] flex-1 ${dark ? "text-white" : "text-ink"}`}>
+                {greeting()}
+              </Text>
+              <View className="flex-row items-center gap-1 shrink-0">
                 <TouchableOpacity
                   onPress={() => router.push("/(buyer)/chat" as any)}
                   className="w-10 h-10 items-center justify-center"

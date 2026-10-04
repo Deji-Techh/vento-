@@ -69,7 +69,7 @@ export default function Onboarding() {
   };
 
   return (
-    <Animated.View style={[{ flex: 1, backgroundColor: "#0A0A0E" }, fadeStyle]}>
+    <Animated.View style={[{ flex: 1, backgroundColor: "#000000" }, fadeStyle]}>
       <FlatList
         ref={listRef}
         data={slides}
@@ -93,7 +93,7 @@ export default function Onboarding() {
               priority="high"
             />
             <LinearGradient
-              colors={["rgba(10,10,14,0)", "rgba(10,10,14,0.55)", "#0A0A0E"]}
+              colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.55)", "#000000"]}
               locations={[0.35, 0.62, 0.85]}
               start={{ x: 0.5, y: 0 }}
               end={{ x: 0.5, y: 1 }}
@@ -127,10 +127,7 @@ export default function Onboarding() {
               ))}
             </View>
             <Animated.View key={current} entering={FadeIn.duration(320)}>
-              <Text className="text-white/50 text-[11px] font-inter-bold tracking-[2px] uppercase">
-                {slides[current].eyebrow}
-              </Text>
-              <Text className="text-white text-[36px] font-display-bold tracking-tight leading-[38px] mt-2">
+              <Text className="text-white text-[36px] font-display-bold tracking-tight leading-[38px]">
                 {slides[current].title}
               </Text>
               <Text className="text-white/60 text-[15px] font-inter leading-[23px] mt-3 max-w-[300px]">

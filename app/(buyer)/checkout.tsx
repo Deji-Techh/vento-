@@ -154,7 +154,7 @@ export default function Checkout() {
         </View>
 
         <View className="mt-6">
-          <AppButton title={pay === "paystack" ? "Pay now" : "Place order"} variant={dark ? "white" : "ink"} loading={loading} onPress={place} />
+          <AppButton title={pay === "paystack" ? `Pay ₦${total.toLocaleString()} now` : `Place order · ₦${total.toLocaleString()}`} variant={dark ? "white" : "ink"} loading={loading} onPress={place} />
         </View>
       </ScrollView>
 
