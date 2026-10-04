@@ -131,6 +131,7 @@ export default function TabBar({
     "chat",
     "notifications",
     "settings",
+    "vento-pay",
   ];
   if (FULLSCREEN.some((s) => pathname.includes(s))) return null;
 

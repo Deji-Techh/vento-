@@ -291,7 +291,7 @@ export default function Browse() {
         {/* Order again */}
         <View className="mt-5 pl-5">
           <View className="pr-5">
-            <SectionHeader title="Order again" action="History" />
+            <SectionHeader title="Order again" action="History" onAction={() => router.push("/(buyer)/orders" as any)} />
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20, gap: 12 }}>
             {reorderItems.map((item) => (

@@ -34,6 +34,7 @@ export default function BuyerLayout() {
       <Tabs.Screen name="track-delivery" options={{ href: null }} />
       <Tabs.Screen name="live-map" options={{ href: null }} />
       <Tabs.Screen name="checkout" options={{ href: null }} />
+      <Tabs.Screen name="vento-pay" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -53,7 +53,7 @@ export default function BuyerSettings() {
         </SettingsCard>
 
         <SettingsCard>
-          <SettingsRow icon={Wallet01Icon} label="Vento Pay" subtitle="Receipts, refunds and wallet" onPress={() => soon("Vento Pay")} last />
+          <SettingsRow icon={Wallet01Icon} label="Vento Pay" subtitle="Receipts, refunds and wallet" onPress={() => router.push("/(buyer)/vento-pay" as any)} last />
         </SettingsCard>
 
         <SettingsCard>

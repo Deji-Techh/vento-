@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../../contexts/ThemeContext";
 
 export function Eyebrow({ children, dark: darkProp }: { children: string; dark?: boolean }) {
@@ -15,10 +15,12 @@ export function Eyebrow({ children, dark: darkProp }: { children: string; dark?:
 export function SectionHeader({
   title,
   action,
+  onAction,
   dark: darkProp,
 }: {
   title: string;
   action?: string;
+  onAction?: () => void;
   dark?: boolean;
 }) {
   const dark = darkProp ?? useTheme().dark;
@@ -28,9 +30,17 @@ export function SectionHeader({
         {title}
       </Text>
       {action ? (
-        <Text className={`text-[13px] font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>
-          {action}  ›
-        </Text>
+        onAction ? (
+          <TouchableOpacity onPress={onAction} hitSlop={8}>
+            <Text className={`text-[13px] font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>
+              {action}  ›
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <Text className={`text-[13px] font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>
+            {action}  ›
+          </Text>
+        )
       ) : null}
     </View>
   );
