@@ -89,7 +89,7 @@ export function SettingsSwitchRow({
           buzz();
           onValueChange(v);
         }}
-        trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D8D2C4" }}
+        trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D1D1D1" }}
       />
     </View>
   );

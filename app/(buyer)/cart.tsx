@@ -35,7 +35,7 @@ export default function Cart() {
   return (
     <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <View className="px-5 pt-1 pb-4 flex-row items-center">
-        <TouchableOpacity onPress={() => router.push("/(buyer)/browse" as any)} className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
+        <TouchableOpacity onPress={() => router.push("/(buyer)/browse" as any)} className="w-11 h-11 items-center justify-center">
           <Icon icon={ArrowLeft01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
         </TouchableOpacity>
         <Text className={`text-[20px] font-inter-bold tracking-tight ml-3 ${dark ? "text-white" : "text-ink"}`}>Your bag</Text>
@@ -56,12 +56,12 @@ export default function Cart() {
             </Text>
 
             {!freeDelivery ? (
-              <View className={`rounded-[20px] p-4 mb-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+              <View className={`rounded-[20px] p-4 mb-4 ${dark ? "bg-white/[0.06]" : "bg-ink/[0.05]"}`}>
                 <Text className={`text-[13px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>
                   ₦{(FREE_DELIVERY_AT - subtotal).toLocaleString()} away from free delivery
                 </Text>
                 <View className={`h-1.5 rounded-full overflow-hidden mt-2.5 ${dark ? "bg-white/10" : "bg-ink/10"}`}>
-                  <View className="h-full bg-ember rounded-full" style={{ width: `${progress * 100}%` }} />
+                  <View className={`h-full rounded-full ${dark ? "bg-white" : "bg-ink"}`} style={{ width: `${progress * 100}%` }} />
                 </View>
               </View>
             ) : (

@@ -3,13 +3,13 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-na
 import { useTheme } from "../../contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 
-// Single-accent rule: white on dark, ink on light. Ember reserved for promos.
+// Mono rule: solid buttons are always ink on light. On dark, use "white".
 type Variant = "white" | "ink" | "primary" | "ghost-dark" | "ghost-light";
 
 const container: Record<Variant, string> = {
   white: "bg-white",
   ink: "bg-ink",
-  primary: "bg-primary",
+  primary: "bg-ink",
   "ghost-dark": "bg-white/10 border border-white/15",
   "ghost-light": "bg-ink/5 border border-ink/10",
 };

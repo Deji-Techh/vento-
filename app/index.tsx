@@ -30,9 +30,9 @@ export default function Splash() {
   useEffect(() => {
     // Warm the onboarding photos while the wordmark types.
     Image.prefetch([
-      "https://images.unsplash.com/photo-1544025162-d76694265947?w=800",
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800",
-      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
+      "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1080&q=80",
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1080&q=80",
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1080&q=80",
     ]);
     if (count < WORD.length) {
       timers.current.push(setTimeout(() => setCount((c) => c + 1), 70));

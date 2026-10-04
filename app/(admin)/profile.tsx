@@ -117,9 +117,9 @@ export default function AdminProfile() {
               <Text className={`text-[20px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>
                 {profile.name}
               </Text>
-              <View className="bg-primary/10 px-3 py-1.5 rounded-full flex-row items-center gap-1">
-                <Icon icon={ShieldCheckIcon} size={12} color="#1B1B8F" />
-                <Text className="text-[11px] text-primary font-inter-bold uppercase tracking-[0.5px]">
+              <View className={`px-3 py-1.5 rounded-full flex-row items-center gap-1 ${dark ? "bg-white/10" : "bg-ink/[0.06]"}`}>
+                <Icon icon={ShieldCheckIcon} size={12} color={dark ? "#fff" : "#0A0A0E"} />
+                <Text className={`text-[11px] font-inter-bold uppercase tracking-[0.5px] ${dark ? "text-white" : "text-ink"}`}>
                   Admin
                 </Text>
               </View>
@@ -142,8 +142,8 @@ export default function AdminProfile() {
                 activeOpacity={0.85}
                 className={`flex-row items-center gap-1.5 border px-4 py-2.5 rounded-full ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}
               >
-                <Icon icon={Edit02Icon} size={14} color="#1B1B8F" />
-                <Text className="text-[13px] text-primary font-inter-bold">Edit</Text>
+                <Icon icon={Edit02Icon} size={14} color={dark ? "#fff" : "#0A0A0E"} />
+                <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Edit</Text>
               </TouchableOpacity>
             )}
           </View>

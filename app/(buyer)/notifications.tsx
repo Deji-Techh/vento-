@@ -73,7 +73,7 @@ export default function Notifications() {
     <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <View className="px-5 pt-1 pb-3 flex-row items-center justify-between">
         <View className="flex-row items-center">
-          <TouchableOpacity onPress={() => router.back()} className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
+          <TouchableOpacity onPress={() => router.back()} className="w-11 h-11 items-center justify-center">
             <Icon icon={ArrowLeft01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
           </TouchableOpacity>
           <Text className={`text-[28px] font-display-bold tracking-tight ml-3 ${dark ? "text-white" : "text-ink"}`}>
@@ -117,11 +117,11 @@ export default function Notifications() {
                     style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
                   />
                   {item.tag && (
-                    <View className="absolute top-3 left-3 bg-ember px-3 py-1.5 rounded-full">
-                      <Text className="text-white text-[11px] font-inter-bold">{item.tag}</Text>
+                    <View className="absolute top-3 left-3 bg-white px-3 py-1.5 rounded-full">
+                      <Text className="text-ink text-[11px] font-inter-bold">{item.tag}</Text>
                     </View>
                   )}
-                  {unread(item.id) && <View className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-ember" />}
+                  {unread(item.id) && <View className={`absolute top-3 right-3 w-2.5 h-2.5 rounded-full ${dark ? "bg-white" : "bg-ink"}`} />}
                   <View className="absolute bottom-0 left-0 right-0 p-4">
                     <Text className="text-white text-[17px] font-inter-bold tracking-tight">{item.title}</Text>
                     <Text className="text-white/70 text-[12px] font-inter mt-0.5" numberOfLines={1}>{item.body}</Text>
@@ -168,7 +168,7 @@ export default function Notifications() {
                       </View>
                     )}
                   </View>
-                  {unread(item.id) && <View className="w-2 h-2 rounded-full bg-ember mt-1.5 shrink-0" />}
+                  {unread(item.id) && <View className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${dark ? "bg-white" : "bg-ink"}`} />}
                 </View>
               </TouchableOpacity>
             )}

@@ -67,7 +67,7 @@ export default function FoodDetails() {
         <View>
           <Image source={{ uri: product.image }} style={{ width: "100%", height: 400 }} contentFit="cover" transition={200} cachePolicy="memory-disk" priority="high" />
           <LinearGradient
-            colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0)", dark ? "rgba(10,10,14,0.9)" : "rgba(250,245,234,0.95)"]}
+            colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0)", dark ? "rgba(0,0,0,0.9)" : "rgba(255,255,255,0.95)"]}
             locations={[0, 0.45, 1]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
@@ -86,7 +86,7 @@ export default function FoodDetails() {
                 className="w-11 h-11 rounded-full items-center justify-center"
                 style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
               >
-                <Icon icon={FavouriteIcon} size={20} color={fav ? "#FF5A1F" : "#fff"} />
+                <Icon icon={FavouriteIcon} size={20} color={fav ? "#fff" : "rgba(255,255,255,0.55)"} />
               </TouchableOpacity>
             </View>
           </SafeAreaView>
@@ -145,7 +145,7 @@ export default function FoodDetails() {
       </ScrollView>
 
       <View className={`absolute bottom-0 w-full px-5 pt-4 border-t ${dark ? "bg-ink border-white/10" : "bg-cream border-border"}`} style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
-        <View className="flex-row items-center justify-between mb-3.5">
+        <View className="flex-row items-center gap-3 mb-3.5">
           <View className={`flex-row items-center rounded-full p-1 ${dark ? "bg-white/[0.07]" : "bg-ink/[0.05]"}`}>
             <TouchableOpacity onPress={() => step(-1)} className="w-10 h-10 rounded-full items-center justify-center">
               <Icon icon={MinusSignIcon} size={17} color={dark ? "#fff" : "#0A0A0E"} />
@@ -155,9 +155,10 @@ export default function FoodDetails() {
               <Icon icon={PlusSignIcon} size={18} color={dark ? "#0A0A0E" : "#fff"} />
             </TouchableOpacity>
           </View>
-          <Text className={`text-[20px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>₦{total}</Text>
+          <View className="flex-1">
+            <AppButton title={`Add to bag · ₦${total}`} variant={dark ? "white" : "ink"} onPress={(e) => handleAdd(e)} />
+          </View>
         </View>
-        <AppButton title="Add to bag" variant={dark ? "white" : "ink"} onPress={(e) => handleAdd(e)} />
       </View>
     </View>
   );

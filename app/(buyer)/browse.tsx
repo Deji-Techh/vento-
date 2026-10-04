@@ -16,11 +16,9 @@ import {
   BubbleChatIcon,
   StarIcon,
   PlusSignIcon,
-  MapPinIcon,
-  Navigation01Icon,
 } from "../../src/components/icons";
 import { SectionHeader, Eyebrow } from "../../src/components/ui/SectionHeader";
-import { StoryRow, PromoBanner } from "../../src/components/ui/Cards";
+import { StoryRow } from "../../src/components/ui/Cards";
 import { Enter } from "../../src/components/motion";
 
 const moods = ["All", "Spicy", "Comfort", "Fresh", "Fast"] as const;
@@ -48,13 +46,14 @@ const reorderItems = [
   { id: "pop-6", name: "Shawarma Wrap", image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300", price: 1200, seller_id: "seller-9", seller_name: "Shawarma Express" },
 ];
 
-function timeLine() {
+function greeting() {
   const h = new Date().getHours();
-  if (h < 11) return "Breakfast spots open now";
-  if (h < 15) return "Lunch rush · kitchens at full speed";
-  if (h < 19) return "Afternoon cravings, handled";
-  if (h < 23) return "Dinner time · order before the rush";
-  return "Open late · midnight kitchens";
+  if (h >= 5 && h < 9) return "Early bird";
+  if (h >= 9 && h < 12) return "Good morning";
+  if (h >= 12 && h < 15) return "Good afternoon";
+  if (h >= 15 && h < 17) return "Slow afternoon";
+  if (h >= 17 && h < 21) return "Good evening";
+  return "Night owl";
 }
 
 export default function Browse() {
@@ -131,41 +130,29 @@ export default function Browse() {
           />
         }
       >
-        {/* Location header */}
-        <View className="px-5 pt-2 flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => toast("Delivering to Campus Gate")} activeOpacity={0.8} className="flex-row items-center gap-1.5">
-            <Icon icon={MapPinIcon} size={18} color="#FF5A1F" />
-            <View>
-              <Text className={`text-[11px] font-inter-medium ${dark ? "text-white/50" : "text-ink/50"}`}>Deliver to</Text>
-              <Text className={`text-[15px] font-inter-bold -mt-0.5 ${dark ? "text-white" : "text-ink"}`}>Campus Gate ▾</Text>
-            </View>
-          </TouchableOpacity>
-          <View className="flex-row items-center gap-2.5">
-            <TouchableOpacity
-              onPress={() => router.push("/(buyer)/chat" as any)}
-              className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}
-            >
-              <Icon icon={BubbleChatIcon} size={18} color={dark ? "#fff" : "#0A0A0E"} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => router.push("/(buyer)/notifications" as any)}
-              className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}
-            >
-              <Icon icon={Notification01Icon} size={18} color={dark ? "#fff" : "#0A0A0E"} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Greeting + smart search */}
+        {/* Greeting + header actions on one row */}
         <Enter>
-          <View className="px-5 mt-4">
-            <Text className={`text-[11px] font-inter-bold tracking-[2px] uppercase ${dark ? "text-white/50" : "text-ink/50"}`}>
-              {timeLine()}
+          <View className="px-5 mt-2">
+            <View className="flex-row items-start justify-between gap-3">
+            <Text className={`text-[30px] font-display-bold tracking-tight leading-[32px] flex-1 ${dark ? "text-white" : "text-ink"}`}>
+              {greeting()}
             </Text>
-            <Text className={`text-[30px] font-display-bold tracking-tight leading-[32px] mt-1.5 ${dark ? "text-white" : "text-ink"}`}>
-              What are we{"\n"}craving today?
-            </Text>
-            <View className={`flex-row items-center rounded-full pl-4 pr-1.5 py-1.5 mt-4 border ${dark ? "bg-white/[0.07] border-white/10" : "bg-white border-border"}`}>
+              <View className="flex-row items-center gap-2.5 pt-1">
+                <TouchableOpacity
+                  onPress={() => router.push("/(buyer)/chat" as any)}
+                  className="w-10 h-10 items-center justify-center"
+                >
+                  <Icon icon={BubbleChatIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.push("/(buyer)/notifications" as any)}
+                  className="w-10 h-10 items-center justify-center"
+                >
+                  <Icon icon={Notification01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View className={`flex-row items-center rounded-full pl-4 pr-4 py-3.5 mt-4 ${dark ? "bg-white/[0.07]" : "bg-ink/[0.05]"}`}>
               <Icon icon={Search01Icon} size={17} color={dark ? "rgba(255,255,255,0.45)" : "rgba(10,10,14,0.4)"} />
               <TextInput
                 placeholder="Jollof, suya, shawarma…"
@@ -179,14 +166,10 @@ export default function Browse() {
                 className={`flex-1 text-[15px] font-inter ml-2 ${dark ? "text-white" : "text-ink"}`}
               />
               {q ? (
-                <TouchableOpacity onPress={() => setQuery("")} className={`px-4 py-2.5 rounded-full ${dark ? "bg-white/15" : "bg-ink/10"}`}>
-                  <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Clear</Text>
+                <TouchableOpacity onPress={() => setQuery("")} hitSlop={8}>
+                  <Text className={`text-[13px] font-inter-medium ${dark ? "text-white/50" : "text-ink/40"}`}>Clear</Text>
                 </TouchableOpacity>
-              ) : (
-                <View className={`px-4 py-2.5 rounded-full ${dark ? "bg-white" : "bg-ink"}`}>
-                  <Text className={`text-[13px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>Search</Text>
-                </View>
-              )}
+              ) : null}
             </View>
 
             {showSuggest && (
@@ -240,133 +223,63 @@ export default function Browse() {
         </Enter>
 
         {/* Moods */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-4 pl-5" contentContainerStyle={{ paddingRight: 20 }}>
-          {moods.map((m) => (
-            <TouchableOpacity
-              key={m}
-              onPress={() => {
-                buzz();
-                setMood(m);
-              }}
-              className={`mr-2 px-5 py-2.5 rounded-full border ${
-                mood === m
-                  ? "bg-ember border-ember"
-                  : dark
-                    ? "bg-white/[0.07] border-white/10"
-                    : "bg-white border-border"
-              }`}
-            >
-              <Text className={`text-[13px] font-inter-bold ${mood === m ? "text-white" : dark ? "text-white/60" : "text-ink/55"}`}>{m}</Text>
-            </TouchableOpacity>
-          ))}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3 pl-5" contentContainerStyle={{ paddingRight: 20 }}>
+          {moods.map((m) => {
+            const active = mood === m;
+            return (
+              <TouchableOpacity
+                key={m}
+                onPress={() => {
+                  buzz();
+                  setMood(m);
+                }}
+                className="mr-5 items-center"
+              >
+                <Text className={`text-[15px] ${active ? "font-inter-bold" : "font-inter"} ${dark ? (active ? "text-white" : "text-white/45") : active ? "text-ink" : "text-ink/40"}`}>{m}</Text>
+                <View className={`h-[2px] rounded-full mt-1 self-stretch ${active ? (dark ? "bg-white" : "bg-ink") : "bg-transparent"}`} />
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
 
-        {/* Live order band */}
-        <Enter delay={60}>
-          <View className="px-5 mt-5">
+        {/* Hero */}
+        <Enter delay={80}>
+          <View className="px-5 mt-4">
             <TouchableOpacity
-              onPress={() => router.push("/(buyer)/track-delivery" as any)}
               activeOpacity={0.92}
-              className={`rounded-[24px] p-4 flex-row items-center gap-3.5 border ${dark ? "bg-white/[0.05] border-white/10" : "bg-white border-border"}`}
+              onPress={() => router.push(`/(buyer)/food-details?id=pop-3` as any)}
+              className="rounded-[20px] overflow-hidden"
+              style={{ height: 200 }}
             >
-              <View className="w-12 h-12 rounded-2xl bg-success/15 items-center justify-center">
-                <Icon icon={Navigation01Icon} size={22} color="#0E9F6E" />
+              <Image source={{ uri: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800" }} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={200} cachePolicy="memory-disk" priority="high" />
+              <LinearGradient
+                colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.6)"]}
+                locations={[0.45, 1]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
+                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+              />
+              <View className="absolute top-3 left-3">
+                <Eyebrow dark>Featured</Eyebrow>
               </View>
-              <View className="flex-1">
-                <View className="flex-row items-center gap-2">
-                  <Text className={`text-[15px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Grill House is on its way</Text>
+              <View className="absolute bottom-0 left-0 right-0 p-4 flex-row items-end justify-between">
+                <View>
+                  <Text className="text-white text-[20px] font-display-bold tracking-tight">Suya Platter</Text>
+                  <Text className="text-white/75 text-[13px] font-inter-bold mt-0.5">₦3,000 · Suya Spot</Text>
                 </View>
-                <View className={`h-1 rounded-full overflow-hidden mt-2 ${dark ? "bg-white/10" : "bg-ink/10"}`}>
-                  <View className="h-full w-2/3 bg-success rounded-full" />
-                </View>
-                <Text className={`text-[12px] font-inter mt-1.5 ${dark ? "text-white/50" : "text-ink/50"}`}>Arriving in 3 min · Tap to track</Text>
+                <TouchableOpacity
+                  onPress={(e) => handleAdd(popularItems[2], e)}
+                  className="w-9 h-9 rounded-full bg-white items-center justify-center"
+                >
+                  <Icon icon={PlusSignIcon} size={17} color="#0A0A0E" />
+                </TouchableOpacity>
               </View>
             </TouchableOpacity>
-          </View>
-        </Enter>
-
-        {/* Bento hero */}
-        <Enter delay={80}>
-          <View className="px-5 mt-5">
-            <View className="flex-row gap-3">
-              <TouchableOpacity
-                activeOpacity={0.92}
-                onPress={() => router.push(`/(buyer)/food-details?id=pop-3` as any)}
-                className="rounded-[24px] overflow-hidden"
-                style={{ flex: 1.15, height: 300 }}
-              >
-                <Image source={{ uri: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800" }} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={200} cachePolicy="memory-disk" priority="high" />
-                <LinearGradient
-                  colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.6)"]}
-                  locations={[0.45, 1]}
-                  start={{ x: 0.5, y: 0 }}
-                  end={{ x: 0.5, y: 1 }}
-                  style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-                />
-                <View className="absolute top-3 left-3">
-                  <Eyebrow dark>Featured</Eyebrow>
-                </View>
-                <View className="absolute bottom-0 left-0 right-0 p-4">
-                  <Text className="text-white text-[20px] font-display-bold tracking-tight">Suya Platter</Text>
-                  <View className="flex-row items-center justify-between mt-1.5">
-                    <Text className="text-white/75 text-[13px] font-inter-bold">₦3,000</Text>
-                    <TouchableOpacity
-                      onPress={(e) => handleAdd(popularItems[2], e)}
-                      className="w-9 h-9 rounded-full bg-white items-center justify-center"
-                    >
-                      <Icon icon={PlusSignIcon} size={17} color="#0A0A0E" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </TouchableOpacity>
-              <View className="flex-1 gap-3">
-                {[
-                  { item: popularItems[4], tag: "4.6★" },
-                  { item: popularItems[0], tag: "FAST" },
-                ].map(({ item, tag }) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    activeOpacity={0.92}
-                    onPress={() => router.push(`/(buyer)/food-details?id=${item.id}` as any)}
-                    className="rounded-[24px] overflow-hidden"
-                    style={{ height: 144 }}
-                  >
-                    <Image source={{ uri: item.image }} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={200} cachePolicy="memory-disk" />
-                    <LinearGradient
-                      colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.6)"]}
-                      locations={[0.4, 1]}
-                      start={{ x: 0.5, y: 0 }}
-                      end={{ x: 0.5, y: 1 }}
-                      style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-                    />
-                    <View className="absolute top-2.5 left-2.5 bg-black/55 px-2 py-1 rounded-full">
-                      <Text className="text-white text-[10px] font-inter-bold">{tag}</Text>
-                    </View>
-                    <View className="absolute bottom-0 left-0 right-0 p-3">
-                      <Text className="text-white text-[14px] font-display-bold tracking-tight" numberOfLines={1}>{item.name}</Text>
-                      <Text className="text-white/75 text-[12px] font-inter-bold mt-0.5">₦{item.price.toLocaleString()}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </View>
-        </Enter>
-
-        {/* Single ember moment */}
-        <Enter delay={100}>
-          <View className="px-5 mt-4">
-            <PromoBanner
-              title="Midnight craving?"
-              subtitle="Hot food from kitchens still open near you."
-              cta="Order"
-              onPress={() => router.push(`/(buyer)/food-details?id=pop-3` as any)}
-            />
           </View>
         </Enter>
 
         {/* Kitchens */}
-        <View className="mt-7 pl-5">
+        <View className="mt-5 pl-5">
           <View className="pr-5">
             <SectionHeader title="Kitchens you follow" />
           </View>
@@ -376,13 +289,13 @@ export default function Browse() {
         </View>
 
         {/* Order again */}
-        <View className="mt-7 pl-5">
+        <View className="mt-5 pl-5">
           <View className="pr-5">
             <SectionHeader title="Order again" action="History" />
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20, gap: 12 }}>
             {reorderItems.map((item) => (
-              <View key={item.id} className={`w-[160px] rounded-[20px] overflow-hidden border ${dark ? "bg-white/[0.04] border-white/10" : "bg-white border-border"}`}>
+              <View key={item.id} className={`w-[160px] rounded-[20px] overflow-hidden ${dark ? "bg-white/[0.04]" : "bg-ink/[0.04]"}`}>
                 <TouchableOpacity onPress={() => router.push(`/(buyer)/food-details?id=${item.id}` as any)} activeOpacity={0.9}>
                   <Image source={{ uri: item.image }} style={{ width: "100%", height: 100 }} contentFit="cover" transition={200} cachePolicy="memory-disk" />
                 </TouchableOpacity>
@@ -404,7 +317,7 @@ export default function Browse() {
         </View>
 
         {/* Dish list */}
-        <View className="px-5 mt-7">
+        <View className="px-5 mt-5">
           <SectionHeader
             title={q || mood !== "All" ? `${visible.length} craving${visible.length === 1 ? "" : "s"}` : "Nearby"}
           />

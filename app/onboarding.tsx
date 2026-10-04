@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { View, Text, Pressable, FlatList, Dimensions, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,19 +21,19 @@ const slides = [
     eyebrow: "01 — Discover",
     title: "Good food,\nclose by.",
     description: "Kitchens around campus, curated daily. No endless menus — just what hits.",
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800",
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1080&q=80",
   },
   {
     eyebrow: "02 — Track",
     title: "Watch it\ncome to you.",
     description: "Live progress, honest ETAs, and a secure PIN handoff at your door.",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800",
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1080&q=80",
   },
   {
     eyebrow: "03 — Control",
     title: "You call\nthe swaps.",
     description: "Something out of stock? Approve a smart alternative before we charge you.",
-    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1080&q=80",
   },
 ];
 
@@ -55,6 +55,11 @@ export default function Onboarding() {
   const fadeStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
   const exiting = useRef(false);
 
+  // Warm the cache for every slide up front — swipes never wait on network.
+  useEffect(() => {
+    Image.prefetch(slides.map((s) => s.image)).catch(() => {});
+  }, []);
+
   // Fade through ink before leaving — no hard cuts into the app.
   const exitTo = (fn: () => void) => {
     if (exiting.current) return;
@@ -71,6 +76,10 @@ export default function Onboarding() {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        initialNumToRender={slides.length}
+        maxToRenderPerBatch={slides.length}
+        windowSize={3}
+        removeClippedSubviews={false}
         keyExtractor={(_, i) => String(i)}
         onMomentumScrollEnd={(e) => setCurrent(Math.round(e.nativeEvent.contentOffset.x / width))}
         renderItem={({ item }) => (

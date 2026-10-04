@@ -115,7 +115,7 @@ export default function Chat() {
             <View className="flex-row items-center gap-3">
               <View className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
                 <Text className={`text-[13px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>TB</Text>
-                <View className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-success border-2 border-white" style={{ borderColor: dark ? "#0A0A0E" : "#FAF5EA" }} />
+                <View className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-success border-2 border-white" style={{ borderColor: dark ? "#000000" : "#FFFFFF" }} />
               </View>
               <View>
                 <Text className={`text-[16px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Tasty Bites</Text>

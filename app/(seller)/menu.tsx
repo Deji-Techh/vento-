@@ -203,7 +203,7 @@ export default function MenuManagement() {
         {foodItems.length === 0 ? (
           <View className={`rounded-[28px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
             <View className={`w-16 h-16 mb-4 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-              <Icon icon={Package01Icon} size={22} color="#1B1B8F" />
+              <Icon icon={Package01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
             </View>
             <Text className={`font-inter-bold mb-2 ${dark ? "text-white" : "text-ink"}`}>No menu items yet</Text>
             <Text className={`font-inter mb-4 text-[13px] ${dark ? "text-white/55" : "text-ink/55"}`}>Add your first item to start selling</Text>
@@ -218,7 +218,7 @@ export default function MenuManagement() {
                     <Image source={{ uri: item.image_url }} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={200} />
                   ) : (
                     <View className="w-full h-full items-center justify-center">
-                      <Icon icon={Package01Icon} size={22} color="#1B1B8F" />
+                      <Icon icon={Package01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
                     </View>
                   )}
                   <View className="absolute top-2 right-2 flex-row gap-1.5">
@@ -249,13 +249,13 @@ export default function MenuManagement() {
                   <Text className={`font-inter-bold text-[13px] ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>
                     {item.name}
                   </Text>
-                  <Text className="text-primary font-inter-bold mt-1">₦{item.price.toFixed(2)}</Text>
+                  <Text className={`font-inter-bold mt-1 ${dark ? "text-white" : "text-ink"}`}>₦{item.price.toFixed(2)}</Text>
                   <View className="flex-row items-center justify-between mt-2">
                     <StatusChip label={item.category} tone="neutral" />
                     <Switch
                       value={item.available}
                       onValueChange={() => toggleAvailability(item)}
-                      trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D8D2C4" }}
+                      trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D1D1D1" }}
                     />
                   </View>
                 </View>
@@ -300,7 +300,7 @@ export default function MenuManagement() {
                   className={`border-2 border-dashed rounded-[20px] p-6 items-center ${dark ? "border-white/10 bg-white/10" : "border-border bg-cream"}`}
                 >
                   <View className={`w-12 h-12 mb-3 rounded-full items-center justify-center border ${dark ? "bg-white/10 border-white/10" : "bg-white border-border"}`}>
-                    <Icon icon={Camera01Icon} size={22} color="#1B1B8F" />
+                    <Icon icon={Camera01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
                   </View>
                   <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Upload photo</Text>
                   <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Tap to select from gallery</Text>
@@ -349,7 +349,7 @@ export default function MenuManagement() {
                 <Switch
                   value={formData.available}
                   onValueChange={(v) => setFormData({ ...formData, available: v })}
-                  trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D8D2C4" }}
+                  trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D1D1D1" }}
                 />
               </View>
 

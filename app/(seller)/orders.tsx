@@ -115,7 +115,7 @@ export default function SellerOrders() {
         {orders.length === 0 ? (
           <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
             <View className={`w-12 h-12 rounded-full border items-center justify-center mb-3 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-              <Icon icon={ReceiptIcon} size={20} color="#1B1B8F" />
+              <Icon icon={ReceiptIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
             </View>
             <Text className={`font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>No orders yet.</Text>
           </View>
@@ -156,7 +156,7 @@ export default function SellerOrders() {
                     activeOpacity={0.85}
                     className={`flex-row items-center gap-1.5 border px-4 h-11 rounded-full ${dark ? "bg-white/10 border-white/10" : "bg-white border-border"}`}
                   >
-                    <Icon icon={EyeIcon} size={16} color="#1B1B8F" />
+                    <Icon icon={EyeIcon} size={16} color={dark ? "#fff" : "#0A0A0E"} />
                     <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>View details</Text>
                   </TouchableOpacity>
                 </View>

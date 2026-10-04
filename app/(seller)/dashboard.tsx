@@ -144,7 +144,7 @@ export default function SellerDashboard() {
               <View className="flex-row items-center gap-3">
                 <View>
                   <View className={`w-14 h-14 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-                    <Text className="text-primary font-inter-bold text-xl">
+                    <Text className={`font-inter-bold text-xl ${dark ? "text-white" : "text-ink"}`}>
                       {sellerInfo?.store_name?.charAt(0) || "S"}
                     </Text>
                   </View>
@@ -198,7 +198,7 @@ export default function SellerDashboard() {
         <View className="px-5 mt-4 flex-row gap-3">
           <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
             <View className={`w-11 h-11 rounded-full border items-center justify-center mb-3 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-              <Icon icon={ReceiptIcon} size={20} color="#1B1B8F" />
+              <Icon icon={ReceiptIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
             </View>
             <Text className={`text-2xl font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{stats.pendingOrders}</Text>
             <Text className={`text-[13px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`}>Pending orders</Text>
@@ -215,7 +215,7 @@ export default function SellerDashboard() {
         <View className="px-5 mt-3 flex-row gap-3">
           <View className={`flex-1 rounded-[24px] p-5 border flex-row items-center gap-3 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
             <View className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-              <Icon icon={StarIcon} size={20} color="#1B1B8F" />
+              <Icon icon={StarIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
             </View>
             <View>
               <Text className={`text-xl font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
@@ -255,7 +255,7 @@ export default function SellerDashboard() {
           <View className="flex-row items-center justify-between mb-4">
             <Text className={`text-lg font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Live orders</Text>
             <TouchableOpacity onPress={() => router.push("/(seller)/orders" as any)}>
-              <Text className="text-[13px] font-inter-bold text-primary">View all</Text>
+              <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>View all</Text>
             </TouchableOpacity>
           </View>
 
@@ -269,7 +269,7 @@ export default function SellerDashboard() {
                 <View key={order.id} className={`rounded-[24px] p-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                   <View className="flex-row items-center gap-3">
                     <View className={`w-14 h-14 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-                      <Icon icon={Package01Icon} size={22} color="#1B1B8F" />
+                      <Icon icon={Package01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
                     </View>
                     <View className="flex-1 min-w-0">
                       <View className="flex-row items-start justify-between gap-2">

@@ -92,7 +92,7 @@ export default function SellerVerification() {
           <View className="gap-4">
             <View className={`rounded-[24px] border p-6 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
               <View className="flex-row items-center gap-2 mb-3">
-                <Icon icon={IdentificationIcon} size={20} color="#1B1B8F" />
+                <Icon icon={IdentificationIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
                 <Text className={`text-lg font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>ID verification</Text>
               </View>
               <Text className={`text-[13px] font-inter-bold mb-2 ${dark ? "text-white" : "text-ink"}`}>ID type</Text>
@@ -128,7 +128,7 @@ export default function SellerVerification() {
                 className={`border-2 border-dashed rounded-[20px] p-8 items-center ${dark ? "border-white/10 bg-white/10" : "border-border bg-cream"}`}
               >
                 <View className={`w-12 h-12 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-white border-border"}`}>
-                  <Icon icon={Camera01Icon} size={22} color="#1B1B8F" />
+                  <Icon icon={Camera01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
                 </View>
                 <Text className={`font-inter-bold mt-3 ${dark ? "text-white" : "text-ink"}`}>Upload ID document</Text>
                 <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>JPG, PNG or PDF</Text>
@@ -142,7 +142,7 @@ export default function SellerVerification() {
           <View className="gap-4">
             <View className={`rounded-[24px] border p-6 gap-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
               <View className="flex-row items-center gap-2">
-                <Icon icon={BankIcon} size={20} color="#1B1B8F" />
+                <Icon icon={BankIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
                 <Text className={`text-lg font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Bank account</Text>
               </View>
               <TextField label="Bank name" value={formData.bankName} onChangeText={(v) => setFormData({ ...formData, bankName: v })} placeholder="e.g. GTBank, Access Bank" />

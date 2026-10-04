@@ -105,8 +105,8 @@ export default function SellerProfile() {
             </View>
             {seller?.store_name ? (
               <View className="flex-row items-center gap-2 mt-2">
-                <Icon icon={Store01Icon} size={15} color="#1B1B8F" />
-                <Text className="text-[13px] font-inter-semibold text-primary">{seller.store_name}</Text>
+                <Icon icon={Store01Icon} size={15} color={dark ? "#fff" : "#0A0A0E"} />
+                <Text className={`text-[13px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>{seller.store_name}</Text>
               </View>
             ) : null}
           </View>
@@ -121,8 +121,8 @@ export default function SellerProfile() {
                 activeOpacity={0.85}
                 className={`flex-row items-center gap-1.5 border px-3 h-10 rounded-full ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}
               >
-                <Icon icon={Edit02Icon} size={14} color="#1B1B8F" />
-                <Text className="text-[13px] text-primary font-inter-bold">Edit</Text>
+                <Icon icon={Edit02Icon} size={14} color={dark ? "#fff" : "#0A0A0E"} />
+                <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Edit</Text>
               </TouchableOpacity>
             )}
           </View>

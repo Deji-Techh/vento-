@@ -63,7 +63,7 @@ export default function SellerSettings() {
                 setNotifications(v);
                 if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
               }}
-              trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D8D2C4" }}
+              trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D1D1D1" }}
             />
           </View>
           <View className="flex-row items-center justify-between py-3">
@@ -78,7 +78,7 @@ export default function SellerSettings() {
                 if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
                 toast.success(v ? "Auto-accept on" : "Auto-accept off");
               }}
-              trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D8D2C4" }}
+              trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D1D1D1" }}
             />
           </View>
         </View>
@@ -92,7 +92,7 @@ export default function SellerSettings() {
               className={`flex-row items-center p-4 ${index < settingsItems.length - 1 ? (dark ? "border-b border-white/10" : "border-b border-border") : ""}`}
             >
               <View className={`w-11 h-11 rounded-full border items-center justify-center mr-3 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-                <Icon icon={item.icon} size={20} color="#1B1B8F" />
+                <Icon icon={item.icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
               </View>
               <View className="flex-1">
                 <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{item.label}</Text>

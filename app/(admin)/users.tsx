@@ -174,7 +174,7 @@ export default function AdminUsers() {
     return (
       <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#1B1B8F"} />
+          <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
         </View>
       </SafeAreaView>
     );
@@ -211,7 +211,7 @@ export default function AdminUsers() {
         <View className="flex-row gap-3">
           <View className={`rounded-[24px] p-4 border flex-1 items-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
             <View className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-              <Icon icon={UsersIcon} size={20} color="#1B1B8F" />
+              <Icon icon={UsersIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
             </View>
             <Text className={`text-[22px] font-inter-bold mt-2 ${dark ? "text-white" : "text-ink"}`}>{agents.length}</Text>
             <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Total Agents</Text>
@@ -227,7 +227,7 @@ export default function AdminUsers() {
           </View>
           <View className={`rounded-[24px] p-4 border flex-1 items-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
             <View className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-              <Icon icon={CheckmarkCircle01Icon} size={20} color="#1B1B8F" />
+              <Icon icon={CheckmarkCircle01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
             </View>
             <Text className={`text-[22px] font-inter-bold mt-2 ${dark ? "text-white" : "text-ink"}`}>
               {agents.filter((a) => a.is_online).length}
@@ -399,7 +399,7 @@ export default function AdminUsers() {
                               selectedUserId === u.id
                                 ? dark
                                   ? "bg-white/10 border border-white/20 rounded-[20px]"
-                                  : "bg-white border border-primary rounded-[20px]"
+                                  : "bg-white border border-ink rounded-[20px]"
                                 : ""
                             }`}
                           >

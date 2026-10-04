@@ -131,7 +131,7 @@ export default function AdminOrders() {
     return (
       <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#1B1B8F"} />
+          <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
         </View>
       </SafeAreaView>
     );
@@ -224,7 +224,7 @@ export default function AdminOrders() {
                       </Text>
                     </View>
                     <View className="items-end gap-1">
-                      <Text className="font-inter-bold text-[15px] text-primary">
+                      <Text className={`font-inter-bold text-[15px] ${dark ? "text-white" : "text-ink"}`}>
                         ₦{order.total_amount.toLocaleString()}
                       </Text>
                       <Text className={`font-inter-bold ${dark ? "text-white/40" : "text-ink/40"}`}>›</Text>
@@ -269,7 +269,7 @@ export default function AdminOrders() {
                 <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                   <View className="flex-row items-center gap-2 mb-4 flex-wrap">
                     <View className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-                      <Icon icon={ReceiptIcon} size={20} color="#1B1B8F" />
+                      <Icon icon={ReceiptIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
                     </View>
                     <Text className={`text-[18px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
                       #{selectedOrder.id.slice(0, 8)}
@@ -324,7 +324,7 @@ export default function AdminOrders() {
                     <View className={`border-t pt-3 mt-1 ${dark ? "border-white/10" : "border-border"}`}>
                       <View className="flex-row justify-between">
                         <Text className={`font-inter-bold text-[14px] ${dark ? "text-white" : "text-ink"}`}>Total</Text>
-                        <Text className="font-inter-bold text-[14px] text-primary">
+                        <Text className={`font-inter-bold text-[14px] ${dark ? "text-white" : "text-ink"}`}>
                           ₦{selectedOrder.total_amount.toLocaleString()}
                         </Text>
                       </View>

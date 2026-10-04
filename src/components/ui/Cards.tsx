@@ -15,7 +15,7 @@ export function StoryRow({ items, dark: darkProp, onPress }: { items: { id: stri
         >
           <View
             className={`w-[64px] h-[64px] rounded-full items-center justify-center ${
-              i === 0 ? "bg-ember" : dark ? "bg-white/15" : "bg-ink/10"
+              i === 0 ? (dark ? "bg-white" : "bg-ink") : dark ? "bg-white/15" : "bg-ink/10"
             }`}
             style={{ padding: 2.5 }}
           >
@@ -54,7 +54,7 @@ export function FoodSnapCard({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.92}
-      className={`w-[208px] mr-3 rounded-[24px] overflow-hidden ${dark ? "bg-card-dark" : "bg-white border border-border"}`}
+      className={`w-[208px] mr-3 rounded-[24px] overflow-hidden ${dark ? "bg-card-dark" : "bg-white"}`}
     >
       <View>
         <Image source={{ uri: image }} style={{ width: "100%", height: 228, borderRadius: 24 }} contentFit="cover" />
@@ -85,16 +85,17 @@ export function FoodSnapCard({
   );
 }
 
-// Ember used here ONLY — the single allowed color moment on dark.
+// Inverted mono panel: black banner on light, white banner on dark.
 export function PromoBanner({ title, subtitle, cta, onPress }: { title: string; subtitle: string; cta: string; onPress?: () => void }) {
+  const { dark } = useTheme();
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.94} className="rounded-[24px] p-[18px] flex-row items-center bg-ember">
+    <TouchableOpacity onPress={onPress} activeOpacity={0.94} className={`rounded-[24px] p-[18px] flex-row items-center ${dark ? "bg-white" : "bg-ink"}`}>
       <View className="flex-1 pr-3">
-        <Text className="text-white font-inter-bold text-[16px] tracking-tight">{title}</Text>
-        <Text className="text-white/85 text-[13px] font-inter mt-1 leading-snug">{subtitle}</Text>
+        <Text className={`font-inter-bold text-[16px] tracking-tight ${dark ? "text-ink" : "text-white"}`}>{title}</Text>
+        <Text className={`text-[13px] font-inter mt-1 leading-snug ${dark ? "text-ink/70" : "text-white/70"}`}>{subtitle}</Text>
       </View>
-      <View className="bg-white pl-4 pr-3 py-2.5 rounded-full flex-row items-center">
-        <Text className="text-ink text-[13px] font-inter-bold">{cta}</Text>
+      <View className={`pl-4 pr-3 py-2.5 rounded-full flex-row items-center ${dark ? "bg-ink" : "bg-white"}`}>
+        <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{cta}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -103,7 +104,7 @@ export function PromoBanner({ title, subtitle, cta, onPress }: { title: string; 
 export function EmptyState({ title, subtitle, dark: darkProp }: { title: string; subtitle: string; dark?: boolean }) {
   const dark = darkProp ?? useTheme().dark;
   return (
-    <View className={`rounded-[28px] p-8 items-center ${dark ? "bg-surface-dark-2" : "bg-white border border-border"}`}>
+    <View className={`rounded-[28px] p-8 items-center ${dark ? "bg-surface-dark-2" : "bg-ink/[0.04]"}`}>
       <Text className={`font-inter-bold text-[17px] tracking-tight ${dark ? "text-white" : "text-ink"}`}>{title}</Text>
       <Text className={`text-[14px] font-inter mt-1 text-center ${dark ? "text-white/55" : "text-ink/55"}`}>{subtitle}</Text>
     </View>

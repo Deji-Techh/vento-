@@ -58,14 +58,14 @@ export function StatusChip({
     neutral: dark ? "bg-white/10" : "bg-ink/5",
     success: "bg-success/15",
     warning: "bg-warning/15",
-    info: "bg-primary/10",
+    info: dark ? "bg-white/10" : "bg-ink/5",
     danger: "bg-destructive/10",
   };
   const fg: Record<string, string> = {
     neutral: dark ? "text-white/80" : "text-ink/70",
     success: "text-[#0E9F6E]",
     warning: "text-warning",
-    info: "text-primary",
+    info: dark ? "text-white/80" : "text-ink/70",
     danger: "text-destructive",
   };
   return (

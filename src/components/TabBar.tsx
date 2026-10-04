@@ -72,9 +72,9 @@ function Pill({
           <Animated.View
             key={tab.badge}
             entering={reduced ? FadeIn.duration(150) : ZoomIn.springify().damping(16).stiffness(320)}
-            style={styles.badge}
+            style={[styles.badge, { backgroundColor: dark ? "#FFFFFF" : "#0A0A0E" }]}
           >
-            <Text style={styles.badgeText}>{tab.badge > 99 ? "99+" : tab.badge}</Text>
+            <Text style={[styles.badgeText, { color: dark ? "#0A0A0E" : "#FFFFFF" }]}>{tab.badge > 99 ? "99+" : tab.badge}</Text>
           </Animated.View>
         )}
       </View>
@@ -93,7 +93,7 @@ function Pill({
   );
 }
 
-// Floating bar: glass nav pill + solid primary action side by side.
+// Floating bar: glass nav pill + solid mono action side by side.
 // Layout is explicit StyleSheet (never class-dependent) so the action
 // can never wrap below the pill.
 export default function TabBar({
@@ -117,8 +117,8 @@ export default function TabBar({
   };
 
   const ActionIcon = action?.icon;
-  const glassBg = dark ? "rgba(19,19,24,0.62)" : "rgba(255,255,255,0.68)";
-  const glassBorder = dark ? "rgba(255,255,255,0.12)" : "rgba(10,10,14,0.10)";
+  const   glassBg = dark ? "rgba(8,8,8,0.62)" : "rgba(255,255,255,0.68)";
+  const glassBorder = dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)";
 
   // Full-screen flows own their bottom edge (sticky CTAs, inputs, sheets)
   // so the floating bar gets out of the way entirely.
@@ -183,9 +183,9 @@ export default function TabBar({
             <Animated.View
               key={action.badge}
               entering={reduced ? FadeIn.duration(150) : ZoomIn.springify().damping(14).stiffness(320)}
-              style={styles.circleBadge}
+              style={[styles.circleBadge, { backgroundColor: dark ? "#FFFFFF" : "#0A0A0E" }]}
             >
-              <Text style={styles.badgeText}>
+              <Text style={[styles.badgeText, { color: dark ? "#0A0A0E" : "#FFFFFF" }]}>
                 {action.badge > 99 ? "99+" : action.badge}
               </Text>
             </Animated.View>
@@ -248,7 +248,6 @@ const styles = StyleSheet.create({
     minWidth: 18,
     height: 18,
     paddingHorizontal: 4,
-    backgroundColor: "#FF5A1F",
     borderRadius: 9,
     alignItems: "center",
     justifyContent: "center",
@@ -260,7 +259,6 @@ const styles = StyleSheet.create({
     minWidth: 20,
     height: 20,
     paddingHorizontal: 4,
-    backgroundColor: "#FF5A1F",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
@@ -268,7 +266,6 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
   },
   badgeText: {
-    color: "#fff",
     fontSize: 10,
     fontFamily: "Inter_700Bold",
   },

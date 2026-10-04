@@ -117,17 +117,17 @@ export default function AdminDashboard() {
     return (
       <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#1B1B8F"} />
+          <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
         </View>
       </SafeAreaView>
     );
   }
 
   const statCards = [
-    { label: "Total Users", value: stats.totalUsers, icon: UsersIcon, tint: "#1B1B8F" },
+    { label: "Total Users", value: stats.totalUsers, icon: UsersIcon, tint: dark ? "#fff" : "#0A0A0E" },
     { label: "Total Sellers", value: stats.totalSellers, icon: Store01Icon, tint: "#12805C" },
-    { label: "Pending", value: stats.pendingSellers, icon: Clock01Icon, tint: "#1B1B8F" },
-    { label: "Total Orders", value: stats.totalOrders, icon: ReceiptIcon, tint: "#1B1B8F" },
+    { label: "Pending", value: stats.pendingSellers, icon: Clock01Icon, tint: dark ? "#fff" : "#0A0A0E" },
+    { label: "Total Orders", value: stats.totalOrders, icon: ReceiptIcon, tint: dark ? "#fff" : "#0A0A0E" },
   ];
 
   return (
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
         {/* Summary hero */}
         <View className={`rounded-[28px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
           <View className="flex-row items-center gap-2">
-            <Icon icon={DashboardSquare01Icon} size={18} color="#1B1B8F" />
+            <Icon icon={DashboardSquare01Icon} size={18} color={dark ? "#fff" : "#0A0A0E"} />
             <Eyebrow>Platform at a glance</Eyebrow>
           </View>
           <Text className={`text-[22px] font-inter-bold tracking-tight mt-3 ${dark ? "text-white" : "text-ink"}`}>

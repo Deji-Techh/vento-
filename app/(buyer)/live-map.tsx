@@ -22,7 +22,7 @@ export default function LiveMap() {
   return (
     <View className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
       {/* Map background — route line + markers */}
-      <View className="absolute inset-0" style={{ backgroundColor: dark ? "#0A0A0E" : "#EFEAE2" }}>
+      <View className="absolute inset-0" style={{ backgroundColor: dark ? "#000000" : "#F2F2F2" }}>
         <View
           className="absolute rounded-full bg-white/40"
           style={{ top: 200, left: 120, width: 3, height: 200, transform: [{ rotate: "15deg" }], opacity: 0.9, backgroundColor: dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.25)" }}

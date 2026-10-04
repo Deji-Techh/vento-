@@ -62,7 +62,7 @@ export default function TrackDelivery() {
           activeOpacity={0.85}
           className={`w-11 h-11 items-center justify-center rounded-full ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}
         >
-          <Icon icon={FavouriteIcon} size={20} color={fav ? "#FF5A1F" : dark ? "#fff" : "#0A0A0E"} />
+          <Icon icon={FavouriteIcon} size={20} color={fav ? (dark ? "#fff" : "#0A0A0E") : (dark ? "rgba(255,255,255,0.5)" : "rgba(10,10,14,0.4)")} />
         </TouchableOpacity>
       </View>
 

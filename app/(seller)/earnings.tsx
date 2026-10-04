@@ -182,7 +182,7 @@ export default function SellerEarnings() {
               <View className="flex-row items-center gap-2 mb-2">
                 <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/55" : "text-ink/55"}`}>Total balance</Text>
                 <TouchableOpacity onPress={() => setShowBalance(!showBalance)} activeOpacity={0.85}>
-                  <Icon icon={showBalance ? EyeIcon : EyeOffIcon} size={16} color="#1B1B8F" />
+                  <Icon icon={showBalance ? EyeIcon : EyeOffIcon} size={16} color={dark ? "#fff" : "#0A0A0E"} />
                 </TouchableOpacity>
               </View>
               <Text className={`text-4xl font-inter-bold mb-3 tracking-tight ${dark ? "text-white" : "text-ink"}`}>
@@ -214,14 +214,14 @@ export default function SellerEarnings() {
         <View className="px-5 mt-4 flex-row gap-3">
           <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
             <View className="flex-row items-center gap-2 mb-2">
-              <Icon icon={ChartLineIcon} size={15} color="#1B1B8F" />
+              <Icon icon={ChartLineIcon} size={15} color={dark ? "#fff" : "#0A0A0E"} />
               <Text className={`text-[11px] font-inter-bold uppercase tracking-[1px] ${dark ? "text-white/55" : "text-ink/55"}`}>This week</Text>
             </View>
             <Text className="text-xl font-inter-bold text-success">+₦{thisWeekEarnings.toFixed(2)}</Text>
           </View>
           <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
             <View className="flex-row items-center gap-2 mb-2">
-              <Icon icon={Package01Icon} size={15} color="#1B1B8F" />
+              <Icon icon={Package01Icon} size={15} color={dark ? "#fff" : "#0A0A0E"} />
               <Text className={`text-[11px] font-inter-bold uppercase tracking-[1px] ${dark ? "text-white/55" : "text-ink/55"}`}>Orders</Text>
             </View>
             <Text className={`text-xl font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{thisWeekOrders}</Text>
@@ -236,8 +236,8 @@ export default function SellerEarnings() {
               onPress={() => toast.success("Filters coming soon")}
               className={`flex-row items-center gap-1 border px-3 h-10 rounded-full ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
             >
-              <Icon icon={FilterIcon} size={14} color="#1B1B8F" />
-              <Text className="text-[13px] font-inter-bold text-primary">Filter</Text>
+              <Icon icon={FilterIcon} size={14} color={dark ? "#fff" : "#0A0A0E"} />
+              <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Filter</Text>
             </TouchableOpacity>
           </View>
 
@@ -250,7 +250,7 @@ export default function SellerEarnings() {
               {recentTransactions.map((t) => (
                 <View key={t.id} className={`rounded-[24px] p-4 flex-row items-center gap-3 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                   <View className={`w-12 h-12 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-                    <Icon icon={t.type === "withdrawal" ? BankIcon : Wallet01Icon} size={20} color="#1B1B8F" />
+                    <Icon icon={t.type === "withdrawal" ? BankIcon : Wallet01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
                   </View>
                   <View className="flex-1 min-w-0">
                     <Text className={`font-inter-bold text-[13px] ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>
