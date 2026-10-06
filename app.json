@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Vento Demo",
-    "slug": "vento-demo",
+    "slug": "vento-rn",
     "scheme": "vento-demo",
     "version": "1.0.0",
     "orientation": "portrait",
