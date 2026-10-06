@@ -81,7 +81,7 @@ export default function Orders() {
   return (
     <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
       <View className="px-6 pt-2 pb-2">
-        <Text className={`text-[28px] font-serif-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Orders</Text>
+        <Text className={`text-[28px] font-display-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Orders</Text>
         <View className="flex-row mt-3">
           {(["Ongoing", "History"] as const).map((t) => {
             const active = tab === t;

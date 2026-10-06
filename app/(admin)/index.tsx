@@ -137,9 +137,9 @@ export default function AdminDashboard() {
 
         <View className={`rounded-[24px] border p-6 gap-3 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
           <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/50" : "text-ink/50"}`}>Quick Actions</Text>
-          <AppButton title="Publish listings" variant="navy" size="md" onPress={() => router.push("/(admin)/listings" as any)} />
-          <AppButton title="Manage Delivery Agents" variant={dark ? "white" : "ink"} size="md" onPress={() => router.push("/(admin)/users" as any)} />
-          <AppButton title="View Terms" variant={dark ? "white" : "ink"} size="md" onPress={() => router.push("/legal/terms" as any)} />
+          <AppButton title="Publish listings" variant="ink" onPress={() => router.push("/(admin)/listings" as any)} />
+          <AppButton title="Manage Delivery Agents" variant={dark ? "white" : "ink"} onPress={() => router.push("/(admin)/users" as any)} />
+          <AppButton title="View Terms" variant={dark ? "white" : "ink"} onPress={() => router.push("/legal/terms" as any)} />
         </View>
 
         <View>

@@ -79,7 +79,7 @@ export default function TrackDelivery() {
         <Enter>
           <View className="items-start mb-6">
             <Eyebrow>Live tracking</Eyebrow>
-            <Text className={`text-[34px] font-serif-bold tracking-tight mt-2 leading-tight ${dark ? "text-white" : "text-ink"}`}>
+            <Text className={`text-[34px] font-display-bold tracking-tight mt-2 leading-tight ${dark ? "text-white" : "text-ink"}`}>
               Rider appears here
             </Text>
             <Text className={`text-[14px] font-inter mt-1.5 ${dark ? "text-white/55" : "text-ink/55"}`}>Real GPS + timeline connect with live orders</Text>

@@ -188,9 +188,9 @@ export default function Notifications() {
                 </View>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity onPress={() => open(item)} activeOpacity={0.9} className={`${card} ${unread(item.id) ? (dark ? "bg-white/[0.07]" : "bg-navy/[0.04]") : ""}`}>
+              <TouchableOpacity onPress={() => open(item)} activeOpacity={0.9} className={`${card} ${unread(item.id) ? (dark ? "bg-white/[0.07]" : "bg-ink/[0.04]") : ""}`}>
                 <View className="flex-row gap-3.5 p-4">
-                  {unread(item.id) && <View className={`w-1 rounded-full ${dark ? "bg-white" : "bg-navy"}`} />}
+                  {unread(item.id) && <View className={`w-1 rounded-full ${dark ? "bg-white" : "bg-ink"}`} />}
                   {item.kind === "wallet" ? (
                     <View className="w-[68px] h-[68px] rounded-[18px] items-center justify-center bg-success/15 shrink-0">
                       <Icon icon={Wallet01Icon} size={26} color="#0E9F6E" />

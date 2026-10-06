@@ -111,7 +111,7 @@ export default function Kitchen() {
               <Text className="text-white text-[13px] font-inter-bold">{ACTIVE_CAMPUS.name}</Text>
             </View>
             <View className="flex-row items-end justify-between mt-1.5">
-              <Text className="text-white text-[32px] font-serif-bold tracking-tight flex-1">{kitchen.name}</Text>
+              <Text className="text-white text-[32px] font-display-bold tracking-tight flex-1">{kitchen.name}</Text>
               <TouchableOpacity onPress={toggleFollow} accessibilityRole="button" accessibilityState={{ selected: following }} accessibilityLabel={following ? `Unfollow ${kitchen.name}` : `Follow ${kitchen.name}`} className={`px-5 h-[44px] rounded-full ml-3 items-center justify-center ${following ? "bg-white/20 border border-white/30" : "bg-white"}`}>
                 <Text className={`text-[13px] font-inter-bold ${following ? "text-white" : "text-ink"}`}>{following ? "Following" : "Follow"}</Text>
               </TouchableOpacity>
@@ -140,7 +140,7 @@ export default function Kitchen() {
           </Enter>
 
           <View className="mt-7 mb-3">
-            <Text className={`text-[21px] font-serif-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Menu · {items.length}</Text>
+            <Text className={`text-[21px] font-display-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Menu · {items.length}</Text>
           </View>
           {items.length === 0 ? (
             <EmptyState title="No items yet" subtitle="Admin hasn't published items for this kitchen." />

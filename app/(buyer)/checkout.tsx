@@ -188,7 +188,7 @@ export default function Checkout() {
             </View>
           </Animated.View>
           <Animated.View entering={FadeIn.delay(150).duration(350)} className="items-center px-8">
-            <Text className={`text-[28px] font-serif-bold tracking-tight mt-6 text-center ${dark ? "text-white" : "text-ink"}`}>
+            <Text className={`text-[28px] font-display-bold tracking-tight mt-6 text-center ${dark ? "text-white" : "text-ink"}`}>
               Order received!
             </Text>
             <Text className={`text-[14px] font-inter mt-2 text-center ${dark ? "text-white/55" : "text-ink/55"}`}>

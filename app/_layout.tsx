@@ -20,10 +20,6 @@ import {
   SpaceGrotesk_600SemiBold,
   SpaceGrotesk_700Bold,
 } from "@expo-google-fonts/space-grotesk";
-import {
-  Fraunces_600SemiBold,
-  Fraunces_700Bold,
-} from "@expo-google-fonts/fraunces";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -41,7 +37,7 @@ function Shell() {
         <Stack.Screen name="(admin)" />
         <Stack.Screen name="legal/terms" />
       </Stack>
-      <Toaster position="bottom-center" offset={110} theme={dark ? "dark" : "light"} />
+      <Toaster position="bottom-center" offset={110} />
       <FlyLayer />
     </GestureHandlerRootView>
   );
@@ -56,8 +52,6 @@ export default function RootLayout() {
     SpaceGrotesk_500Medium,
     SpaceGrotesk_600SemiBold,
     SpaceGrotesk_700Bold,
-    Fraunces_600SemiBold,
-    Fraunces_700Bold,
   });
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
-import * as Device from "expo-constants";
+import Constants, * as Device from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "./supabase";
 
@@ -27,7 +27,7 @@ export async function registerPush(userId: string) {
       await AsyncStorage.setItem(ASKED_KEY, "1").catch(() => {});
     }
     if (status !== "granted") return;
-    const projectId = (require("../../app.json") as any)?.expo?.extra?.eas?.projectId;
+    const projectId = (Constants.expoConfig as any)?.extra?.eas?.projectId;
     const { data: token } = await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined);
     if (token) {
       await supabase.from("device_tokens").upsert(

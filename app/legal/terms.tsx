@@ -34,7 +34,7 @@ export default function Terms() {
         </View>
         <Enter>
           <Eyebrow>Vento v1.0</Eyebrow>
-          <Text className={`text-[28px] font-serif-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>The fine print, plainly.</Text>
+          <Text className={`text-[28px] font-display-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>The fine print, plainly.</Text>
           <Text className={`text-[14px] font-inter mt-2 mb-5 ${dark ? "text-white/55" : "text-ink/55"}`}>Short version: admin publishes every listing, ₦1,500 delivery (free over ₦10k), POD by default, 24h dispute window, ₦1,000 min payout.</Text>
         </Enter>
         <View className="gap-3">

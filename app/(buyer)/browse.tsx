@@ -19,7 +19,6 @@ import {
   PlusSignIcon,
 } from "../../src/components/icons";
 import { SectionHeader, Eyebrow } from "../../src/components/ui/SectionHeader";
-import { ACTIVE_CAMPUS, CAMPUSES } from "../../src/lib/campus";
 import { StoryRow } from "../../src/components/ui/Cards";
 import { EmptyState } from "../../src/components/ui/Cards";
 import { Skeleton } from "../../src/components/ui/Skeleton";
@@ -52,7 +51,6 @@ export default function Browse() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [showCampus, setShowCampus] = useState(false);
 
   const load = useCallback(async () => {
     setError("");
@@ -144,29 +142,8 @@ export default function Browse() {
       >
         <Enter>
           <View className="px-5 mt-2">
-            <TouchableOpacity onPress={() => { buzz(); setShowCampus(!showCampus); }} accessibilityLabel={`Campus: ${ACTIVE_CAMPUS.name}`} accessibilityRole="button" className="flex-row items-center gap-1.5 mb-1">
-              <Text className={`text-[12px] font-inter-bold uppercase tracking-[1.5px] ${dark ? "text-white/60" : "text-ink/60"}`}>📍 {ACTIVE_CAMPUS.name}</Text>
-              <Text className={`text-[12px] font-inter-bold ${dark ? "text-white/40" : "text-ink/40"}`}>{showCampus ? "▴" : "▾"}</Text>
-            </TouchableOpacity>
-            {showCampus && (
-              <View className={`rounded-[20px] border p-2 mb-2 ${dark ? "bg-surface-dark border-white/10" : "bg-white border-border"}`}>
-                {CAMPUSES.map((c) => (
-                  <View key={c.id} className="flex-row items-center justify-between px-3 py-2.5">
-                    <View className="flex-1 pr-3">
-                      <Text className={`text-[14px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{c.name}</Text>
-                      <Text className={`text-[12px] font-inter ${dark ? "text-white/50" : "text-ink/50"}`}>{c.town}</Text>
-                    </View>
-                    {c.active ? (
-                      <Text className="text-[12px] font-inter-bold text-[#12805C]">● Live</Text>
-                    ) : (
-                      <Text className={`text-[12px] font-inter-bold ${dark ? "text-white/40" : "text-ink/40"}`}>Soon</Text>
-                    )}
-                  </View>
-                ))}
-              </View>
-            )}
             <View className="flex-row items-center justify-between gap-3">
-              <Text className={`text-[30px] font-serif-bold tracking-tight leading-[32px] flex-1 ${dark ? "text-white" : "text-ink"}`}>
+              <Text className={`text-[30px] font-display-bold tracking-tight leading-[32px] flex-1 ${dark ? "text-white" : "text-ink"}`}>
                 {greeting()}
               </Text>
               <View className="flex-row items-center gap-1 shrink-0">
@@ -305,7 +282,7 @@ export default function Browse() {
                     </View>
                     <View className="absolute bottom-0 left-0 right-0 p-4 flex-row items-end justify-between">
                       <View>
-                        <Text className="text-white text-[20px] font-serif-bold tracking-tight">{hero.name}</Text>
+                        <Text className="text-white text-[20px] font-display-bold tracking-tight">{hero.name}</Text>
                         <Text className="text-white/75 text-[13px] font-inter-bold mt-0.5">₦{hero.price.toLocaleString()} · {hero.seller_name}</Text>
                       </View>
                       <TouchableOpacity

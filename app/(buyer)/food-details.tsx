@@ -143,7 +143,7 @@ export default function FoodDetails() {
                 {product.seller_name} • ~{product.prep_time} min
               </Text>
             </View>
-            <Text className={`text-[30px] font-serif-bold tracking-tight mt-2 ${dark ? "text-white" : "text-ink"}`}>{product.name}</Text>
+            <Text className={`text-[30px] font-display-bold tracking-tight mt-2 ${dark ? "text-white" : "text-ink"}`}>{product.name}</Text>
             <View className="flex-row items-center gap-1.5 mt-2.5">
               <Icon icon={StarIcon} size={14} color={dark ? "#fff" : "#0A0A0E"} />
               <Text className={`text-[13px] font-inter ${dark ? "text-white/45" : "text-ink/50"}`}>{product.category} · ₦{product.price.toLocaleString()}</Text>

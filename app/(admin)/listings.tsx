@@ -151,7 +151,7 @@ export default function AdminListings() {
           <Text className={`text-[15px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>1 · New store</Text>
           <TextField placeholder="Store name — e.g. Suya Spot" value={storeName} onChangeText={setStoreName} />
           <TextField placeholder="Description (optional)" value={storeDesc} onChangeText={setStoreDesc} />
-          <AppButton title="Publish store" variant="navy" size="md" loading={saving} onPress={createStore} />
+          <AppButton title="Publish store" variant="ink" loading={saving} onPress={createStore} />
         </View>
 
         <View className={`rounded-[24px] p-6 border gap-3 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
@@ -166,7 +166,7 @@ export default function AdminListings() {
           {sellers.length === 0 ? <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Create a store first.</Text> : null}
           <TextField placeholder="Item name — e.g. Suya Platter" value={itemName} onChangeText={setItemName} />
           <TextField placeholder="Price — e.g. 3000" value={itemPrice} onChangeText={setItemPrice} keyboardType="numeric" />
-          <AppButton title="Publish item" variant={dark ? "white" : "ink"} size="md" loading={saving} onPress={createItem} />
+          <AppButton title="Publish item" variant={dark ? "white" : "ink"} loading={saving} onPress={createItem} />
         </View>
 
         <View>

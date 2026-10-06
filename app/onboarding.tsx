@@ -107,7 +107,7 @@ export default function Onboarding() {
             {slides[current].eyebrow}
           </Text>
           <Animated.View key={current} entering={FadeIn.duration(320)}>
-            <Text className="text-ink text-[36px] font-serif-bold tracking-tight leading-[38px] mt-2">
+            <Text className="text-ink text-[36px] font-display-bold tracking-tight leading-[38px] mt-2">
               {slides[current].title}
             </Text>
             <Text className="text-ink/60 text-[15px] font-inter leading-[23px] mt-3 max-w-[300px]">

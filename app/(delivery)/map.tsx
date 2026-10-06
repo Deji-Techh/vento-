@@ -135,12 +135,12 @@ export default function DeliveryMap() {
           </Text>
         </View>
         {perm !== "granted" ? (
-          <AppButton title="Enable location" variant="navy" size="md" onPress={requestPerm} />
+          <AppButton title="Enable location" variant="ink" onPress={requestPerm} />
         ) : (
           <AppButton
             title={isTracking ? "Stop Tracking" : "Start Tracking"}
             variant={isTracking ? (dark ? "ghost-dark" : "ghost-light") : dark ? "white" : "ink"}
-            size="md"
+           
             onPress={toggleTracking}
           />
         )}

@@ -81,7 +81,7 @@ export default function VentoPay() {
               {loading ? (
                 <Skeleton width={160} height={34} radius={10} />
               ) : (
-                <Text className={`text-[34px] font-serif-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>₦{spent.toLocaleString()}</Text>
+                <Text className={`text-[34px] font-display-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>₦{spent.toLocaleString()}</Text>
               )}
             </View>
           </View>
