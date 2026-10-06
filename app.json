@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Vento",
-    "slug": "vento-rn",
-    "scheme": "vento-rn",
+    "name": "Vento Demo",
+    "slug": "vento-demo",
+    "scheme": "vento-demo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,8 +17,11 @@
         "backgroundColor": "#1B1B8F",
         "foregroundImage": "./assets/adaptive-icon.png"
       },
-      "package": "com.vento.app",
-      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
+      "package": "com.vento.demo",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyBKl52b1NtXvyPrsU24oyvrtMwR3qvTcy0"
