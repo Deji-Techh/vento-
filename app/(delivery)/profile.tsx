@@ -185,6 +185,23 @@ export default function DeliveryProfile() {
         </View>
       </View>
 
+      {/* Verify rider */}
+      <TouchableOpacity
+        onPress={() => router.push("/(delivery)/verification" as any)}
+        accessibilityLabel="Verify rider account"
+        activeOpacity={0.85}
+        className={`mt-4 rounded-[24px] p-4 border items-center flex-row gap-3 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
+      >
+        <View className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-cream"}`}>
+          <Icon icon={UserIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+        </View>
+        <View className="flex-1">
+          <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Verify account</Text>
+          <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Uni ID + bank · Igbinedion only</Text>
+        </View>
+        <Text className={`text-lg font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>›</Text>
+      </TouchableOpacity>
+
       {/* Sign out */}
       <TouchableOpacity
         onPress={handleSignOut}

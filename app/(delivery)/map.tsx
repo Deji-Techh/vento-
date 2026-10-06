@@ -1,61 +1,90 @@
-import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  Platform,
-} from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, Linking } from "react-native";
 import * as Haptics from "expo-haptics";
+import * as Location from "expo-location";
 import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
+import { EmptyState } from "../../src/components/ui/Cards";
 import { Icon } from "../../src/components/ui/Icon";
 import { useTheme } from "../../src/contexts/ThemeContext";
+import { LiveMapView } from "../../src/components/LiveMapView";
+import { buzz } from "../../src/lib/haptics";
 import {
   MapPinIcon,
   Navigation01Icon,
   RefreshIcon,
-  Package01Icon,
 } from "../../src/components/icons";
-
-const mockActiveDelivery = {
-  id: "delivery-001",
-  order_id: "order-001",
-  status: "heading_to_seller",
-  delivery_fee: 500,
-};
-
-const statusLabel = (status: string) => status.replaceAll("_", " ");
 
 export default function DeliveryMap() {
   const { dark } = useTheme();
   const [loading, setLoading] = useState(true);
-  const [activeDelivery, setActiveDelivery] = useState<any>(null);
+  const [perm, setPerm] = useState<Location.PermissionStatus | null>(null);
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isTracking, setIsTracking] = useState(false);
+  const sub = useRef<Location.LocationSubscription | null>(null);
 
   useEffect(() => {
-    setTimeout(() => {
-      setActiveDelivery(mockActiveDelivery);
+    (async () => {
+      if (Platform.OS === "web") { setLoading(false); return; }
+      const { status } = await Location.getForegroundPermissionsAsync();
+      setPerm(status);
+      if (status === "granted") {
+        try {
+          const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+        } catch {}
+      }
       setLoading(false);
-    }, 800);
+    })();
+    return () => { sub.current?.remove(); };
   }, []);
 
-  const toggleTracking = () => {
-    const next = !isTracking;
-    setIsTracking(next);
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+  const requestPerm = async () => {
+    if (Platform.OS === "web") { toast("Location is native-only — use the device build"); return; }
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    setPerm(status);
+    if (status !== "granted") {
+      toast.error("Location denied — tracking paused");
+      return;
     }
-    toast.success(next ? "Location tracking started" : "Location tracking stopped");
+    refreshLocation();
   };
 
-  const refreshLocation = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+  const refreshLocation = async () => {
+    buzz();
+    if (Platform.OS === "web") return;
+    if (perm !== "granted") { requestPerm(); return; }
+    try {
+      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+      toast.success("Location refreshed");
+    } catch {
+      toast.error("Couldn't get location");
     }
-    toast.success("Location refreshed");
+  };
+
+  const toggleTracking = async () => {
+    if (Platform.OS === "web") { toast("Tracking is native-only — use the device build"); return; }
+    if (perm !== "granted") { requestPerm(); return; }
+    const next = !isTracking;
+    setIsTracking(next);
+    buzz("medium");
+    if (next) {
+      try {
+        sub.current = await Location.watchPositionAsync({ accuracy: Location.Accuracy.Balanced, distanceInterval: 20 }, (pos) => {
+          setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+        });
+        toast.success("Location tracking started");
+      } catch {
+        setIsTracking(false);
+        toast.error("Couldn't start tracking");
+      }
+    } else {
+      sub.current?.remove();
+      sub.current = null;
+      toast.success("Location tracking stopped");
+    }
   };
 
   if (loading) {
@@ -73,13 +102,15 @@ export default function DeliveryMap() {
           <Eyebrow>Route</Eyebrow>
           <Text className={`text-[28px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>Live Map</Text>
           <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
-            Track your delivery route in real-time
+            {perm === "granted" ? "Real GPS — demo route overlay" : "Grant location to start live tracking"}
           </Text>
         </View>
         <View className="flex-row items-center gap-2">
           <StatusChip label={isTracking ? "Tracking" : "Paused"} tone={isTracking ? "success" : "neutral"} />
           <TouchableOpacity
             onPress={refreshLocation}
+            accessibilityLabel="Refresh location"
+            accessibilityRole="button"
             activeOpacity={0.85}
             className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
           >
@@ -88,20 +119,8 @@ export default function DeliveryMap() {
         </View>
       </View>
 
-      {/* Map placeholder */}
-      <View className={`rounded-[28px] overflow-hidden border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`} style={{ height: 380 }}>
-        <View className={`flex-1 items-center justify-center px-8 ${dark ? "bg-transparent" : "bg-cream"}`}>
-          <View className={`w-16 h-16 rounded-full border items-center justify-center mb-4 ${dark ? "bg-white/10 border-white/10" : "bg-white border-border"}`}>
-            <Icon icon={MapPinIcon} size={22} color={dark ? "#FFFFFF" : "#0A0A0E"} />
-          </View>
-          <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Map view</Text>
-          <Text className={`text-[13px] font-inter mt-1 text-center ${dark ? "text-white/55" : "text-ink/55"}`}>
-            Live route preview will appear here when tracking starts
-          </Text>
-        </View>
-      </View>
+      <LiveMapView height={380} />
 
-      {/* Location controls */}
       <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
         <View className="flex-row items-center gap-2 mb-4">
           <View className={`w-9 h-9 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
@@ -112,52 +131,31 @@ export default function DeliveryMap() {
         <View className="mb-4">
           <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Your location</Text>
           <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`}>
-            6.4541, 3.3947
+            {coords ? `${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}` : perm === "granted" ? "Locating…" : "Permission needed"}
           </Text>
         </View>
-        <AppButton
-          title={isTracking ? "Stop Tracking" : "Start Tracking"}
-          variant={isTracking ? (dark ? "ghost-dark" : "ghost-light") : dark ? "white" : "ink"}
-          onPress={toggleTracking}
-        />
+        {perm !== "granted" ? (
+          <AppButton title="Enable location" variant="navy" size="md" onPress={requestPerm} />
+        ) : (
+          <AppButton
+            title={isTracking ? "Stop Tracking" : "Start Tracking"}
+            variant={isTracking ? (dark ? "ghost-dark" : "ghost-light") : dark ? "white" : "ink"}
+            size="md"
+            onPress={toggleTracking}
+          />
+        )}
+        {perm !== null && perm !== "granted" ? (
+          <TouchableOpacity onPress={() => Linking.openSettings()} className="items-center mt-3">
+            <Text className={`text-[13px] font-inter-bold ${dark ? "text-white/60" : "text-ink/60"}`}>Open Settings →</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
-      {/* Active delivery info */}
-      {activeDelivery ? (
-        <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
-          <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-3 ${dark ? "text-white/55" : "text-ink/55"}`}>
-            Active delivery
-          </Text>
-          <View className={`border rounded-[20px] p-4 gap-2.5 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-            <View className="flex-row justify-between">
-              <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Order ID</Text>
-              <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
-                #{activeDelivery.order_id.slice(0, 8)}
-              </Text>
-            </View>
-            <View className="flex-row justify-between items-center">
-              <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Status</Text>
-              <StatusChip label={statusLabel(activeDelivery.status)} tone="info" />
-            </View>
-            <View className="flex-row justify-between">
-              <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Delivery fee</Text>
-              <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
-                ₦{activeDelivery.delivery_fee}
-              </Text>
-            </View>
-          </View>
-        </View>
-      ) : (
-        <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
-          <View className={`w-12 h-12 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
-            <Icon icon={Package01Icon} size={20} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.4)"} />
-          </View>
-          <Text className={`font-inter-bold mt-3 ${dark ? "text-white" : "text-ink"}`}>No active delivery</Text>
-          <Text className={`text-[13px] font-inter mt-1 text-center ${dark ? "text-white/55" : "text-ink/55"}`}>
-            Start a delivery to see the route on the map
-          </Text>
-        </View>
-      )}
+      <EmptyState title="No active delivery" subtitle="Assignments appear here once the order flow is wired. Map above is live GPS." />
+      <View className="flex-row items-center gap-2 opacity-60 px-1">
+        <Icon icon={MapPinIcon} size={14} color={dark ? "rgba(255,255,255,0.6)" : "#55505E"} />
+        <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Demo key — route line is illustrative, not Directions API.</Text>
+      </View>
     </ScrollView>
   );
 }

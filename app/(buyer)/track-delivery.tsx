@@ -8,6 +8,7 @@ import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { Eyebrow } from "../../src/components/ui/SectionHeader";
 import { PinBoxes } from "../../src/components/ui/PinBoxes";
+import { LiveMapView } from "../../src/components/LiveMapView";
 import { Enter } from "../../src/components/motion";
 import { Icon } from "../../src/components/ui/Icon";
 import {
@@ -70,58 +71,37 @@ export default function TrackDelivery() {
         <View className="items-center mt-2 mb-5">
           <View className={`border px-4 py-2 rounded-full ${dark ? "border-white/10" : "border-ink/10"}`}>
             <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/50" : "text-ink/50"}`}>
-              Invoice 12A394
+              Demo preview
             </Text>
           </View>
         </View>
 
         <Enter>
           <View className="items-start mb-6">
-            <Eyebrow>Rider is nearby</Eyebrow>
-            <Text className={`text-[34px] font-display-bold tracking-tight mt-2 leading-tight ${dark ? "text-white" : "text-ink"}`}>
-              Arriving in 3 min
+            <Eyebrow>Live tracking</Eyebrow>
+            <Text className={`text-[34px] font-serif-bold tracking-tight mt-2 leading-tight ${dark ? "text-white" : "text-ink"}`}>
+              Rider appears here
             </Text>
-            <Text className={`text-[14px] font-inter mt-1.5 ${dark ? "text-white/55" : "text-ink/55"}`}>Live GPS · 1 km away</Text>
+            <Text className={`text-[14px] font-inter mt-1.5 ${dark ? "text-white/55" : "text-ink/55"}`}>Real GPS + timeline connect with live orders</Text>
           </View>
         </Enter>
 
-        {/* Map placeholder */}
         <Enter delay={60}>
-          <View className={`border rounded-[28px] overflow-hidden mb-4 ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}>
-            <View className="h-44 items-center justify-center">
-              <View
-                className="absolute rounded-full bg-white/25"
-                style={{ width: 3, height: 120, transform: [{ rotate: "18deg" }] }}
-              />
-              <View className="absolute" style={{ top: 30 }}>
-                <View className={`w-10 h-10 rounded-full items-center justify-center border ${dark ? "bg-white/10 border-white/15" : "bg-ink/[0.05] border-ink/10"}`}>
-                  <Icon icon={MapPinIcon} size={18} color={dark ? "#fff" : "#0A0A0E"} />
-                </View>
-              </View>
-              <View className="absolute" style={{ top: 92 }}>
-                <View className={`w-12 h-12 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
-                  <Icon icon={Navigation01Icon} size={20} color={dark ? "#0A0A0E" : "#fff"} />
-                </View>
-              </View>
-              <View className={`absolute bottom-3 right-3 border px-3 py-1.5 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-ink/80 border-white/10" : "bg-white/90 border-ink/10"}`}>
-                <Icon icon={Navigation01Icon} size={12} color={dark ? "#fff" : "#0A0A0E"} />
-                <Text className={`text-[11px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>1 KM away</Text>
-              </View>
+          <LiveMapView height={220} />
+          <View className={`px-5 py-4 mt-2 mb-4 flex-row items-center justify-between border rounded-[28px] ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}>
+            <View>
+              <Text className={`text-[15px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Demo route</Text>
+              <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`}>Illustrative — not Directions API</Text>
             </View>
-            <View className={`px-5 py-4 flex-row items-center justify-between border-t ${dark ? "border-white/10" : "border-ink/10"}`}>
-              <View>
-                <Text className={`text-[15px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Rider is nearby</Text>
-                <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`}>Arriving in around 3 min</Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => router.push("/(buyer)/live-map" as any)}
-                activeOpacity={0.85}
-                className={`px-4 py-2.5 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
-              >
-                <Text className={`text-[13px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>Tracking</Text>
-                <Icon icon={Navigation01Icon} size={14} color={dark ? "#0A0A0E" : "#fff"} />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              onPress={() => router.push("/(buyer)/live-map" as any)}
+              activeOpacity={0.85}
+              accessibilityLabel="Open live tracking"
+              className={`px-4 h-[44px] rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
+            >
+              <Text className={`text-[13px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>Tracking</Text>
+              <Icon icon={Navigation01Icon} size={14} color={dark ? "#0A0A0E" : "#fff"} />
+            </TouchableOpacity>
           </View>
         </Enter>
 
@@ -169,8 +149,7 @@ export default function TrackDelivery() {
           <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-3 ${dark ? "text-white/50" : "text-ink/50"}`}>
             Delivery PIN
           </Text>
-          <PinBoxes value="4821" />
-          <Text className={`text-[12px] font-inter mt-3 ${dark ? "text-white/45" : "text-ink/50"}`}>Share only with your rider</Text>
+          <Text className={`text-[14px] font-inter ${dark ? "text-white/60" : "text-ink/60"}`}>Your 4-digit PIN appears here with live orders. Share only with your rider.</Text>
         </View>
       </ScrollView>
 

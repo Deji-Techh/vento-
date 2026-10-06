@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../src/contexts/ThemeContext";
@@ -6,6 +6,7 @@ import { toast } from "sonner-native";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { Enter } from "../../src/components/motion";
 import { Icon } from "../../src/components/ui/Icon";
+import { LiveMapView } from "../../src/components/LiveMapView";
 import {
   ArrowLeft01Icon,
   FavouriteIcon,
@@ -21,40 +22,8 @@ export default function LiveMap() {
 
   return (
     <View className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
-      {/* Map background — route line + markers */}
-      <View className="absolute inset-0" style={{ backgroundColor: dark ? "#000000" : "#F2F2F2" }}>
-        <View
-          className="absolute rounded-full bg-white/40"
-          style={{ top: 200, left: 120, width: 3, height: 200, transform: [{ rotate: "15deg" }], opacity: 0.9, backgroundColor: dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.25)" }}
-        />
-
-        <View className="absolute flex-col items-center" style={{ top: 180, left: 105 }}>
-          <View className={`w-11 h-11 rounded-full items-center justify-center border ${dark ? "bg-white/10 border-white/15" : "bg-ink/[0.05] border-ink/10"}`}>
-            <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>R</Text>
-          </View>
-          <View className={`mt-1.5 border px-3 py-1 rounded-full ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}>
-            <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/50" : "text-ink/50"}`}>Restaurant</Text>
-          </View>
-        </View>
-
-        <View className="absolute flex-row items-center" style={{ top: 300, left: 140 }}>
-          <View className={`w-14 h-14 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
-            <Icon icon={Navigation01Icon} size={22} color={dark ? "#0A0A0E" : "#fff"} />
-          </View>
-          <View className={`ml-2 px-3 py-1.5 rounded-full border flex-row items-center gap-1.5 ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}>
-            <Icon icon={Navigation01Icon} size={12} color={dark ? "#fff" : "#0A0A0E"} />
-            <Text className={`text-[12px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>1 KM</Text>
-          </View>
-        </View>
-
-        <View className="absolute flex-col items-center" style={{ top: 390, left: 240 }}>
-          <View className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
-            <Text className={`text-[13px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>D</Text>
-          </View>
-          <View className={`mt-1.5 border px-3 py-1 rounded-full ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}>
-            <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/50" : "text-ink/50"}`}>Home</Text>
-          </View>
-        </View>
+      <View className="absolute inset-0 px-5 pt-24">
+        <LiveMapView height={520} />
       </View>
 
       <SafeAreaView edges={["top", "left", "right"]} className="z-50">
@@ -70,6 +39,8 @@ export default function LiveMap() {
             <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Food</Text>
           </View>
           <TouchableOpacity
+            onPress={() => toast("Saved kitchens live here once favourites ship")}
+            accessibilityLabel="Save kitchen"
             activeOpacity={0.85}
             className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}
           >
@@ -83,8 +54,8 @@ export default function LiveMap() {
               <Icon icon={ShoppingBag02Icon} size={20} color={dark ? "#0A0A0E" : "#fff"} />
             </View>
             <View>
-              <Text className={`text-[15px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Arriving in 10:32</Text>
-              <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`}>Invoice 12A394 · Rider nearby</Text>
+              <Text className={`text-[15px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Demo preview</Text>
+              <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`}>Live rider appears here with orders</Text>
             </View>
           </View>
           <View className={`border px-3 py-1.5 rounded-full ${dark ? "bg-white/10 border-white/10" : "bg-ink/[0.05] border-ink/10"}`}>
@@ -103,15 +74,15 @@ export default function LiveMap() {
 
         <View className="px-6 pb-2 pt-2 items-center">
           <Text className={`text-[11px] uppercase tracking-[2px] font-inter-bold mb-2 ${dark ? "text-white/50" : "text-ink/50"}`}>
-            Invoice 12A394
+            Demo preview
           </Text>
           <Text className={`text-[22px] font-inter-bold mb-1 text-center tracking-tight ${dark ? "text-white" : "text-ink"}`}>
-            Tracking order
+            Tracking connects with live orders
           </Text>
 
           <View className="flex-row items-baseline gap-2 mb-7 mt-2">
-            <Text className={`text-[15px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Arrived in</Text>
-            <Text className={`text-3xl font-inter-bold ${dark ? "text-white" : "text-ink"}`}>10 : 32</Text>
+            <Text className={`text-[15px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Typical delivery</Text>
+            <Text className={`text-3xl font-inter-bold ${dark ? "text-white" : "text-ink"}`}>~30</Text>
             <Text className={`text-[15px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>min</Text>
           </View>
 
@@ -122,7 +93,7 @@ export default function LiveMap() {
               </View>
               <Text className={`text-[12px] font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>Message</Text>
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.85} className="items-center gap-2" onPress={() => toast("Calling your rider…")}>
+            <TouchableOpacity activeOpacity={0.85} className="items-center gap-2" onPress={() => toast("Rider number appears with live orders")}>
               <View className={`w-14 h-14 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-ink/[0.05] border-ink/10"}`}>
                 <Icon icon={PhoneIcon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
               </View>
@@ -130,7 +101,7 @@ export default function LiveMap() {
             </TouchableOpacity>
           </View>
 
-          <AppButton title="Order Details" variant={dark ? "white" : "ink"} onPress={() => router.back()} />
+          <AppButton title="View orders" variant={dark ? "white" : "ink"} onPress={() => router.push("/(buyer)/orders" as any)} />
         </View>
       </View>
       </Enter>
