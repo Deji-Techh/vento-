@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
+import { supabase } from "../../src/lib/supabase";
+import { buzz } from "../../src/lib/haptics";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
+import { EmptyState } from "../../src/components/ui/Cards";
 import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
 import { Icon } from "../../src/components/ui/Icon";
 import {
@@ -64,7 +67,7 @@ const mockRecentOrders = [
 
 function toneFor(status: string): "success" | "warning" | "info" | "neutral" {
   switch (status) {
-    case "completed":
+    case "delivered":
       return "success";
     case "preparing":
       return "warning";
@@ -77,21 +80,44 @@ function toneFor(status: string): "success" | "warning" | "info" | "neutral" {
 
 export default function SellerDashboard() {
   const router = useRouter();
-  const { profile, loading: authLoading } = useAuth();
+  const { profile, loading: authLoading, user } = useAuth();
   const { dark } = useTheme();
   const [sellerInfo, setSellerInfo] = useState<any>(null);
-  const [stats] = useState(mockStats);
+  const [stats, setStats] = useState({ totalEarnings: 0, totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setSellerInfo(mockSellerInfo);
-      setRecentOrders(mockRecentOrders);
+  const load = useCallback(async () => {
+    if (!user) { setLoading(false); setRefreshing(false); return; }
+    try {
+      const { data: stores } = await supabase.from("sellers").select("id, store_name, approved, total_earnings").eq("owner_id", user.id).limit(5);
+      const store = (stores || [])[0] || null;
+      setSellerInfo(store);
+      if (store) {
+        const { data: orders } = await supabase.from("orders").select("id, status, created_at, notes, total, order_items(name, image_url)").eq("seller_id", store.id).order("created_at", { ascending: false }).limit(10);
+        const list = orders || [];
+        setRecentOrders(list);
+        setStats({
+          totalEarnings: store.total_earnings || 0,
+          totalOrders: list.length,
+          completedOrders: list.filter((o: any) => o.status === "delivered").length,
+          pendingOrders: list.filter((o: any) => o.status === "pending").length,
+        });
+      } else {
+        setRecentOrders([]);
+        setStats({ totalEarnings: 0, totalOrders: 0, completedOrders: 0, pendingOrders: 0 });
+      }
+    } catch {
+      // keep honest empty states; errors surface inline
+    } finally {
       setLoading(false);
-    }, 800);
-  }, [profile, authLoading]);
+      setRefreshing(false);
+    }
+  }, [user]);
+
+  useEffect(() => { load(); }, [load, profile, authLoading]);
 
   const getTimeAgo = (date: string) => {
     const minutes = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
@@ -103,20 +129,24 @@ export default function SellerDashboard() {
 
   const toggleOnline = () => {
     setIsOnline((v) => {
-      if (Platform.OS !== "web") {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      }
+      buzz();
       toast.success(!v ? "You are online" : "You are offline");
       return !v;
     });
   };
 
-  const completeOrder = (id: string) => {
-    setRecentOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: "completed" } : o)));
-    if (Platform.OS !== "web") {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+  const advanceOrder = async (id: string, status: string) => {
+    try {
+      const { error } = await supabase.from("orders").update({ status }).eq("id", id);
+      if (error) throw error;
+      setRecentOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+      buzz("success");
+      toast.success(`Order ${status.replaceAll("_", " ")}`);
+      load();
+    } catch (e: any) {
+      buzz("error");
+      toast.error(e.message || "Couldn't update order");
     }
-    toast.success("Order completed");
   };
 
   if (authLoading || loading) {
@@ -128,15 +158,15 @@ export default function SellerDashboard() {
   }
 
   const quickActions = [
-    { icon: PlusSignIcon, label: "Add Item", onPress: () => router.push("/(seller)/menu" as any) },
-    { icon: ChartLineIcon, label: "Promote", onPress: () => toast.success("Promotions coming soon") },
+    { icon: PlusSignIcon, label: "Menu", onPress: () => router.push("/(seller)/menu" as any) },
+    { icon: ChartLineIcon, label: "Verify", onPress: () => router.push("/(seller)/verification" as any) },
     { icon: ReceiptIcon, label: "Orders", onPress: () => router.push("/(seller)/orders" as any) },
     { icon: ListViewIcon, label: "More", onPress: () => router.push("/(seller)/settings" as any) },
   ];
 
   return (
     <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); buzz(); load(); }} tintColor={dark ? "#fff" : "#0A0A0E"} />}>
         <View className="px-5 pt-4 pb-2">
           <Eyebrow>Seller overview</Eyebrow>
           <View className={`rounded-[28px] p-5 border mt-3 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
@@ -179,12 +209,12 @@ export default function SellerDashboard() {
                   Total earnings
                 </Text>
                 <Text className="text-[32px] font-inter-bold text-white mt-2 tracking-tight">
-                  ₦{stats.totalEarnings.toFixed(2)}
+                  ₦{stats.totalEarnings.toLocaleString()}
                 </Text>
                 <View className="flex-row items-center mt-4">
                   <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-white">
                     <Icon icon={ChartLineIcon} size={14} color="#0A0A0E" />
-                    <Text className="text-xs font-inter-bold text-ink">+12.5% today</Text>
+                    <Text className="text-xs font-inter-bold text-ink">{stats.totalOrders} orders all time</Text>
                   </View>
                 </View>
               </View>
@@ -219,9 +249,9 @@ export default function SellerDashboard() {
             </View>
             <View>
               <Text className={`text-xl font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
-                4.8<Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}> / 5.0</Text>
+                {stats.totalOrders}<Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}> orders</Text>
               </Text>
-              <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Store rating</Text>
+              <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Total volume</Text>
             </View>
           </View>
           <View className={`flex-1 rounded-[24px] p-5 border flex-row items-center gap-3 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
@@ -259,9 +289,10 @@ export default function SellerDashboard() {
             </TouchableOpacity>
           </View>
 
-          {recentOrders.length === 0 ? (
+          {sellerInfo ? (
+            recentOrders.length === 0 ? (
             <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
-              <Text className={`font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>No orders yet</Text>
+              <Text className={`font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>No orders yet — new orders appear here live</Text>
             </View>
           ) : (
             <View className="gap-3">
@@ -274,7 +305,7 @@ export default function SellerDashboard() {
                     <View className="flex-1 min-w-0">
                       <View className="flex-row items-start justify-between gap-2">
                         <Text className={`font-inter-bold flex-1 ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>
-                          {order.items?.[0]?.name || "Order"}
+                          {(order.order_items?.[0]?.name) || "Order"}
                         </Text>
                         <Text className={`text-xs font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>#{order.id.slice(0, 4)}</Text>
                       </View>
@@ -286,9 +317,30 @@ export default function SellerDashboard() {
                         <Text className={`text-xs font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>• {getTimeAgo(order.created_at)}</Text>
                       </View>
                     </View>
+                    {order.status === "pending" && (
+                      <TouchableOpacity
+                        onPress={() => advanceOrder(order.id, "accepted")}
+                        accessibilityLabel="Accept order"
+                        activeOpacity={0.85}
+                        className={`px-4 h-[44px] rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}
+                      >
+                        <Text className={`text-[13px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>Accept</Text>
+                      </TouchableOpacity>
+                    )}
+                    {order.status === "accepted" && (
+                      <TouchableOpacity
+                        onPress={() => advanceOrder(order.id, "preparing")}
+                        accessibilityLabel="Start preparing"
+                        activeOpacity={0.85}
+                        className={`px-4 h-[44px] rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}
+                      >
+                        <Text className={`text-[13px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>Prepare</Text>
+                      </TouchableOpacity>
+                    )}
                     {order.status === "preparing" && (
                       <TouchableOpacity
-                        onPress={() => completeOrder(order.id)}
+                        onPress={() => advanceOrder(order.id, "delivered")}
+                        accessibilityLabel="Mark delivered"
                         activeOpacity={0.85}
                         className={`w-12 h-12 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}
                       >
@@ -299,6 +351,9 @@ export default function SellerDashboard() {
                 </View>
               ))}
             </View>
+          )
+          ) : (
+            <EmptyState title="No store yet" subtitle="Admin creates your store after verification. Start in Verify." actionLabel="Verify account" onAction={() => router.push("/(seller)/verification" as any)} />
           )}
         </View>
       </ScrollView>

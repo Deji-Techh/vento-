@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,9 +7,15 @@ import {
   Modal,
   ActivityIndicator,
   Platform,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
+import { supabase } from "../../src/lib/supabase";
+import { useAuth } from "../../src/contexts/AuthContext";
+import { buzz } from "../../src/lib/haptics";
+import { EmptyState } from "../../src/components/ui/Cards";
 import { Eyebrow, SectionHeader, StatusChip } from "../../src/components/ui/SectionHeader";
 import { Icon } from "../../src/components/ui/Icon";
 import { useTheme } from "../../src/contexts/ThemeContext";
@@ -68,10 +74,9 @@ const mockOrders = [
 
 const statusLabels: Record<string, string> = {
   pending: "Pending",
-  confirmed: "Confirmed",
+  accepted: "Accepted",
   preparing: "Preparing",
-  ready_for_pickup: "Ready",
-  assigned: "Assigned",
+  picked_up: "Picked up",
   on_the_way: "On the Way",
   delivered: "Delivered",
   cancelled: "Cancelled",
@@ -86,10 +91,9 @@ function statusTone(status: string): "success" | "warning" | "info" | "danger" |
     case "pending":
     case "preparing":
       return "warning";
-    case "confirmed":
-    case "assigned":
+    case "accepted":
+    case "picked_up":
     case "on_the_way":
-    case "ready_for_pickup":
       return "info";
     default:
       return "neutral";
@@ -100,18 +104,77 @@ const tabs = ["All", "Pending", "Preparing", "On the Way", "Delivered"];
 
 export default function AdminOrders() {
   const { dark } = useTheme();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
+  const [riders, setRiders] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setOrders(mockOrders);
+  const load = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id, buyer_id, seller_id, agent_id, status, total, delivery_fee, delivery_address, payment_method, created_at, order_items(name, quantity)")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      const buyerIds = [...new Set((data || []).map((o: any) => o.buyer_id))];
+      const sellerIds = [...new Set((data || []).map((o: any) => o.seller_id))];
+      let buyers: Record<string, any> = {};
+      let sellers: Record<string, any> = {};
+      if (buyerIds.length > 0) {
+        const { data: p } = await supabase.from("profiles").select("id, name").in("id", buyerIds);
+        buyers = Object.fromEntries(((p || []) as any[]).map((x: any) => [x.id, x]));
+      }
+      if (sellerIds.length > 0) {
+        const { data: s } = await supabase.from("sellers").select("id, store_name").in("id", sellerIds);
+        sellers = Object.fromEntries(((s || []) as any[]).map((x: any) => [x.id, x]));
+      }
+      setOrders((data || []).map((o: any) => ({ ...o, total_amount: o.total, delivery_agent_id: o.agent_id, buyer: buyers[o.buyer_id] || { name: "Buyer" }, seller: sellers[o.seller_id] || { store_name: "Kitchen" } })));
+      const { data: r } = await supabase.from("profiles").select("id, name").eq("role", "delivery_agent").limit(50);
+      setRiders((r as any) || []);
+    } catch (e: any) {
+      toast.error(e.message || "Couldn't load orders");
+    } finally {
       setLoading(false);
-    }, 800);
-    return () => clearTimeout(t);
+      setRefreshing(false);
+    }
   }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const assignRider = async (orderId: string, agentId: string) => {
+    try {
+      const { error } = await supabase.from("orders").update({ status: "accepted", agent_id: agentId }).eq("id", orderId);
+      if (error) throw error;
+      await supabase.from("deliveries").upsert({ order_id: orderId, agent_id: agentId, status: "assigned" }, { onConflict: "order_id" });
+      if (user) await supabase.from("admin_actions").insert({ admin_id: user.id, action_type: "rider_assigned", target_id: orderId, meta: { agent_id: agentId } });
+      buzz("success");
+      toast.success("Rider assigned");
+      setSelectedOrder(null);
+      load();
+    } catch (e: any) {
+      buzz("error");
+      toast.error(e.message || "Couldn't assign rider");
+    }
+  };
+
+  const cancelOrder = async (orderId: string) => {
+    try {
+      const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", orderId);
+      if (error) throw error;
+      if (user) await supabase.from("admin_actions").insert({ admin_id: user.id, action_type: "order_cancelled", target_id: orderId, meta: {} });
+      buzz("success");
+      toast.success("Order cancelled");
+      setSelectedOrder(null);
+      load();
+    } catch (e: any) {
+      buzz("error");
+      toast.error(e.message || "Couldn't cancel order");
+    }
+  };
 
   const filteredOrders =
     activeTab === "All"
@@ -143,6 +206,7 @@ export default function AdminOrders() {
         className="flex-1 px-5"
         contentContainerStyle={{ paddingBottom: 120, paddingTop: 12, gap: 16 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); buzz(); load(); }} tintColor={dark ? "#fff" : "#0A0A0E"} />}
       >
         <View>
           <Eyebrow>Oversight</Eyebrow>
@@ -343,6 +407,24 @@ export default function AdminOrders() {
                     Created: {new Date(selectedOrder.created_at).toLocaleString()}
                   </Text>
                 </View>
+
+                {selectedOrder.status !== "delivered" && selectedOrder.status !== "cancelled" && (
+                  <View className={`rounded-[24px] p-6 border gap-3 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                    <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/50" : "text-ink/50"}`}>Assign rider</Text>
+                    {riders.length === 0 ? (
+                      <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>No riders yet — they appear after signing up to deliver.</Text>
+                    ) : (
+                      riders.map((r: any) => (
+                        <TouchableOpacity key={r.id} onPress={() => assignRider(selectedOrder.id, r.id)} accessibilityLabel={`Assign ${r.name}`} className={`h-[52px] rounded-full border items-center justify-center ${dark ? "border-white/15" : "border-ink/15"}`}>
+                          <Text className={`text-[14px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Assign {r.name}</Text>
+                        </TouchableOpacity>
+                      ))
+                    )}
+                    <TouchableOpacity onPress={() => cancelOrder(selectedOrder.id)} accessibilityLabel="Cancel order" className="h-[52px] rounded-full items-center justify-center bg-[#D92D20]">
+                      <Text className="text-[14px] font-inter-bold text-white">Cancel order</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </ScrollView>
             )}
           </SafeAreaView>
