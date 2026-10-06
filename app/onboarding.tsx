@@ -1,9 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { View, Text, Pressable, FlatList, Dimensions, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   FadeIn,
   useSharedValue,
@@ -13,6 +11,7 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { AppButton } from "../src/components/ui/AppButton";
+import { DiscoverArt, TrackArt, ControlArt } from "../src/components/art/OnboardingArt";
 import { markOnboardingSeen } from "../src/lib/firstRun";
 
 const { width } = Dimensions.get("window");
@@ -22,19 +21,19 @@ const slides = [
     eyebrow: "01 — Discover",
     title: "Good food,\nclose by.",
     description: "Kitchens around campus, curated daily. No endless menus — just what hits.",
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1080&q=80",
+    Art: DiscoverArt,
   },
   {
     eyebrow: "02 — Track",
     title: "Watch it\ncome to you.",
     description: "Live progress, honest ETAs, and a secure PIN handoff at your door.",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1080&q=80",
+    Art: TrackArt,
   },
   {
     eyebrow: "03 — Control",
     title: "You call\nthe swaps.",
     description: "Something out of stock? Approve a smart alternative before we charge you.",
-    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1080&q=80",
+    Art: ControlArt,
   },
 ];
 
@@ -56,12 +55,7 @@ export default function Onboarding() {
   const fadeStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
   const exiting = useRef(false);
 
-  // Warm the cache for every slide up front — swipes never wait on network.
-  useEffect(() => {
-    Image.prefetch(slides.map((s) => s.image)).catch(() => {});
-  }, []);
-
-  // Fade through ink before leaving — no hard cuts into the app.
+  // Fade through cream before leaving — no hard cuts into the app.
   const exitTo = (fn: () => void) => {
     if (exiting.current) return;
     exiting.current = true;
@@ -71,86 +65,69 @@ export default function Onboarding() {
   };
 
   return (
-    <Animated.View style={[{ flex: 1, backgroundColor: "#000000" }, fadeStyle]}>
+    <Animated.View style={[{ flex: 1, backgroundColor: "#FAF5EA" }, fadeStyle]}>
+      <SafeAreaView edges={["top"]} className="z-10">
+        <View className="px-6 pt-3 flex-row items-center justify-between">
+          <View className="w-10 h-10 rounded-full bg-ink items-center justify-center">
+            <Text className="text-cream text-lg font-inter-bold">V</Text>
+          </View>
+          <Pressable onPress={() => exitTo(() => router.replace("/(buyer)/browse" as any))} className="active:opacity-60" accessibilityLabel="Skip onboarding" accessibilityRole="button">
+            <Text className="text-ink/60 text-[14px] font-inter-semibold">Skip</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+
       <FlatList
         ref={listRef}
         data={slides}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        initialNumToRender={slides.length}
-        maxToRenderPerBatch={slides.length}
-        windowSize={3}
-        removeClippedSubviews={false}
         keyExtractor={(_, i) => String(i)}
         onMomentumScrollEnd={(e) => setCurrent(Math.round(e.nativeEvent.contentOffset.x / width))}
-        renderItem={({ item }) => (
-          <View style={{ width }}>
-            <Image
-              source={{ uri: item.image }}
-              style={{ width, height: "100%" }}
-              contentFit="cover"
-              transition={200}
-              cachePolicy="memory-disk"
-              priority="high"
-            />
-            <LinearGradient
-              colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.55)", "#000000"]}
-              locations={[0.35, 0.62, 0.85]}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 1 }}
-              style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-            />
+        renderItem={({ item, index }) => (
+          <View style={{ width }} className="flex-1 justify-center px-8">
+            <Animated.View key={`${index}-${current === index}`} entering={FadeIn.duration(400)}>
+              <item.Art />
+            </Animated.View>
           </View>
         )}
       />
 
-      <SafeAreaView edges={["top"]} className="absolute top-0 left-0 right-0">
-        <View className="px-6 pt-3 flex-row items-center justify-between">
-          <View className="w-10 h-10 rounded-full bg-white items-center justify-center">
-            <Text className="text-ink text-lg font-inter-bold">V</Text>
+      <SafeAreaView edges={["bottom"]}>
+        <View className="px-6 pb-4">
+          <View className="flex-row gap-1.5 mb-5">
+            {slides.map((_, i) => (
+              <Pressable key={i} onPress={() => goTo(i)} accessibilityLabel={`Go to slide ${i + 1}`} className="flex-1 h-8 justify-center">
+                <View className={`h-1 rounded-full ${i <= current ? "bg-ink" : "bg-ink/15"}`} />
+              </Pressable>
+            ))}
           </View>
-          <Pressable onPress={() => exitTo(() => router.replace("/(buyer)/browse" as any))} className="active:opacity-60">
-            <Text className="text-white text-[14px] font-inter-semibold">Skip</Text>
+          <Text className="text-ink/50 text-[11px] font-inter-bold tracking-[2px] uppercase">
+            {slides[current].eyebrow}
+          </Text>
+          <Animated.View key={current} entering={FadeIn.duration(320)}>
+            <Text className="text-ink text-[36px] font-serif-bold tracking-tight leading-[38px] mt-2">
+              {slides[current].title}
+            </Text>
+            <Text className="text-ink/60 text-[15px] font-inter leading-[23px] mt-3 max-w-[300px]">
+              {slides[current].description}
+            </Text>
+          </Animated.View>
+          <View className="mt-6">
+            <AppButton
+              title={isLast ? "Get started" : "Continue"}
+              variant="ink"
+              onPress={() => (isLast ? exitTo(() => router.replace("/(buyer)/browse" as any)) : goTo(current + 1))}
+            />
+          </View>
+          <Pressable onPress={() => exitTo(() => router.push("/auth/login" as any))} className="mt-4 items-center active:opacity-60">
+            <Text className="text-ink/55 text-[14px] font-inter-medium">
+              Have an account? <Text className="font-inter-bold text-ink">Log in</Text>
+            </Text>
           </Pressable>
         </View>
       </SafeAreaView>
-
-      <View className="absolute bottom-0 left-0 right-0">
-        <SafeAreaView edges={["bottom"]}>
-          <View className="px-6 pb-4">
-            <View className="flex-row gap-1.5 mb-5">
-              {slides.map((_, i) => (
-                <Pressable key={i} onPress={() => goTo(i)} className="flex-1 h-8 justify-center">
-                  <View
-                    className={`h-1 rounded-full ${i <= current ? "bg-white" : "bg-white/25"}`}
-                  />
-                </Pressable>
-              ))}
-            </View>
-            <Animated.View key={current} entering={FadeIn.duration(320)}>
-              <Text className="text-white text-[36px] font-display-bold tracking-tight leading-[38px]">
-                {slides[current].title}
-              </Text>
-              <Text className="text-white/60 text-[15px] font-inter leading-[23px] mt-3 max-w-[300px]">
-                {slides[current].description}
-              </Text>
-            </Animated.View>
-            <View className="mt-6">
-              <AppButton
-                title={isLast ? "Get started" : "Continue"}
-                variant="white"
-                onPress={() => (isLast ? exitTo(() => router.replace("/(buyer)/browse" as any)) : goTo(current + 1))}
-              />
-            </View>
-            <Pressable onPress={() => exitTo(() => router.push("/auth/login" as any))} className="mt-4 items-center active:opacity-60">
-              <Text className="text-white/60 text-[14px] font-inter-medium">
-                Have an account? <Text className="font-inter-bold text-white">Log in</Text>
-              </Text>
-            </Pressable>
-          </View>
-        </SafeAreaView>
-      </View>
     </Animated.View>
   );
 }
