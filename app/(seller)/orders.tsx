@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import { supabase } from "../../src/lib/supabase";
+import { pushToUser } from "../../src/lib/push";
 import { buzz } from "../../src/lib/haptics";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
@@ -120,6 +121,11 @@ export default function SellerOrders() {
       setSelectedOrder((prev: any) => (prev && prev.id === orderId ? { ...prev, status: newStatus } : prev));
       buzz("success");
       toast.success(`Order ${newStatus.replaceAll("_", " ")}`);
+      const target = orders.find((o) => o.id === orderId);
+      if (target?.buyer_id) {
+        await supabase.from("notifications").insert({ user_id: target.buyer_id, kind: "order", title: `Order ${newStatus.replaceAll("_", " ")}`, body: "Your order status changed — tap to track", href: "/(buyer)/orders" });
+        pushToUser(target.buyer_id, `Order ${newStatus.replaceAll("_", " ")}`, "Your order status changed — tap to track");
+      }
       if (newStatus === "delivered" || newStatus === "cancelled") setDialogOpen(false);
     } catch (e: any) {
       buzz("error");

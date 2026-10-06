@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import { toast } from "sonner-native";
@@ -21,6 +22,19 @@ export default function DeliverySettings() {
   const { dark } = useTheme();
   const [assignments, setAssignments] = useState(true);
   const [sounds, setSounds] = useState(true);
+
+  useEffect(() => {
+    AsyncStorage.multiGet(["vento-rider-assignments", "vento-rider-sounds"]).then((pairs) => {
+      const get = (k: string) => pairs.find(([key]) => key === k)?.[1];
+      if (get("vento-rider-assignments") != null) setAssignments(get("vento-rider-assignments") === "1");
+      if (get("vento-rider-sounds") != null) setSounds(get("vento-rider-sounds") === "1");
+    }).catch(() => {});
+  }, []);
+
+  const save = (key: string, v: boolean, set: (v: boolean) => void) => {
+    set(v);
+    AsyncStorage.setItem(key, v ? "1" : "0").catch(() => {});
+  };
 
   const soon = (label: string) => toast(`${label} coming soon`);
 
@@ -46,8 +60,8 @@ export default function DeliverySettings() {
           <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-1 ${dark ? "text-white/50" : "text-ink/50"}`}>
             Notifications
           </Text>
-          <SettingsSwitchRow label="New assignments" subtitle="Ping when orders drop near you" value={assignments} onValueChange={setAssignments} />
-          <SettingsSwitchRow label="Sounds" subtitle="Play a tone with alerts" value={sounds} onValueChange={setSounds} last />
+          <SettingsSwitchRow label="New assignments" subtitle="Ping when orders drop near you" value={assignments} onValueChange={(v) => save("vento-rider-assignments", v, setAssignments)} />
+          <SettingsSwitchRow label="Sounds" subtitle="Play a tone with alerts" value={sounds} onValueChange={(v) => save("vento-rider-sounds", v, setSounds)} last />
         </SettingsCard>
 
         <SettingsCard>

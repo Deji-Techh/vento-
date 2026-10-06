@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { supabase } from "../../src/lib/supabase";
+import { pushToUser } from "../../src/lib/push";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { buzz } from "../../src/lib/haptics";
 import { EmptyState } from "../../src/components/ui/Cards";
@@ -151,6 +152,7 @@ export default function AdminOrders() {
       if (error) throw error;
       await supabase.from("deliveries").upsert({ order_id: orderId, agent_id: agentId, status: "assigned" }, { onConflict: "order_id" });
       if (user) await supabase.from("admin_actions").insert({ admin_id: user.id, action_type: "rider_assigned", target_id: orderId, meta: { agent_id: agentId } });
+      pushToUser(agentId, "New delivery 🛵", "An order was assigned to you — open Deliveries");
       buzz("success");
       toast.success("Rider assigned");
       setSelectedOrder(null);
@@ -163,9 +165,14 @@ export default function AdminOrders() {
 
   const cancelOrder = async (orderId: string) => {
     try {
+      const target = orders.find((o) => o.id === orderId);
       const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", orderId);
       if (error) throw error;
       if (user) await supabase.from("admin_actions").insert({ admin_id: user.id, action_type: "order_cancelled", target_id: orderId, meta: {} });
+      if (target?.buyer_id) {
+        await supabase.from("notifications").insert({ user_id: target.buyer_id, kind: "order", title: "Order cancelled", body: "Admin cancelled your order — contact support for a refund", href: "/(buyer)/orders" });
+        pushToUser(target.buyer_id, "Order cancelled", "Admin cancelled your order — contact support for a refund");
+      }
       buzz("success");
       toast.success("Order cancelled");
       setSelectedOrder(null);

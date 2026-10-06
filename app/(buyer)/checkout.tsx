@@ -6,6 +6,7 @@ import { useCart } from "../../src/stores/cartStore";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import { supabase } from "../../src/lib/supabase";
+import { pushToUser } from "../../src/lib/push";
 import { buzz } from "../../src/lib/haptics";
 import * as Haptics from "expo-haptics";
 import { AppButton } from "../../src/components/ui/AppButton";
@@ -81,6 +82,11 @@ export default function Checkout() {
         const { error: de } = await supabase.from("deliveries").insert({ order_id: (order as any).id, status: "assigned", delivery_fee: fee, pin });
         if (de) throw new Error("Order saved, but delivery setup needs migration_checkout.sql — run it, then re-checkout.");
         await supabase.from("notifications").insert({ user_id: user.id, kind: "order", title: "Order placed", body: `Kitchen confirmed within 5 min · PIN ${pin}`, href: "/(buyer)/orders" });
+        const { data: store } = await supabase.from("sellers").select("owner_id, store_name").eq("id", sellerId).maybeSingle();
+        if (store) {
+          await supabase.from("notifications").insert({ user_id: (store as any).owner_id, kind: "order", title: "New order", body: `${g.length} item${g.length === 1 ? "" : "s"} · ₦${subtotal.toLocaleString()} · ${address.trim().slice(0, 40)}`, href: "/(seller)/orders" });
+          pushToUser((store as any).owner_id, "New order 🔔", `${g.length} item${g.length === 1 ? "" : "s"} · ₦${subtotal.toLocaleString()}`);
+        }
         n++;
       }
       setOrderCount(n);

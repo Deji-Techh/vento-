@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import { toast } from "sonner-native";
@@ -22,6 +23,20 @@ export default function BuyerSettings() {
   const [orderUpdates, setOrderUpdates] = useState(true);
   const [promos, setPromos] = useState(false);
   const [sounds, setSounds] = useState(true);
+
+  useEffect(() => {
+    AsyncStorage.multiGet(["vento-pref-orders", "vento-pref-promos", "vento-pref-sounds"]).then((pairs) => {
+      const get = (k: string) => pairs.find(([key]) => key === k)?.[1];
+      if (get("vento-pref-orders") !== undefined && get("vento-pref-orders") !== null) setOrderUpdates(get("vento-pref-orders") === "1");
+      if (get("vento-pref-promos") !== undefined && get("vento-pref-promos") !== null) setPromos(get("vento-pref-promos") === "1");
+      if (get("vento-pref-sounds") !== undefined && get("vento-pref-sounds") !== null) setSounds(get("vento-pref-sounds") === "1");
+    }).catch(() => {});
+  }, []);
+
+  const save = (key: string, v: boolean, set: (v: boolean) => void) => {
+    set(v);
+    AsyncStorage.setItem(key, v ? "1" : "0").catch(() => {});
+  };
 
   const soon = (label: string) => toast(`${label} coming soon`);
 
@@ -47,9 +62,9 @@ export default function BuyerSettings() {
           <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-1 ${dark ? "text-white/50" : "text-ink/50"}`}>
             Notifications
           </Text>
-          <SettingsSwitchRow label="Order updates" subtitle="Status, rider and PIN alerts" value={orderUpdates} onValueChange={setOrderUpdates} />
-          <SettingsSwitchRow label="Promotions" subtitle="Deals from kitchens you follow" value={promos} onValueChange={setPromos} />
-          <SettingsSwitchRow label="Sounds" subtitle="Play a tone with alerts" value={sounds} onValueChange={setSounds} last />
+          <SettingsSwitchRow label="Order updates" subtitle="Status, rider and PIN alerts" value={orderUpdates} onValueChange={(v) => save("vento-pref-orders", v, setOrderUpdates)} />
+          <SettingsSwitchRow label="Promotions" subtitle="Deals from kitchens you follow" value={promos} onValueChange={(v) => save("vento-pref-promos", v, setPromos)} />
+          <SettingsSwitchRow label="Sounds" subtitle="Play a tone with alerts" value={sounds} onValueChange={(v) => save("vento-pref-sounds", v, setSounds)} last />
         </SettingsCard>
 
         <SettingsCard>

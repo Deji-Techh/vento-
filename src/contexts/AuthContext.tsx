@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase, SUPABASE_CONFIGURED } from "../lib/supabase";
+import { registerPush } from "../lib/push";
 import { markOnboardingSeen } from "../lib/firstRun";
 
 export type Role = "buyer" | "seller" | "delivery_agent" | "admin";
@@ -60,6 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (!alive) return;
           setProfile(p);
           setRole(p?.role || "buyer");
+          registerPush(session.user.id);
         }
         setLoading(false);
       })
@@ -101,6 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(p);
     setRole(r);
     markOnboardingSeen();
+    if (data.user) registerPush(data.user.id);
     return r;
   };
 

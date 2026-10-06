@@ -41,6 +41,13 @@
           "locationWhenInUsePermission": "Vento uses your location to show live delivery tracking.",
           "isAndroidBackgroundLocationEnabled": false
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#000080"
+        }
       ]
     ],
     "extra": {

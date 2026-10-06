@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Switch, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { useAuth } from "../../src/contexts/AuthContext";
@@ -33,6 +34,14 @@ export default function SellerSettings() {
   const [notifications, setNotifications] = useState(true);
   const [autoAccept, setAutoAccept] = useState(false);
 
+  useEffect(() => {
+    AsyncStorage.multiGet(["vento-seller-notifs", "vento-seller-autoaccept"]).then((pairs) => {
+      const get = (k: string) => pairs.find(([key]) => key === k)?.[1];
+      if (get("vento-seller-notifs") != null) setNotifications(get("vento-seller-notifs") === "1");
+      if (get("vento-seller-autoaccept") != null) setAutoAccept(get("vento-seller-autoaccept") === "1");
+    }).catch(() => {});
+  }, []);
+
   const handleSignOut = async () => {
     await signOut();
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
@@ -61,6 +70,7 @@ export default function SellerSettings() {
               value={notifications}
               onValueChange={(v) => {
                 setNotifications(v);
+                AsyncStorage.setItem("vento-seller-notifs", v ? "1" : "0").catch(() => {});
                 if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
               }}
               trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D1D1D1" }}
@@ -75,6 +85,7 @@ export default function SellerSettings() {
               value={autoAccept}
               onValueChange={(v) => {
                 setAutoAccept(v);
+                AsyncStorage.setItem("vento-seller-autoaccept", v ? "1" : "0").catch(() => {});
                 if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
                 toast.success(v ? "Auto-accept on" : "Auto-accept off");
               }}

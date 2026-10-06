@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import { supabase } from "../../src/lib/supabase";
+import { pushToUser } from "../../src/lib/push";
 import { buzz } from "../../src/lib/haptics";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
@@ -96,7 +97,7 @@ export default function SellerDashboard() {
       const store = (stores || [])[0] || null;
       setSellerInfo(store);
       if (store) {
-        const { data: orders } = await supabase.from("orders").select("id, status, created_at, notes, total, order_items(name, image_url)").eq("seller_id", store.id).order("created_at", { ascending: false }).limit(10);
+        const { data: orders } = await supabase.from("orders").select("id, buyer_id, status, created_at, notes, total, order_items(name, image_url)").eq("seller_id", store.id).order("created_at", { ascending: false }).limit(10);
         const list = orders || [];
         setRecentOrders(list);
         setStats({
@@ -137,11 +138,16 @@ export default function SellerDashboard() {
 
   const advanceOrder = async (id: string, status: string) => {
     try {
+      const target = recentOrders.find((o) => o.id === id);
       const { error } = await supabase.from("orders").update({ status }).eq("id", id);
       if (error) throw error;
       setRecentOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
       buzz("success");
       toast.success(`Order ${status.replaceAll("_", " ")}`);
+      if (target?.buyer_id) {
+        await supabase.from("notifications").insert({ user_id: target.buyer_id, kind: "order", title: `Order ${status.replaceAll("_", " ")}`, body: `${sellerInfo?.store_name || "Kitchen"} updated your order`, href: "/(buyer)/orders" });
+        pushToUser(target.buyer_id, `Order ${status.replaceAll("_", " ")}`, `${sellerInfo?.store_name || "Kitchen"} updated your order`);
+      }
       load();
     } catch (e: any) {
       buzz("error");
