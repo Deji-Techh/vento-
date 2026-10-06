@@ -26,7 +26,14 @@ export default function ChooseRole() {
 
   const handleContinue = async () => {
     if (!selectedRole || saving) return;
+    // NEVER add admin here. Admin access is login-only via admin@vento.ng
+    // and is granted server-side (profiles.role='admin'). See src/components/AuthGuard.tsx.
+    const ALLOWED = ["buyer", "seller", "delivery_agent"] as const;
     const role = selectedRole === "rider" ? "delivery_agent" : selectedRole;
+    if (!(ALLOWED as readonly string[]).includes(role)) {
+      toast.error("Invalid role");
+      return;
+    }
     setSaving(true);
     try {
       if (user) {

@@ -3,7 +3,7 @@ import { usePathname, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated, { FadeIn, SlideInDown, ZoomIn, useReducedMotion } from "react-native-reanimated";
+import Animated, { FadeIn, SlideInDown, ZoomIn, useReducedMotion, useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { useTheme } from "../contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 
@@ -55,8 +55,19 @@ function Pill({
 }) {
   const TabIcon = tab.icon;
   const reduced = useReducedMotion();
+  const scale = useSharedValue(1);
+  const pressStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   return (
-    <Pressable onPress={onPress} style={styles.pillTouch}>
+    <Pressable
+      onPress={onPress}
+      onPressIn={() => { scale.value = withSpring(0.92, { damping: 18, stiffness: 400 }); }}
+      onPressOut={() => { scale.value = withSpring(1, { damping: 18, stiffness: 400 }); }}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={tab.label}
+      style={styles.pillTouch}
+    >
+      <Animated.View style={pressStyle}>
       <View
         style={[
           styles.pillIcon,
@@ -64,7 +75,7 @@ function Pill({
         ]}
       >
         <TabIcon
-          color={active ? (dark ? "#0A0A0E" : "#FFFFFF") : dark ? "rgba(255,255,255,0.7)" : "#4A4653"}
+          color={active ? (dark ? "#0A0A0E" : "#FFFFFF") : dark ? "rgba(255,255,255,0.7)" : "#55505E"}
           size={20}
           strokeWidth={1.9}
         />
@@ -83,12 +94,13 @@ function Pill({
           styles.pillLabel,
           {
             fontWeight: active ? "700" : "500",
-            color: active ? (dark ? "#fff" : "#0A0A0E") : dark ? "rgba(255,255,255,0.55)" : "#6E6A75",
+            color: active ? (dark ? "#fff" : "#0A0A0E") : dark ? "rgba(255,255,255,0.55)" : "#55505E",
           },
         ]}
       >
         {tab.label}
       </Text>
+      </Animated.View>
     </Pressable>
   );
 }

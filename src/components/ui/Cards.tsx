@@ -101,12 +101,17 @@ export function PromoBanner({ title, subtitle, cta, onPress }: { title: string; 
   );
 }
 
-export function EmptyState({ title, subtitle, dark: darkProp }: { title: string; subtitle: string; dark?: boolean }) {
+export function EmptyState({ title, subtitle, actionLabel, onAction, dark: darkProp }: { title: string; subtitle: string; actionLabel?: string; onAction?: () => void; dark?: boolean }) {
   const dark = darkProp ?? useTheme().dark;
   return (
     <View className={`rounded-[28px] p-8 items-center ${dark ? "bg-surface-dark-2" : "bg-ink/[0.04]"}`}>
       <Text className={`font-inter-bold text-[17px] tracking-tight ${dark ? "text-white" : "text-ink"}`}>{title}</Text>
       <Text className={`text-[14px] font-inter mt-1 text-center ${dark ? "text-white/55" : "text-ink/55"}`}>{subtitle}</Text>
+      {actionLabel && onAction ? (
+        <TouchableOpacity onPress={onAction} activeOpacity={0.85} accessibilityRole="button" className={`mt-4 px-5 h-[44px] rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
+          <Text className={`text-[14px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>{actionLabel}</Text>
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 }

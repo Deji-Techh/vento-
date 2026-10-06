@@ -96,7 +96,7 @@ export default function Signup() {
                 {formData.terms && <Text className={`text-xs font-inter-bold ${dark ? "text-ink" : "text-white"}`}>✓</Text>}
               </View>
               <Text className={`text-[13px] font-inter ml-3 flex-1 ${dark ? "text-white/60" : "text-ink/60"}`}>
-                I agree to the <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Terms</Text> and <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Privacy Policy</Text>
+                I agree to the <Text onPress={() => router.push("/legal/terms" as any)} className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Terms</Text> and <Text onPress={() => router.push("/legal/terms" as any)} className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Privacy Policy</Text>
               </Text>
             </TouchableOpacity>
             {errors.terms ? <Text className="text-[#FF8A80] text-xs font-inter-medium mt-1.5">{errors.terms}</Text> : null}

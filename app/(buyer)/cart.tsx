@@ -80,13 +80,13 @@ export default function Cart() {
                       <Text className={`text-[13px] font-inter mt-0.5 ${dark ? "text-white/45" : "text-ink/50"}`}>₦{item.price.toLocaleString()}</Text>
                     </View>
                     <View className={`flex-row items-center rounded-full p-1 ${dark ? "bg-white/[0.07]" : "bg-ink/[0.05]"}`}>
-                      <TouchableOpacity onPress={() => step(item.id, item.quantity, -1)} className="w-8 h-8 items-center justify-center">
+                      <TouchableOpacity onPress={() => step(item.id, item.quantity, -1)} accessibilityLabel={item.quantity === 1 ? `Remove ${item.name}` : `Decrease ${item.name}`} accessibilityRole="button" hitSlop={8} className="w-11 h-11 items-center justify-center">
                         {item.quantity === 1
                           ? <Icon icon={Delete02Icon} size={15} color={dark ? "rgba(255,255,255,0.7)" : "rgba(10,10,14,0.6)"} />
                           : <Icon icon={MinusSignIcon} size={15} color={dark ? "#fff" : "#0A0A0E"} />}
                       </TouchableOpacity>
-                      <Text className={`w-6 text-center font-inter-bold text-[14px] ${dark ? "text-white" : "text-ink"}`}>{item.quantity}</Text>
-                      <TouchableOpacity onPress={() => step(item.id, item.quantity, 1)} className={`w-8 h-8 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
+                      <Text accessibilityLabel={`Quantity ${item.quantity}`} className={`w-6 text-center font-inter-bold text-[14px] ${dark ? "text-white" : "text-ink"}`}>{item.quantity}</Text>
+                      <TouchableOpacity onPress={() => step(item.id, item.quantity, 1)} accessibilityLabel={`Increase ${item.name}`} accessibilityRole="button" hitSlop={8} className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
                         <Icon icon={PlusSignIcon} size={15} color={dark ? "#0A0A0E" : "#fff"} />
                       </TouchableOpacity>
                     </View>

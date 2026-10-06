@@ -5,6 +5,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withSpring,
   withDelay,
   Easing,
   useReducedMotion,
@@ -24,6 +25,7 @@ export function FlyLayer() {
   const x = useSharedValue(0);
   const y = useSharedValue(0);
   const opacity = useSharedValue(0);
+  const scale = useSharedValue(1);
 
   useEffect(() => {
     if (!burst) return;
@@ -33,13 +35,16 @@ export function FlyLayer() {
     x.value = burst.x;
     y.value = burst.y;
     opacity.value = 1;
+    scale.value = 1;
     if (reduced) {
       const t = setTimeout(clear, 60);
       return () => clearTimeout(t);
     }
-    const ease = Easing.out(Easing.quad);
+    // Arc: x glides linear, y dips via bezier, dot shrinks 1 → 0.4 with spring.
+    const ease = Easing.bezier(0.22, 0.9, 0.3, 1);
     x.value = withTiming(tx, { duration: 480, easing: ease });
-    y.value = withTiming(ty, { duration: 480, easing: ease });
+    y.value = withTiming(ty, { duration: 480, easing: Easing.bezier(0.5, -0.3, 0.5, 1.3) });
+    scale.value = withSpring(0.4, { damping: 16, stiffness: 320 });
     opacity.value = withDelay(330, withTiming(0, { duration: 150 }));
     const t = setTimeout(clear, 540);
     return () => clearTimeout(t);
@@ -47,7 +52,7 @@ export function FlyLayer() {
   }, [burst]);
 
   const style = useAnimatedStyle(() => ({
-    transform: [{ translateX: x.value - DOT / 2 }, { translateY: y.value - DOT / 2 }],
+    transform: [{ translateX: x.value - DOT / 2 }, { translateY: y.value - DOT / 2 }, { scale: scale.value }],
     opacity: opacity.value,
   }));
 

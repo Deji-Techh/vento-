@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, FlatList, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../src/contexts/ThemeContext";
@@ -102,8 +102,25 @@ export default function Notifications() {
         ))}
       </ScrollView>
 
-      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        {visible.map((item, i) => (
+      <FlatList
+        data={visible}
+        keyExtractor={(item) => item.id}
+        className="flex-1 px-5"
+        contentContainerStyle={{ paddingBottom: 40, gap: 12 }}
+        showsVerticalScrollIndicator={false}
+        initialNumToRender={8}
+        windowSize={5}
+        removeClippedSubviews
+        ListEmptyComponent={<EmptyState title="Nothing here" subtitle="No notifications in this filter yet." />}
+        ListFooterComponent={visible.length > 0 && unreadCount === 0 ? (
+          <View className="items-center mt-2">
+            <View className="flex-row items-center gap-1.5">
+              <Icon icon={CheckmarkCircle01Icon} size={14} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.35)"} />
+              <Text className={`text-[12px] font-inter-medium ${dark ? "text-white/40" : "text-ink/40"}`}>All caught up</Text>
+            </View>
+          </View>
+        ) : null}
+        renderItem={({ item, index: i }) => (
           <Enter key={item.id} delay={Math.min(i * 50, 150)}>
             {item.kind === "deal" && item.image ? (
               <TouchableOpacity onPress={() => open(item)} activeOpacity={0.92} className={card}>
@@ -121,7 +138,6 @@ export default function Notifications() {
                       <Text className="text-ink text-[11px] font-inter-bold">{item.tag}</Text>
                     </View>
                   )}
-                  {unread(item.id) && <View className={`absolute top-3 right-3 w-2.5 h-2.5 rounded-full ${dark ? "bg-white" : "bg-ink"}`} />}
                   <View className="absolute bottom-0 left-0 right-0 p-4">
                     <Text className="text-white text-[17px] font-inter-bold tracking-tight">{item.title}</Text>
                     <Text className="text-white/70 text-[12px] font-inter mt-0.5" numberOfLines={1}>{item.body}</Text>
@@ -133,14 +149,15 @@ export default function Notifications() {
                 </View>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity onPress={() => open(item)} activeOpacity={0.9} className={card}>
+              <TouchableOpacity onPress={() => open(item)} activeOpacity={0.9} className={`${card} ${unread(item.id) ? (dark ? "bg-white/[0.07]" : "bg-navy/[0.04]") : ""}`}>
                 <View className="flex-row gap-3.5 p-4">
+                  {unread(item.id) && <View className={`w-1 rounded-full ${dark ? "bg-white" : "bg-navy"}`} />}
                   {item.kind === "wallet" ? (
                     <View className="w-[68px] h-[68px] rounded-[18px] items-center justify-center bg-success/15 shrink-0">
                       <Icon icon={Wallet01Icon} size={26} color="#0E9F6E" />
                     </View>
                   ) : (
-                    <Image source={{ uri: item.image }} style={{ width: 68, height: 68, borderRadius: 18 }} contentFit="cover" transition={200} />
+                    item.image ? <Image source={{ uri: item.image }} style={{ width: 68, height: 68, borderRadius: 18 }} contentFit="cover" transition={200} /> : <View style={{ width: 68, height: 68, borderRadius: 18 }} className={dark ? "bg-white/10" : "bg-ink/10"} />
                   )}
                   <View className="flex-1">
                     <View className="flex-row items-center justify-between gap-2">
@@ -168,25 +185,12 @@ export default function Notifications() {
                       </View>
                     )}
                   </View>
-                  {unread(item.id) && <View className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${dark ? "bg-white" : "bg-ink"}`} />}
                 </View>
               </TouchableOpacity>
             )}
           </Enter>
-        ))}
-
-        {visible.length === 0 && (
-          <EmptyState title="Nothing here" subtitle="No notifications in this filter yet." />
         )}
-        {visible.length > 0 && unreadCount === 0 && (
-          <View className="items-center mt-2">
-            <View className="flex-row items-center gap-1.5">
-              <Icon icon={CheckmarkCircle01Icon} size={14} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.35)"} />
-              <Text className={`text-[12px] font-inter-medium ${dark ? "text-white/40" : "text-ink/40"}`}>All caught up</Text>
-            </View>
-          </View>
-        )}
-      </ScrollView>
+      />
     </SafeAreaView>
   );
 }

@@ -22,3 +22,17 @@ export function Enter({
     </Animated.View>
   );
 }
+
+// Stagger wrapper: stagger direct children by 40ms, capped at 160ms.
+export function Stagger({ children }: { children: ReactNode[] }) {
+  const reduced = useReducedMotion();
+  return (
+    <>
+      {(Array.isArray(children) ? children : [children]).map((c, i) => (
+        <Animated.View key={i} entering={reduced ? FadeIn.duration(150) : FadeInUp.delay(Math.min(i * 40, 160)).duration(400).damping(22)}>
+          {c}
+        </Animated.View>
+      ))}
+    </>
+  );
+}

@@ -104,8 +104,22 @@ export default function SellerSettings() {
         </View>
 
         <TouchableOpacity
-          onPress={handleSignOut}
+          onPress={() => router.push("/legal/terms" as any)}
           activeOpacity={0.85}
+          className={`rounded-[24px] p-5 flex-row items-center gap-3 border mb-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
+        >
+          <View className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={Clock01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+          </View>
+          <View className="flex-1">
+            <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Terms & privacy</Text>
+            <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>The fine print</Text>
+          </View>
+          <Text className={`text-lg font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>›</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleSignOut}          activeOpacity={0.85}
           className={`rounded-[24px] p-5 flex-row items-center gap-3 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
         >
           <View className="w-11 h-11 rounded-full bg-destructive/10 items-center justify-center">

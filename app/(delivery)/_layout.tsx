@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import TabBar from "../../src/components/TabBar";
+import { RequireRole } from "../../src/components/AuthGuard";
 import { ic, DashboardSquare01Icon, DeliveryBox01Icon, MapPinIcon, Wallet01Icon, UserIcon } from "../../src/components/icons";
 
 const tabs = [
@@ -12,6 +13,7 @@ const tabs = [
 
 export default function DeliveryLayout() {
   return (
+    <RequireRole allow={["delivery_agent", "admin"]} redirectTo="/auth/choose-role">
     <Tabs
       screenOptions={{ headerShown: false }}
       tabBar={() => <TabBar tabs={tabs} />}
@@ -23,5 +25,6 @@ export default function DeliveryLayout() {
       <Tabs.Screen name="profile" />
       <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
+    </RequireRole>
   );
 }

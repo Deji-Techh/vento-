@@ -55,7 +55,8 @@ export default function DeliverySettings() {
         </SettingsCard>
 
         <SettingsCard>
-          <SettingsRow icon={BubbleChatIcon} label="Help center" subtitle="FAQs and support" onPress={() => soon("Help center")} last />
+          <SettingsRow icon={BubbleChatIcon} label="Help center" subtitle="FAQs and support" onPress={() => router.push("/legal/terms" as any)} />
+          <SettingsRow icon={BubbleChatIcon} label="Terms & privacy" subtitle="The fine print" onPress={() => router.push("/legal/terms" as any)} last />
         </SettingsCard>
 
         <View className="items-center mt-2 mb-6">

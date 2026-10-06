@@ -38,8 +38,8 @@ export default function Checkout() {
   }, [placed]);
 
   const place = async () => {
-    if (!address.trim()) {
-      setAddressError("Where should your rider go?");
+    if (address.trim().length < 10) {
+      setAddressError("Add a full address — street, hostel, landmark (10+ characters)");
       return;
     }
     setLoading(true);
@@ -165,12 +165,12 @@ export default function Checkout() {
               <Icon icon={CheckmarkCircle01Icon} size={44} color={dark ? "#0A0A0E" : "#fff"} />
             </View>
           </Animated.View>
-          <Animated.View entering={FadeIn.delay(150).duration(350)} className="items-center">
-            <Text className={`text-[28px] font-display-bold tracking-tight mt-6 ${dark ? "text-white" : "text-ink"}`}>
-              Order fired!
+          <Animated.View entering={FadeIn.delay(150).duration(350)} className="items-center px-8">
+            <Text className={`text-[28px] font-display-bold tracking-tight mt-6 text-center ${dark ? "text-white" : "text-ink"}`}>
+              Order received!
             </Text>
-            <Text className={`text-[14px] font-inter mt-2 ${dark ? "text-white/55" : "text-ink/55"}`}>
-              The kitchen has it · ~30 min
+            <Text className={`text-[14px] font-inter mt-2 text-center ${dark ? "text-white/55" : "text-ink/55"}`}>
+              Demo checkout · live ordering wires next — the kitchen confirms within 5 min. Total ₦{total.toLocaleString()}.
             </Text>
           </Animated.View>
         </Animated.View>

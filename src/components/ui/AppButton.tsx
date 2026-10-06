@@ -3,13 +3,16 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-na
 import { useTheme } from "../../contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 
-// Mono rule: solid buttons are always ink on light. On dark, use "white".
-type Variant = "white" | "ink" | "primary" | "ghost-dark" | "ghost-light";
+// Mono rule: solid buttons are ink on light, white on dark. Navy = brand/admin + primary actions.
+type Variant = "white" | "ink" | "primary" | "navy" | "destructive" | "ghost-dark" | "ghost-light";
+type Size = "sm" | "md" | "lg";
 
 const container: Record<Variant, string> = {
   white: "bg-white",
   ink: "bg-ink",
-  primary: "bg-ink",
+  primary: "bg-[#000080]",
+  navy: "bg-[#000080]",
+  destructive: "bg-[#D92D20]",
   "ghost-dark": "bg-white/10 border border-white/15",
   "ghost-light": "bg-ink/5 border border-ink/10",
 };
@@ -18,20 +21,26 @@ const label: Record<Variant, string> = {
   white: "text-ink",
   ink: "text-white",
   primary: "text-white",
+  navy: "text-white",
+  destructive: "text-white",
   "ghost-dark": "text-white",
   "ghost-light": "text-ink",
 };
+
+const heights: Record<Size, string> = { sm: "h-[44px]", md: "h-[52px]", lg: "h-[56px]" };
 
 export function AppButton({
   title,
   onPress,
   variant = "white",
+  size = "lg",
   loading,
   disabled,
 }: {
   title: string;
   onPress?: (e?: any) => void;
   variant?: Variant;
+  size?: Size;
   loading?: boolean;
   disabled?: boolean;
 }) {
@@ -59,10 +68,10 @@ export function AppButton({
         onPressOut={() => {
           scale.value = withSpring(1, { damping: 18, stiffness: 400 });
         }}
-        className={`w-full h-[56px] rounded-full items-center justify-center flex-row ${container[variant]}`}
+        className={`w-full ${heights[size]} rounded-full items-center justify-center flex-row ${container[variant]}`}
       >
         {loading ? (
-          <ActivityIndicator color={variant === "white" ? "#0A0A0E" : "#fff"} />
+          <ActivityIndicator color={variant === "white" || variant === "ghost-light" ? "#0A0A0E" : "#fff"} />
         ) : (
           <Text className={`text-[16px] font-inter-bold tracking-tight ${label[variant]}`}>{title}</Text>
         )}
