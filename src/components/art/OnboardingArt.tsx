@@ -71,7 +71,7 @@ export function DiscoverArt({ dark = false }: { dark?: boolean }) {
       <Path d="M86 58 c-6 0 -10 4 -10 9 c0 7 10 15 10 15 s10 -8 10 -15 c0 -5 -4 -9 -10 -9z" fill={dark ? "#0A0A0E" : "#fff"} />
       <Circle cx={86} cy={67} r={3.5} fill={S} />
       <SvgText x={200} y={282} textAnchor="middle" fontSize={21} fontWeight="700" fill={S}>
-        IUOK EATS
+        VENTO
       </SvgText>
     </Frame>
   );
