@@ -1,8 +1,11 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, FlatList, Platform } from "react-native";
+import { useState, useCallback, useEffect } from "react";
+import { View, Text, TouchableOpacity, ScrollView, FlatList, Platform, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
+import { supabase } from "../../src/lib/supabase";
+import { buzz } from "../../src/lib/haptics";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -24,6 +27,7 @@ type Item = {
   title: string;
   body: string;
   time: string;
+  read: boolean;
   image?: string;
   tag?: string;
   status?: string;
@@ -32,22 +36,45 @@ type Item = {
   href?: string;
 };
 
-const items: Item[] = [
-  { id: "n1", kind: "order", title: "Grill House is on its way", body: "Grilled Chicken Bowl · Emeka is 1 km away", time: "2m", image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=200", status: "On the way", progress: 0.7, href: "/(buyer)/track-delivery" },
-  { id: "n2", kind: "order", title: "Order delivered", body: "Chicken & Chips Combo from Tasty Bites", time: "1h", image: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200", status: "Delivered", progress: 1, href: "/(buyer)/orders" },
-  { id: "n3", kind: "deal", title: "Suya Spot tonight", body: "20% off all platters till midnight. Yaji-dusted, fire-grilled.", time: "3h", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800", tag: "20% OFF", href: "/(buyer)/browse" },
-  { id: "n4", kind: "wallet", title: "Refund landed", body: "Overcharged delivery fee back to your wallet.", time: "Yesterday", amount: "₦1,200", href: "/(buyer)/orders" },
-];
-
 const filters = ["All", "Orders", "Deals", "Wallet"] as const;
 
 export default function Notifications() {
   const router = useRouter();
+  const { user } = useAuth();
   const { dark } = useTheme();
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
-  const [read, setRead] = useState<string[]>(["n4"]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const unread = (id: string) => !read.includes(id);
+  const load = useCallback(async () => {
+    if (!user) { setItems([]); setLoading(false); setRefreshing(false); return; }
+    try {
+      const { data, error } = await supabase.from("notifications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50);
+      if (error) throw error;
+      setItems(
+        (data || []).map((n: any) => ({
+          id: n.id, kind: n.kind, title: n.title, body: n.body || "", time: new Date(n.created_at).toLocaleString(),
+          image: n.image_url || undefined, href: n.href || undefined, read: n.read,
+        }))
+      );
+    } catch {
+      // honest empty state below
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [user]);
+
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase.channel(`notifications:${user.id}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => load()).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user, load]);
+
+  const unread = (id: string) => !items.find((i) => i.id === id)?.read;
   const visible = items.filter((i) => {
     if (filter === "Orders") return i.kind === "order";
     if (filter === "Deals") return i.kind === "deal";
@@ -56,15 +83,18 @@ export default function Notifications() {
   });
   const unreadCount = items.filter((i) => unread(i.id)).length;
 
-  const open = (item: Item) => {
-    setRead((r) => (r.includes(item.id) ? r : [...r, item.id]));
-    if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
+  const open = async (item: Item) => {
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, read: true } : i)));
+    buzz();
+    await supabase.from("notifications").update({ read: true }).eq("id", item.id);
     if (item.href) router.push(item.href as any);
   };
 
-  const markAll = () => {
-    setRead(items.map((i) => i.id));
-    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+  const markAll = async () => {
+    if (!user) return;
+    setItems((prev) => prev.map((i) => ({ ...i, read: true })));
+    buzz("success");
+    await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
   };
 
   const card = `rounded-[24px] overflow-hidden border mb-3 ${dark ? "bg-white/[0.04] border-white/10" : "bg-white border-border"}`;
@@ -111,7 +141,16 @@ export default function Notifications() {
         initialNumToRender={8}
         windowSize={5}
         removeClippedSubviews
-        ListEmptyComponent={<EmptyState title="Nothing here" subtitle="No notifications in this filter yet." />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); buzz(); load(); }} tintColor={dark ? "#fff" : "#0A0A0E"} />}
+        ListEmptyComponent={
+          loading ? (
+            <Text className={`text-[13px] font-inter text-center py-8 ${dark ? "text-white/50" : "text-ink/50"}`}>Loading inbox…</Text>
+          ) : !user ? (
+            <EmptyState title="Sign in for updates" subtitle="Order, deal and wallet alerts land here." actionLabel="Log in" onAction={() => router.push("/auth/login" as any)} />
+          ) : (
+            <EmptyState title="All quiet" subtitle="Order updates, deals and wallet alerts appear here." />
+          )
+        }
         ListFooterComponent={visible.length > 0 && unreadCount === 0 ? (
           <View className="items-center mt-2">
             <View className="flex-row items-center gap-1.5">
