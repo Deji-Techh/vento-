@@ -67,7 +67,7 @@ function Pill({
       accessibilityLabel={tab.label}
       style={styles.pillTouch}
     >
-      <Animated.View style={pressStyle}>
+      <Animated.View style={[pressStyle, { alignItems: "center", width: "100%" }]}>
       <View
         style={[
           styles.pillIcon,
@@ -253,6 +253,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Inter_500Medium",
     marginTop: 1,
+    textAlign: "center",
   },
   badge: {
     position: "absolute",

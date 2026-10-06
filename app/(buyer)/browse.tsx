@@ -256,8 +256,8 @@ export default function Browse() {
             <EmptyState title="Couldn't load listings" subtitle={error} actionLabel="Retry" onAction={load} />
           </View>
         ) : items.length === 0 ? (
-          <View className="px-5 mt-4">
-            <EmptyState title="No listings yet" subtitle="The admin hasn't published anything. Check back soon — new items appear here first." actionLabel="Refresh" onAction={load} />
+          <View className="px-5 mt-4 py-10 items-center">
+            <Text className={`text-[15px] font-inter-medium ${dark ? "text-white/60" : "text-ink/60"}`}>No listings yet</Text>
           </View>
         ) : (
           <>
