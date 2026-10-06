@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, ScrollView, Modal, Switch, ActivityIndica
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
-import { supabase } from "../../src/lib/supabase";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
@@ -80,25 +79,10 @@ export default function MenuManagement() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        // Admin-only publishing: sellers read the live catalogue, never write.
-        const { data, error } = await supabase
-          .from("menu_items")
-          .select("id, name, description, price, category, prep_time, available, image_url")
-          .eq("available", true)
-          .order("created_at", { ascending: false })
-          .limit(100);
-        if (error) throw error;
-        if (alive) setFoodItems(data || []);
-      } catch {
-        if (alive) setFoodItems([]);
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => { alive = false; };
+    setTimeout(() => {
+      setFoodItems(mockFoodItems);
+      setLoading(false);
+    }, 800);
   }, [profile]);
 
   const buzz = (ok: boolean) => {
@@ -109,20 +93,54 @@ export default function MenuManagement() {
   };
 
   const handleSubmit = () => {
-    // Listings are published exclusively via the admin app (admin@vento.ng → Listings).
-    buzz(false);
-    toast.error("Listings are published by admin only");
+    if (!formData.name || !formData.price) {
+      buzz(false);
+      toast.error("Add a name and price");
+      return;
+    }
+    if (editingItem) {
+      setFoodItems((prev) =>
+        prev.map((item) =>
+          item.id === editingItem.id
+            ? {
+                ...item,
+                name: formData.name,
+                description: formData.description,
+                price: parseFloat(formData.price),
+                category: formData.category,
+                prep_time: parseInt(formData.prep_time),
+                available: formData.available,
+                image_url: imagePreview || item.image_url,
+              }
+            : item
+        )
+      );
+      buzz(true);
+      toast.success("Item updated");
+    } else {
+      const newItem = {
+        id: `food-${Date.now()}`,
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        category: formData.category,
+        prep_time: parseInt(formData.prep_time),
+        available: formData.available,
+        image_url: imagePreview,
+        created_at: new Date().toISOString(),
+      };
+      setFoodItems((prev) => [newItem, ...prev]);
+      buzz(true);
+      toast.success("Item added to menu");
+    }
     setDialogOpen(false);
     resetForm();
   };
-  const handleDelete = (id: string) => {
-    buzz(false);
-    toast.error("Listings are published by admin only");
-  };
 
-  const adminOnly = () => {
-    buzz(false);
-    toast.error("Listings are published by admin only");
+  const handleDelete = (id: string) => {
+    setFoodItems((prev) => prev.filter((item) => item.id !== id));
+    buzz(true);
+    toast.success("Item deleted");
   };
 
   const resetForm = () => {
@@ -132,15 +150,27 @@ export default function MenuManagement() {
   };
 
   const toggleAvailability = (item: any) => {
-    adminOnly();
+    setFoodItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, available: !i.available } : i)));
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   };
 
   const openEditDialog = (item: any) => {
-    adminOnly();
+    setEditingItem(item);
+    setFormData({
+      name: item.name,
+      description: item.description || "",
+      price: item.price.toString(),
+      category: item.category,
+      prep_time: item.prep_time?.toString() || "15",
+      available: item.available,
+    });
+    setImagePreview(item.image_url);
+    setDialogOpen(true);
   };
 
   const openAddDialog = () => {
-    adminOnly();
+    resetForm();
+    setDialogOpen(true);
   };
 
   if (loading && foodItems.length === 0) {
@@ -157,7 +187,7 @@ export default function MenuManagement() {
         <View>
           <Eyebrow>Catalogue</Eyebrow>
           <Text className={`text-[28px] font-inter-bold mt-1 tracking-tight ${dark ? "text-white" : "text-ink"}`}>My Menu</Text>
-          <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>{foodItems.length} live items · published by admin</Text>
+          <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>{foodItems.length} items</Text>
         </View>
         <TouchableOpacity
           onPress={openAddDialog}
@@ -175,9 +205,9 @@ export default function MenuManagement() {
             <View className={`w-16 h-16 mb-4 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
               <Icon icon={Package01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
             </View>
-            <Text className={`font-inter-bold mb-2 ${dark ? "text-white" : "text-ink"}`}>No live items</Text>
-            <Text className={`font-inter mb-4 text-[13px] text-center ${dark ? "text-white/55" : "text-ink/55"}`}>Listings are published by admin only. New items appear here automatically.</Text>
-            <AppButton title="Refresh" variant={dark ? "white" : "ink"} onPress={() => setLoading(true)} />
+            <Text className={`font-inter-bold mb-2 ${dark ? "text-white" : "text-ink"}`}>No menu items yet</Text>
+            <Text className={`font-inter mb-4 text-[13px] ${dark ? "text-white/55" : "text-ink/55"}`}>Add your first item to start selling</Text>
+            <AppButton title="Add First Item" variant={dark ? "white" : "ink"} onPress={openAddDialog} />
           </View>
         ) : (
           <View className="flex-row flex-wrap gap-3">

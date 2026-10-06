@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,10 @@ import {
   Modal,
   ActivityIndicator,
   Platform,
-  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
-import { useAuth } from "../../src/contexts/AuthContext";
-import { supabase } from "../../src/lib/supabase";
-import { buzz } from "../../src/lib/haptics";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
 import { Eyebrow, SectionHeader, StatusChip } from "../../src/components/ui/SectionHeader";
@@ -70,12 +66,11 @@ function notifyError(message: string) {
 
 export default function AdminUsers() {
   const { dark } = useTheme();
-  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [agents, setAgents] = useState<any[]>([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [addTab, setAddTab] = useState<"existing" | "new">("existing");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [availableUsers, setAvailableUsers] = useState<any[]>([]);
@@ -86,52 +81,44 @@ export default function AdminUsers() {
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserPhone, setNewUserPhone] = useState("");
 
-  const load = useCallback(async () => {
-    try {
-      const { data, error } = await supabase.from("profiles").select("id, name, phone, role, created_at").eq("role", "delivery_agent").order("created_at", { ascending: false }).limit(100);
-      if (error) throw error;
-      const ids = (data || []).map((a: any) => a.id);
-      let counts: Record<string, number> = {};
-      if (ids.length > 0) {
-        const { data: d } = await supabase.from("deliveries").select("agent_id").in("agent_id", ids).eq("status", "delivered");
-        for (const row of (d || []) as any[]) counts[row.agent_id] = (counts[row.agent_id] || 0) + 1;
-      }
-      setAgents((data || []).map((a: any) => ({ id: a.id, is_active: true, is_online: false, total_earnings: 0, completed_deliveries: counts[a.id] || 0, created_at: a.created_at, profiles: { name: a.name, phone: a.phone } })));
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't load agents");
-    } finally {
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setAgents(mockAgents);
       setLoading(false);
-      setRefreshing(false);
-    }
+    }, 800);
+    return () => clearTimeout(t);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
-
-  const searchUsers = async () => {
+  const searchUsers = () => {
     if (!searchQuery.trim()) return;
     setSearchingUsers(true);
-    try {
-      const { data, error } = await supabase.from("profiles").select("id, name, phone, role").or(`name.ilike.%${searchQuery.trim()}%,email.ilike.%${searchQuery.trim()}%`).neq("role", "delivery_agent").limit(10);
-      if (error) throw error;
-      setAvailableUsers((data as any) || []);
-    } catch (e: any) {
-      toast.error(e.message || "Search failed");
-    } finally {
+    setTimeout(() => {
+      setAvailableUsers(mockAvailableUsers);
       setSearchingUsers(false);
-    }
+    }, 500);
   };
 
   const addExistingUserAsAgent = async () => {
     if (!selectedUserId) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("profiles").update({ role: "delivery_agent" }).eq("id", selectedUserId);
-      if (error) throw error;
-      if (user) await supabase.from("admin_actions").insert({ admin_id: user.id, action_type: "rider_promoted", target_id: selectedUserId, meta: {} });
+      await new Promise((r) => setTimeout(r, 1000));
+      const user = mockAvailableUsers.find((u) => u.id === selectedUserId);
+      if (user) {
+        const newAgent = {
+          id: `agent-${Date.now()}`,
+          is_active: true,
+          is_online: false,
+          total_earnings: 0,
+          completed_deliveries: 0,
+          created_at: new Date().toISOString(),
+          profiles: { name: user.name, phone: user.phone },
+        };
+        setAgents((prev) => [newAgent, ...prev]);
+      }
       notifySuccess("Delivery agent added");
       setIsAddOpen(false);
       resetForm();
-      load();
     } catch (error: any) {
       notifyError(error.message || "Failed to add agent");
     } finally {
@@ -140,7 +127,31 @@ export default function AdminUsers() {
   };
 
   const createNewAgent = async () => {
-    notifyError("Create auth users in Supabase Dashboard → Auth → Add user, then promote here");
+    if (!newUserName || !newUserEmail) {
+      notifyError("Name and email are required");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await new Promise((r) => setTimeout(r, 1000));
+      const newAgent = {
+        id: `agent-${Date.now()}`,
+        is_active: true,
+        is_online: false,
+        total_earnings: 0,
+        completed_deliveries: 0,
+        created_at: new Date().toISOString(),
+        profiles: { name: newUserName, phone: newUserPhone },
+      };
+      setAgents((prev) => [newAgent, ...prev]);
+      notifySuccess("Delivery agent created");
+      setIsAddOpen(false);
+      resetForm();
+    } catch (error: any) {
+      notifyError(error.message || "Failed to create agent");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const resetForm = () => {
@@ -152,17 +163,11 @@ export default function AdminUsers() {
     setNewUserPhone("");
   };
 
-  const toggleAgentStatus = async (agentId: string, isActive: boolean) => {
-    try {
-      // No is_active column: demote back to buyer to deactivate, restore to promote.
-      const { error } = await supabase.from("profiles").update({ role: isActive ? "buyer" : "delivery_agent" }).eq("id", agentId);
-      if (error) throw error;
-      if (user) await supabase.from("admin_actions").insert({ admin_id: user.id, action_type: isActive ? "rider_demoted" : "rider_promoted", target_id: agentId, meta: {} });
-      notifySuccess(isActive ? "Agent deactivated" : "Agent activated");
-      load();
-    } catch (e: any) {
-      notifyError(e.message || "Couldn't update agent");
-    }
+  const toggleAgentStatus = (agentId: string, isActive: boolean) => {
+    setAgents((prev) =>
+      prev.map((a) => (a.id === agentId ? { ...a, is_active: !isActive } : a))
+    );
+    notifySuccess(isActive ? "Agent deactivated" : "Agent activated");
   };
 
   if (loading) {
@@ -326,9 +331,40 @@ export default function AdminUsers() {
               contentContainerStyle={{ paddingBottom: 40, gap: 16 }}
               showsVerticalScrollIndicator={false}
             >
-              <Text className={`text-[13px] font-inter px-1 ${dark ? "text-white/55" : "text-ink/55"}`}>Search a signed-up user, then promote to delivery agent. New accounts are created in Supabase Dashboard → Auth → Add user.</Text>
+              <View className={`flex-row gap-2 border rounded-full p-1.5 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                <TouchableOpacity
+                  onPress={() => setAddTab("existing")}
+                  activeOpacity={0.85}
+                  className={`flex-1 h-14 rounded-full items-center justify-center ${
+                    addTab === "existing" ? (dark ? "bg-white" : "bg-ink") : "bg-transparent"
+                  }`}
+                >
+                  <Text
+                    className={`font-inter-bold text-[14px] ${
+                      addTab === "existing" ? (dark ? "text-ink" : "text-white") : dark ? "text-white/60" : "text-ink"
+                    }`}
+                  >
+                    Existing User
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setAddTab("new")}
+                  activeOpacity={0.85}
+                  className={`flex-1 h-14 rounded-full items-center justify-center ${
+                    addTab === "new" ? (dark ? "bg-white" : "bg-ink") : "bg-transparent"
+                  }`}
+                >
+                  <Text
+                    className={`font-inter-bold text-[14px] ${
+                      addTab === "new" ? (dark ? "text-ink" : "text-white") : dark ? "text-white/60" : "text-ink"
+                    }`}
+                  >
+                    New User
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-              {true ? (
+              {addTab === "existing" ? (
                 <View className="gap-4">
                   <View className={`rounded-[24px] border p-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                     <View className="flex-row gap-2">
@@ -397,10 +433,37 @@ export default function AdminUsers() {
                 </View>
               ) : (
                 <View className="gap-4">
-                  <View className={`rounded-[24px] border p-5 gap-2 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
-                    <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>New accounts</Text>
-                    <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Create the auth user in Supabase Dashboard → Auth → Add user. They'll appear in search above — then promote.</Text>
+                  <View className={`rounded-[24px] border p-5 gap-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+                    <TextField
+                      label="Full Name *"
+                      value={newUserName}
+                      onChangeText={setNewUserName}
+                      placeholder="Enter full name"
+                      autoCapitalize="words"
+                    />
+                    <TextField
+                      label="Email *"
+                      value={newUserEmail}
+                      onChangeText={setNewUserEmail}
+                      placeholder="Enter email address"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+                    <TextField
+                      label="Phone (optional)"
+                      value={newUserPhone}
+                      onChangeText={setNewUserPhone}
+                      placeholder="Enter phone number"
+                      keyboardType="phone-pad"
+                    />
                   </View>
+                  <AppButton
+                    title={submitting ? "Creating..." : "Create New Agent"}
+                    variant={dark ? "white" : "ink"}
+                    onPress={createNewAgent}
+                    loading={submitting}
+                    disabled={!newUserName || !newUserEmail || submitting}
+                  />
                 </View>
               )}
             </ScrollView>

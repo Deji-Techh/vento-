@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,17 +7,11 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAuth } from "../../src/contexts/AuthContext";
+import { useRouter } from "expo-router";
 import { useTheme } from "../../src/contexts/ThemeContext";
-import { supabase } from "../../src/lib/supabase";
-import { buzz } from "../../src/lib/haptics";
 import * as Haptics from "expo-haptics";
-import { toast } from "sonner-native";
-import { EmptyState } from "../../src/components/ui/Cards";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { Icon } from "../../src/components/ui/Icon";
 import {
@@ -42,80 +36,67 @@ const seed = [
   { id: "msg-9", type: "sender", text: "Perfect! Add a Suya Platter to my order please.", time: "9:20 AM", read: true },
 ];
 
-const quickReplies = ["Where's my order?", "Thank you!"];
+const quickReplies = ["Where's my order?", "Add an item", "Thank you!"];
+
+const autoReply = (text: string) => {
+  const t = text.toLowerCase();
+  if (t.includes("where") || t.includes("order")) return "Your rider picked it up — 3 minutes away.";
+  if (t.includes("add")) return "Done — I added it to your order, no extra delivery fee.";
+  if (t.includes("thank")) return "Anytime! Enjoy your meal.";
+  return "On it — the kitchen has your message.";
+};
 
 export default function Chat() {
   const router = useRouter();
-  const { orderId } = useLocalSearchParams<{ orderId: string }>();
-  const { user } = useAuth();
   const { dark } = useTheme();
-  const [messages, setMessages] = useState<any[]>([]);
-  const [threadId, setThreadId] = useState<string | null>(orderId || null);
-  const [threadLabel, setThreadLabel] = useState("Order chat");
+  const [messages, setMessages] = useState<any[]>(seed);
   const [draft, setDraft] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
+  const [typing, setTyping] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
-
-  const loadThread = useCallback(async () => {
-    if (!user) { setLoading(false); return; }
-    try {
-      let oid = orderId || threadId;
-      if (!oid) {
-        const { data: latest } = await supabase.from("orders").select("id, sellers(store_name)").eq("buyer_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
-        if (!latest) { setLoading(false); return; }
-        oid = (latest as any).id;
-        setThreadLabel((latest as any).sellers?.store_name || "Order chat");
-      } else if (!threadId) {
-        const { data: o } = await supabase.from("orders").select("id, sellers(store_name)").eq("id", oid).maybeSingle();
-        if (o) setThreadLabel((o as any).sellers?.store_name || "Order chat");
-      }
-      setThreadId(oid);
-      const { data, error } = await supabase.from("messages").select("id, sender_id, body, created_at").eq("order_id", oid).order("created_at", { ascending: true }).limit(100);
-      if (error) throw error;
-      setMessages(
-        (data || []).map((m: any) => ({
-          id: m.id,
-          type: m.sender_id === user.id ? "sender" : ("receiver" as const),
-          text: m.body,
-          time: new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        }))
-      );
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't load messages");
-    } finally {
-      setLoading(false);
-    }
-  }, [user, orderId]);
-
-  useEffect(() => { loadThread(); }, [loadThread]);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
-    if (!threadId) return;
-    const ch = supabase.channel(`messages:${threadId}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `order_id=eq.${threadId}` }, () => loadThread()).subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [threadId, loadThread]);
+    const stash = timers.current;
+    return () => stash.forEach(clearTimeout);
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     return () => clearTimeout(t);
-  }, [messages]);
+  }, [messages, typing]);
 
-  const send = async (raw: string) => {
+  const buzz = () => {
+    if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
+  };
+
+  const send = (raw: string) => {
     const text = raw.trim();
-    if (!text || !user || !threadId || sending) return;
-    setSending(true);
-    try {
-      const { error } = await supabase.from("messages").insert({ order_id: threadId, sender_id: user.id, body: text.slice(0, 500) });
-      if (error) throw error;
-      setDraft("");
-      buzz();
-      loadThread();
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't send");
-    } finally {
-      setSending(false);
-    }
+    if (!text) return;
+    const mine = {
+      id: `msg-${Date.now()}`,
+      type: "sender" as const,
+      text,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      read: false,
+    };
+    setMessages((prev) => [...prev, mine]);
+    setDraft("");
+    buzz();
+    setTyping(true);
+    timers.current.push(
+      setTimeout(() => {
+        setTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `msg-${Date.now()}-r`,
+            type: "receiver" as const,
+            text: autoReply(text),
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          },
+        ]);
+      }, 1400)
+    );
   };
 
   return (
@@ -133,21 +114,22 @@ export default function Chat() {
             </TouchableOpacity>
             <View className="flex-row items-center gap-3">
               <View className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
-                <Text className={`text-[13px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>{threadLabel.slice(0, 2).toUpperCase()}</Text>
+                <Text className={`text-[13px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>TB</Text>
+                <View className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-success border-2 border-white" style={{ borderColor: dark ? "#000000" : "#FFFFFF" }} />
               </View>
               <View>
-                <Text className={`text-[16px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>{threadLabel}</Text>
+                <Text className={`text-[16px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Tasty Bites</Text>
                 <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
-                  {threadId ? `Order #${threadId.slice(0, 8)}` : "No orders yet"}
+                  {typing ? "typing…" : "Online now"}
                 </Text>
               </View>
             </View>
           </View>
           <View className="flex-row items-center gap-2">
-            <TouchableOpacity onPress={() => toast("Video calls ship with live support")} accessibilityLabel="Video call" activeOpacity={0.85} className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
+            <TouchableOpacity activeOpacity={0.85} className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
               <Icon icon={Video01Icon} size={18} color={dark ? "#fff" : "#0A0A0E"} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => toast("Voice calls ship with live support")} accessibilityLabel="Voice call" activeOpacity={0.85} className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
+            <TouchableOpacity activeOpacity={0.85} className={`w-10 h-10 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
               <Icon icon={PhoneIcon} size={18} color={dark ? "#fff" : "#0A0A0E"} />
             </TouchableOpacity>
           </View>
@@ -169,13 +151,6 @@ export default function Chat() {
             </View>
           </View>
 
-          {loading ? (
-            <View className="py-10 items-center"><Text className={`text-[13px] font-inter ${dark ? "text-white/50" : "text-ink/50"}`}>Loading thread…</Text></View>
-          ) : !threadId ? (
-            <EmptyState title="No conversations yet" subtitle="Messages with your kitchen and rider live here once you order." actionLabel="Browse kitchens" onAction={() => router.push("/(buyer)/browse" as any)} />
-          ) : messages.length === 0 ? (
-            <EmptyState title="Say hello" subtitle="Messages to your kitchen and rider start here." />
-          ) : null}
           {messages.map((msg: any, idx: number) => {
             if (msg.type === "date") {
               return (
@@ -241,6 +216,15 @@ export default function Chat() {
             );
           })}
 
+          {typing && (
+            <View className="flex-row justify-start mb-2">
+              <View className={`rounded-[20px] rounded-tl-md px-4 py-3.5 flex-row gap-1.5 ${dark ? "bg-white/10" : "bg-white border border-border"}`}>
+                {[0, 1, 2].map((d) => (
+                  <View key={d} className={`w-1.5 h-1.5 rounded-full ${dark ? "bg-white/60" : "bg-ink/40"}`} />
+                ))}
+              </View>
+            </View>
+          )}
         </ScrollView>
 
         {/* Quick replies */}
@@ -267,7 +251,7 @@ export default function Chat() {
         {/* Input */}
         <View className={`px-5 py-3 border-t ${dark ? "border-white/10 bg-ink" : "border-ink/10 bg-cream"}`}>
           <View className="flex-row items-center gap-2">
-            <TouchableOpacity onPress={() => toast("Photo sharing ships with live support")} accessibilityLabel="Attach photo" activeOpacity={0.85} className={`w-10 h-10 rounded-full items-center justify-center border ${dark ? "bg-white/10 border-white/10" : "bg-ink/[0.05] border-ink/10"}`}>
+            <TouchableOpacity activeOpacity={0.85} className={`w-10 h-10 rounded-full items-center justify-center border ${dark ? "bg-white/10 border-white/10" : "bg-ink/[0.05] border-ink/10"}`}>
               <Icon icon={PlusSignIcon} size={20} color={dark ? "rgba(255,255,255,0.7)" : "rgba(10,10,14,0.6)"} />
             </TouchableOpacity>
             <View className={`flex-1 border rounded-full flex-row items-center px-4 h-[52px] ${dark ? "bg-white/10 border-white/10" : "bg-white border-ink/10"}`}>

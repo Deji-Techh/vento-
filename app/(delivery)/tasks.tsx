@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,14 +6,9 @@ import {
   ScrollView,
   ActivityIndicator,
   Platform,
-  RefreshControl,
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
-import { useAuth } from "../../src/contexts/AuthContext";
-import { supabase } from "../../src/lib/supabase";
-import { buzz } from "../../src/lib/haptics";
-import { EmptyState } from "../../src/components/ui/Cards";
 import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
 import { Icon } from "../../src/components/ui/Icon";
 import { useTheme } from "../../src/contexts/ThemeContext";
@@ -99,54 +94,34 @@ const getTimeAgo = (date: string) => {
 
 export default function DeliveryTasks() {
   const { dark } = useTheme();
-  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([]);
   const [completedDeliveries, setCompletedDeliveries] = useState<any[]>([]);
 
-  const load = useCallback(async () => {
-    if (!user) { setActiveDeliveries([]); setCompletedDeliveries([]); setLoading(false); setRefreshing(false); return; }
-    try {
-      const { data, error } = await supabase
-        .from("deliveries")
-        .select("id, order_id, status, delivery_fee, created_at, orders(id, delivery_address, notes, status, order_items(name))")
-        .eq("agent_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      const list = data || [];
-      setActiveDeliveries(list.filter((d: any) => d.status !== "delivered" && d.status !== "cancelled"));
-      setCompletedDeliveries(list.filter((d: any) => d.status === "delivered" || d.status === "cancelled"));
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't load deliveries");
-    } finally {
+  useEffect(() => {
+    setTimeout(() => {
+      setActiveDeliveries(mockActiveDeliveries);
+      setCompletedDeliveries(mockCompletedDeliveries);
       setLoading(false);
-      setRefreshing(false);
-    }
-  }, [user]);
+    }, 800);
+  }, []);
 
-  useEffect(() => { load(); }, [load]);
-
-  const updateDeliveryStatus = async (deliveryId: string, orderId: string, newStatus: string) => {
-    try {
-      const { error: de } = await supabase.from("deliveries").update({ status: newStatus }).eq("id", deliveryId);
-      if (de) throw de;
-      const orderStatus = newStatus === "assigned" || newStatus === "heading_to_seller" ? "accepted" : newStatus;
-      await supabase.from("orders").update({ status: orderStatus }).eq("id", orderId);
-      buzz("success");
-      toast.success(`Delivery marked as ${statusLabel(newStatus)}`);
-      load();
-    } catch (e: any) {
-      buzz("error");
-      toast.error(e.message || "Couldn't update delivery");
+  const updateDeliveryStatus = (deliveryId: string, newStatus: string) => {
+    setActiveDeliveries((prev) =>
+      prev.map((d) =>
+        d.id === deliveryId ? { ...d, status: newStatus } : d
+      )
+    );
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     }
+    toast.success(`Delivery marked as ${statusLabel(newStatus)}`);
   };
 
   const renderDeliveryCard = (delivery: any, showActions: boolean) => {
     const order = delivery.orders;
-    const items = order?.order_items || [];
+    const items = order?.items || [];
     const itemNames = Array.isArray(items)
       ? items.map((i: any) => i.name || "Item").slice(0, 3)
       : [];
@@ -191,7 +166,7 @@ export default function DeliveryTasks() {
               {delivery.status === "heading_to_seller" && (
                 <TouchableOpacity
                   onPress={() =>
-                    updateDeliveryStatus(delivery.id, delivery.order_id, "picked_up")
+                    updateDeliveryStatus(delivery.id, "picked_up")
                   }
                   activeOpacity={0.85}
                   className={`px-4 h-11 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
@@ -205,21 +180,7 @@ export default function DeliveryTasks() {
               {delivery.status === "picked_up" && (
                 <TouchableOpacity
                   onPress={() =>
-                    updateDeliveryStatus(delivery.id, delivery.order_id, "on_the_way")
-                  }
-                  activeOpacity={0.85}
-                  className={`px-4 h-11 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
-                >
-                  <Icon icon={CheckmarkCircle01Icon} size={14} color={dark ? "#0A0A0E" : "#fff"} />
-                  <Text className={`text-[12px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>
-                    En route
-                  </Text>
-                </TouchableOpacity>
-              )}
-              {delivery.status === "on_the_way" && (
-                <TouchableOpacity
-                  onPress={() =>
-                    updateDeliveryStatus(delivery.id, delivery.order_id, "delivered")
+                    updateDeliveryStatus(delivery.id, "delivered")
                   }
                   activeOpacity={0.85}
                   className={`px-4 h-11 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
@@ -249,7 +210,7 @@ export default function DeliveryTasks() {
     activeTab === "active" ? activeDeliveries : completedDeliveries;
 
   return (
-    <ScrollView className={`flex-1 px-5 pt-14 ${dark ? "bg-ink" : "bg-cream"}`} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); buzz(); load(); }} tintColor={dark ? "#fff" : "#0A0A0E"} />}>
+    <ScrollView className={`flex-1 px-5 pt-14 ${dark ? "bg-ink" : "bg-cream"}`} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
       <View className="mb-6">
         <Eyebrow>Tasks</Eyebrow>
         <Text className={`text-[28px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>Deliveries</Text>
@@ -294,7 +255,12 @@ export default function DeliveryTasks() {
 
       {/* Delivery List */}
       {displayDeliveries.length === 0 ? (
-        <EmptyState title={activeTab === "active" ? "No active deliveries" : "Nothing delivered yet"} subtitle="Assigned deliveries appear here automatically." />
+        <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-16 h-16 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={DeliveryBox01Icon} size={22} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.4)"} />
+          </View>
+          <Text className={`mt-3 font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>No deliveries found</Text>
+        </View>
       ) : (
         <View className="gap-4">
           {displayDeliveries.map((delivery) =>

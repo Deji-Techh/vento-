@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,9 @@ import {
   Modal,
   ActivityIndicator,
   Platform,
-  RefreshControl,
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
-import { useAuth } from "../../src/contexts/AuthContext";
-import { supabase } from "../../src/lib/supabase";
-import { buzz } from "../../src/lib/haptics";
-import { EmptyState } from "../../src/components/ui/Cards";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
 import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
@@ -72,75 +67,57 @@ const withdrawalTone = (status: string): ChipTone => {
 
 export default function DeliveryEarnings() {
   const { dark } = useTheme();
-  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [trips, setTrips] = useState(0);
-  const [earned, setEarned] = useState(0);
+  const [agent, setAgent] = useState<any>(null);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawMethod, setWithdrawMethod] = useState("bank_transfer");
   const [submitting, setSubmitting] = useState(false);
 
-  const load = useCallback(async () => {
-    if (!user) { setLoading(false); setRefreshing(false); return; }
-    try {
-      const { data: ds, error } = await supabase.from("deliveries").select("delivery_fee, status").eq("agent_id", user.id).eq("status", "delivered");
-      if (error) throw error;
-      const list = (ds as any) || [];
-      setTrips(list.length);
-      setEarned(list.reduce((s: number, d: any) => s + (d.delivery_fee || 0), 0));
-      const { data: wd } = await supabase.from("withdrawals").select("*").eq("requester_id", user.id).order("created_at", { ascending: false }).limit(20);
-      setWithdrawals((wd as any) || []);
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't load earnings");
-    } finally {
+  useEffect(() => {
+    setTimeout(() => {
+      setAgent(mockAgent);
+      setWithdrawals(mockWithdrawals);
       setLoading(false);
-      setRefreshing(false);
-    }
-  }, [user]);
+    }, 800);
+  }, []);
 
-  useEffect(() => { load(); }, [load]);
-
-  const handleWithdrawal = async () => {
-    const amount = Math.round(Number(withdrawAmount));
-    if (!amount || amount < 1000) {
-      buzz("error");
-      toast.error("Minimum withdrawal is ₦1,000");
+  const handleWithdrawal = () => {
+    const amount = Number(withdrawAmount);
+    if (!amount || amount <= 0) {
+      toast.error("Enter a valid withdrawal amount");
       return;
     }
 
     const pendingTotal = withdrawals
       .filter((w) => w.status === "pending")
-      .reduce((sum, w) => sum + Number(w.amount), 0);
-    const paidTotal = withdrawals
-      .filter((w) => w.status === "approved" || w.status === "completed")
-      .reduce((sum, w) => sum + Number(w.amount), 0);
-    const available = earned - pendingTotal - paidTotal;
+      .reduce((sum, w) => sum + w.amount, 0);
+    const available = (agent?.total_earnings || 0) - pendingTotal;
 
     if (amount > available) {
-      buzz("error");
       toast.error(`Your available balance is ₦${available.toLocaleString()}`);
       return;
     }
-    if (!user) return;
 
     setSubmitting(true);
-    try {
-      const { error } = await supabase.from("withdrawals").insert({ requester_id: user.id, amount, method: withdrawMethod });
-      if (error) throw error;
-      buzz("success");
+    setTimeout(() => {
+      const newWithdrawal = {
+        id: `w-${Date.now()}`,
+        amount,
+        status: "pending",
+        method: withdrawMethod,
+        created_at: new Date().toISOString(),
+      };
+      setWithdrawals((prev) => [newWithdrawal, ...prev]);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
       toast.success(`₦${amount.toLocaleString()} withdrawal is being processed`);
       setDialogOpen(false);
       setWithdrawAmount("");
-      load();
-    } catch (e: any) {
-      buzz("error");
-      toast.error(e.message || "Couldn't submit request");
-    } finally {
       setSubmitting(false);
-    }
+    }, 1000);
   };
 
   if (loading) {
@@ -153,14 +130,11 @@ export default function DeliveryEarnings() {
 
   const pendingTotal = withdrawals
     .filter((w) => w.status === "pending")
-    .reduce((sum, w) => sum + Number(w.amount), 0);
-  const paidTotal = withdrawals
-    .filter((w) => w.status === "approved" || w.status === "completed")
-    .reduce((sum, w) => sum + Number(w.amount), 0);
-  const availableBalance = earned - pendingTotal - paidTotal;
+    .reduce((sum, w) => sum + w.amount, 0);
+  const availableBalance = (agent?.total_earnings || 0) - pendingTotal;
 
   return (
-    <ScrollView className={`flex-1 px-5 pt-14 ${dark ? "bg-ink" : "bg-cream"}`} contentContainerStyle={{ paddingBottom: 120, gap: 16 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); buzz(); load(); }} tintColor={dark ? "#fff" : "#0A0A0E"} />}>
+    <ScrollView className={`flex-1 px-5 pt-14 ${dark ? "bg-ink" : "bg-cream"}`} contentContainerStyle={{ paddingBottom: 120, gap: 16 }} showsVerticalScrollIndicator={false}>
       <View>
         <Eyebrow>Payouts</Eyebrow>
         <Text className={`text-[28px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>Earnings</Text>
@@ -180,12 +154,12 @@ export default function DeliveryEarnings() {
         <View className="flex-row items-center mt-4 gap-2">
           <View className={`px-3 py-1.5 rounded-full ${dark ? "bg-white/10" : "bg-ink/5"}`}>
             <Text className={`text-[12px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
-              ₦{earned.toLocaleString()} total
+              ₦{(agent?.total_earnings || 0).toLocaleString()} total
             </Text>
           </View>
           <View className={`px-3 py-1.5 rounded-full ${dark ? "bg-white/10" : "bg-ink/5"}`}>
             <Text className={`text-[12px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
-              {trips} trips
+              {agent?.completed_deliveries || 0} trips
             </Text>
           </View>
         </View>
@@ -207,7 +181,7 @@ export default function DeliveryEarnings() {
           </View>
           <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Total</Text>
           <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
-            ₦{earned.toLocaleString()}
+            ₦{(agent?.total_earnings || 0).toLocaleString()}
           </Text>
         </View>
         <View className={`flex-1 rounded-[24px] p-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
@@ -225,7 +199,7 @@ export default function DeliveryEarnings() {
           </View>
           <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Trips</Text>
           <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
-            {trips}
+            {agent?.completed_deliveries || 0}
           </Text>
         </View>
       </View>

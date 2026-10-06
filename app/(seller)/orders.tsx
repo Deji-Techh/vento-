@@ -1,14 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Modal, ActivityIndicator, Platform, RefreshControl } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, Modal, ActivityIndicator, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
-import { supabase } from "../../src/lib/supabase";
-import { pushToUser } from "../../src/lib/push";
-import { buzz } from "../../src/lib/haptics";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
-import { EmptyState } from "../../src/components/ui/Cards";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
 import { Icon } from "../../src/components/ui/Icon";
@@ -61,7 +57,7 @@ const mockOrders = [
 
 function toneFor(status: string): "success" | "warning" | "info" | "danger" | "neutral" {
   switch (status) {
-    case "delivered":
+    case "completed":
       return "success";
     case "preparing":
       return "warning";
@@ -75,62 +71,28 @@ function toneFor(status: string): "success" | "warning" | "info" | "danger" | "n
 }
 
 export default function SellerOrders() {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const { dark } = useTheme();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const load = useCallback(async () => {
-    if (!user) { setOrders([]); setLoading(false); setRefreshing(false); return; }
-    try {
-      const { data: stores } = await supabase.from("sellers").select("id").eq("owner_id", user.id);
-      const ids = (stores || []).map((s: any) => s.id);
-      if (ids.length === 0) { setOrders([]); return; }
-      const { data, error } = await supabase
-        .from("orders")
-        .select("id, created_at, status, total, delivery_address, notes, buyer_id, order_items(name, quantity, price)")
-        .in("seller_id", ids)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      const buyerIds = [...new Set((data || []).map((o: any) => o.buyer_id))];
-      let buyers: Record<string, any> = {};
-      if (buyerIds.length > 0) {
-        const { data: profs } = await supabase.from("profiles").select("id, name, phone").in("id", buyerIds);
-        buyers = Object.fromEntries(((profs || []) as any[]).map((p: any) => [p.id, p]));
-      }
-      setOrders((data || []).map((o: any) => ({ ...o, total_price: o.total, items: o.order_items || [], profiles: buyers[o.buyer_id] || { name: "Buyer", phone: "" } })));
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't load orders");
-    } finally {
+  useEffect(() => {
+    setTimeout(() => {
+      setOrders(mockOrders);
       setLoading(false);
-      setRefreshing(false);
-    }
-  }, [user]);
+    }, 800);
+  }, [profile]);
 
-  useEffect(() => { load(); }, [load, profile]);
-
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    try {
-      const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
-      if (error) throw error;
-      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
-      setSelectedOrder((prev: any) => (prev && prev.id === orderId ? { ...prev, status: newStatus } : prev));
-      buzz("success");
-      toast.success(`Order ${newStatus.replaceAll("_", " ")}`);
-      const target = orders.find((o) => o.id === orderId);
-      if (target?.buyer_id) {
-        await supabase.from("notifications").insert({ user_id: target.buyer_id, kind: "order", title: `Order ${newStatus.replaceAll("_", " ")}`, body: "Your order status changed — tap to track", href: "/(buyer)/orders" });
-        pushToUser(target.buyer_id, `Order ${newStatus.replaceAll("_", " ")}`, "Your order status changed — tap to track");
-      }
-      if (newStatus === "delivered" || newStatus === "cancelled") setDialogOpen(false);
-    } catch (e: any) {
-      buzz("error");
-      toast.error(e.message || "Couldn't update order");
+  const updateOrderStatus = (orderId: string, newStatus: string) => {
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
+    setSelectedOrder((prev: any) => (prev && prev.id === orderId ? { ...prev, status: newStatus } : prev));
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     }
+    toast.success(`Order ${newStatus}`);
+    if (newStatus === "completed" || newStatus === "cancelled") setDialogOpen(false);
   };
 
   if (loading) {
@@ -293,7 +255,7 @@ export default function SellerOrders() {
                   </View>
                 )}
 
-                {selectedOrder.status !== "delivered" && selectedOrder.status !== "cancelled" && (
+                {selectedOrder.status !== "completed" && selectedOrder.status !== "cancelled" && (
                   <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
                     <Text className={`font-inter-bold mb-4 ${dark ? "text-white" : "text-ink"}`}>Update order status</Text>
                     <View className="gap-3">
@@ -307,7 +269,7 @@ export default function SellerOrders() {
                         <AppButton title="Mark as Preparing" variant={dark ? "white" : "ink"} onPress={() => updateOrderStatus(selectedOrder.id, "preparing")} />
                       )}
                       {selectedOrder.status === "preparing" && (
-                        <AppButton title="Mark as Delivered" variant={dark ? "white" : "ink"} onPress={() => updateOrderStatus(selectedOrder.id, "delivered")} />
+                        <AppButton title="Mark as Completed" variant={dark ? "white" : "ink"} onPress={() => updateOrderStatus(selectedOrder.id, "completed")} />
                       )}
                     </View>
                   </View>

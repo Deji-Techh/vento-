@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Modal, ActivityIndicator, Platform, RefreshControl } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, Modal, ActivityIndicator, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useTheme } from "../../src/contexts/ThemeContext";
-import { supabase } from "../../src/lib/supabase";
-import { buzz } from "../../src/lib/haptics";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
-import { EmptyState } from "../../src/components/ui/Cards";
 import { AppButton } from "../../src/components/ui/AppButton";
 import { TextField } from "../../src/components/ui/TextField";
 import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
@@ -36,7 +33,7 @@ const mockWithdrawals = [
     id: "w-001",
     amount: "10000",
     status: "approved",
-    method: "bank_transfer",
+    method: "bank",
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
   },
   {
@@ -64,81 +61,55 @@ const mockOrders = [
 ];
 
 export default function SellerEarnings() {
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
   const { dark } = useTheme();
   const [sellerInfo, setSellerInfo] = useState<any>(null);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showBalance, setShowBalance] = useState(true);
-  const [withdrawalForm, setWithdrawalForm] = useState({ amount: "", method: "bank_transfer" });
+  const [withdrawalForm, setWithdrawalForm] = useState({ amount: "", method: "bank" });
 
-  const load = useCallback(async () => {
-    if (!user) { setLoading(false); setRefreshing(false); return; }
-    try {
-      const { data: stores } = await supabase.from("sellers").select("id, store_name, total_earnings").eq("owner_id", user.id).limit(1);
-      const store = (stores || [])[0] || null;
-      setSellerInfo(store);
-      const { data: wd } = await supabase.from("withdrawals").select("*").eq("requester_id", user.id).order("created_at", { ascending: false }).limit(20);
-      setWithdrawals((wd as any) || []);
-      if (store) {
-        const { data: o } = await supabase.from("orders").select("id, total, created_at, buyer_id").eq("seller_id", store.id).order("created_at", { ascending: false }).limit(10);
-        const bids = [...new Set(((o || []) as any[]).map((x: any) => x.buyer_id))];
-        let names: Record<string, string> = {};
-        if (bids.length > 0) {
-          const { data: p } = await supabase.from("profiles").select("id, name").in("id", bids);
-          names = Object.fromEntries(((p || []) as any[]).map((x: any) => [x.id, x.name]));
-        }
-        setOrders(((o || []) as any[]).map((x: any) => ({ id: x.id, total_price: x.total, created_at: x.created_at, profiles: { name: names[x.buyer_id] || "Customer", avatar_url: null } })));
-      }
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't load earnings");
-    } finally {
+  useEffect(() => {
+    setTimeout(() => {
+      setSellerInfo(mockSellerInfo);
+      setWithdrawals(mockWithdrawals);
+      setOrders(mockOrders);
       setLoading(false);
-      setRefreshing(false);
-    }
-  }, [user]);
+    }, 800);
+  }, [profile]);
 
-  useEffect(() => { load(); }, [load, profile]);
-
-  const handleWithdrawal = async () => {
-    const amount = Math.round(Number(withdrawalForm.amount));
-    if (!amount || amount < 1000) {
-      buzz("error");
-      toast.error("Minimum withdrawal is ₦1,000");
+  const handleWithdrawal = () => {
+    const amount = parseFloat(withdrawalForm.amount);
+    if (isNaN(amount) || amount <= 0 || amount > availableBalance) {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      toast.error("Enter a valid amount within balance");
       return;
     }
-    if (amount > availableBalance) {
-      buzz("error");
-      toast.error("Amount exceeds available balance");
-      return;
-    }
-    if (!user) return;
-    try {
-      const { error } = await supabase.from("withdrawals").insert({ requester_id: user.id, amount, method: withdrawalForm.method });
-      if (error) throw error;
-      buzz("success");
-      toast.success("Withdrawal request submitted");
-      setDialogOpen(false);
-      setWithdrawalForm({ amount: "", method: "bank_transfer" });
-      load();
-    } catch (e: any) {
-      buzz("error");
-      toast.error(e.message || "Couldn't submit request");
-    }
+    const newWithdrawal = {
+      id: `w-${Date.now()}`,
+      amount: withdrawalForm.amount,
+      status: "pending",
+      method: withdrawalForm.method,
+      created_at: new Date().toISOString(),
+    };
+    setWithdrawals((prev) => [newWithdrawal, ...prev]);
+    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    toast.success("Withdrawal request submitted");
+    setDialogOpen(false);
+    setWithdrawalForm({ amount: "", method: "bank" });
   };
 
   const totalWithdrawn = withdrawals
-    .filter((w) => w.status === "approved" || w.status === "completed")
-    .reduce((sum, w) => sum + Number(w.amount), 0);
+    .filter((w) => w.status === "approved")
+    .reduce((sum, w) => sum + parseFloat(w.amount), 0);
 
   const pendingWithdrawals = withdrawals
     .filter((w) => w.status === "pending")
-    .reduce((sum, w) => sum + Number(w.amount), 0);
+    .reduce((sum, w) => sum + parseFloat(w.amount), 0);
 
-  const availableBalance = (sellerInfo?.total_earnings || 0) - totalWithdrawn - pendingWithdrawals;
+  const availableBalance = (sellerInfo?.total_earnings || 0) - totalWithdrawn;
 
   const recentTransactions = [
     ...orders.slice(0, 5).map((order) => ({
@@ -152,7 +123,7 @@ export default function SellerEarnings() {
     ...withdrawals.slice(0, 2).map((w) => ({
       id: w.id,
       type: "withdrawal",
-      name: `Withdrawal to ${w.method === "bank_transfer" ? "Bank" : "Mobile Money"}`,
+      name: `Withdrawal to ${w.method === "bank" ? "Bank" : "Mobile Money"}`,
       date: w.created_at,
       amount: -parseFloat(w.amount),
       status: w.status.toUpperCase(),
@@ -204,7 +175,7 @@ export default function SellerEarnings() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); buzz(); load(); }} tintColor={dark ? "#fff" : "#0A0A0E"} />}>
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         <View className="px-5">
           <View className={`rounded-[28px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
             <View className="items-center">
@@ -330,16 +301,16 @@ export default function SellerEarnings() {
               <Text className={`text-[13px] font-inter-bold mb-2 ${dark ? "text-white" : "text-ink"}`}>Method</Text>
               <View className="flex-row gap-2 mt-1">
                 <TouchableOpacity
-                  onPress={() => setWithdrawalForm({ ...withdrawalForm, method: "bank_transfer" })}
+                  onPress={() => setWithdrawalForm({ ...withdrawalForm, method: "bank" })}
                   activeOpacity={0.85}
                   className={`flex-1 h-14 rounded-full flex-row items-center justify-center gap-2 border ${
-                    withdrawalForm.method === "bank_transfer"
+                    withdrawalForm.method === "bank"
                       ? dark ? "bg-white border-white" : "bg-ink border-ink"
                       : dark ? "bg-white/10 border-white/10" : "bg-white border-border"
                   }`}
                 >
-                  <Icon icon={BankIcon} size={16} color={withdrawalForm.method === "bank_transfer" ? (dark ? "#0A0A0E" : "#fff") : (dark ? "#fff" : "#0A0A0E")} />
-                  <Text className={`font-inter-bold text-[13px] ${withdrawalForm.method === "bank_transfer" ? (dark ? "text-ink" : "text-white") : (dark ? "text-white" : "text-ink")}`}>
+                  <Icon icon={BankIcon} size={16} color={withdrawalForm.method === "bank" ? (dark ? "#0A0A0E" : "#fff") : (dark ? "#fff" : "#0A0A0E")} />
+                  <Text className={`font-inter-bold text-[13px] ${withdrawalForm.method === "bank" ? (dark ? "text-ink" : "text-white") : (dark ? "text-white" : "text-ink")}`}>
                     Bank
                   </Text>
                 </TouchableOpacity>
