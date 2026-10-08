@@ -1,221 +1,135 @@
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Image } from "expo-image";
 import { useCart } from "../../src/stores/cartStore";
-import {
-  X,
-  Search,
-  Package,
-  ChevronRight,
-  Trash2,
-  Minus,
-  Plus,
-  Gift,
-  Tag,
-} from "lucide-react-native";
+import { useAuth } from "../../src/contexts/AuthContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
+import { AppButton } from "../../src/components/ui/AppButton";
+import { EmptyState } from "../../src/components/ui/Cards";
+import { Enter } from "../../src/components/motion";
+import { Icon } from "../../src/components/ui/Icon";
+import { ArrowLeft01Icon, MinusSignIcon, PlusSignIcon, Delete02Icon } from "../../src/components/icons";
+
+const FREE_DELIVERY_AT = 10000;
+const FEE = 1500;
 
 export default function Cart() {
   const router = useRouter();
   const { items, removeItem, updateQuantity, getTotal } = useCart();
-
+  const { user } = useAuth();
+  const { dark } = useTheme();
   const subtotal = getTotal();
-  const deliveryFee = 1500;
-  const total = subtotal + deliveryFee;
-  const savings = items.reduce((sum, item) => sum + item.price * 0.1, 0);
+  const freeDelivery = subtotal >= FREE_DELIVERY_AT;
+  const total = subtotal + (freeDelivery ? 0 : FEE);
+  const progress = Math.min(1, subtotal / FREE_DELIVERY_AT);
+
+  const step = (id: string, qty: number, d: number) => {
+    if (qty === 1 && d < 0) removeItem(id);
+    else updateQuantity(id, qty + d);
+    if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
+  };
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Header */}
-      <View className="px-5 pt-10 pb-2 bg-white">
-        <View className="flex-row justify-between items-center h-12">
-          <TouchableOpacity
-            onPress={() => router.push("/(buyer)/browse")}
-            className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
-          >
-            <X color="#1C1B1B" size={20} />
-          </TouchableOpacity>
-          <Text className="text-xl font-bold tracking-tight">My Bag</Text>
-          <TouchableOpacity className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center">
-            <Search color="#1C1B1B" size={20} />
-          </TouchableOpacity>
-        </View>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
+      <View className="px-5 pt-1 pb-4 flex-row items-center">
+        <TouchableOpacity onPress={() => router.push("/(buyer)/browse" as any)} className="w-11 h-11 items-center justify-center">
+          <Icon icon={ArrowLeft01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
+        </TouchableOpacity>
+        <Text className={`text-[20px] font-inter-bold tracking-tight ml-3 ${dark ? "text-white" : "text-ink"}`}>Your bag</Text>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }}>
-        {/* Delivery Info */}
-        <TouchableOpacity className="flex-row items-center py-5 border-b border-gray-200 px-5">
-          <View className="w-12 h-12 rounded-full bg-blue-50 items-center justify-center mr-4">
-            <Package color="#000080" size={24} />
-          </View>
-          <View className="flex-1">
-            <Text className="text-lg font-bold leading-tight">
-              Delivery in 26-43 mins
-            </Text>
-            <Text className="text-gray-500 text-sm">1723 Locust St</Text>
-          </View>
-          <ChevronRight color="#9CA3AF" size={24} />
-        </TouchableOpacity>
-
+      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         {items.length === 0 ? (
-          <View className="py-16 px-5 items-center">
-            <Text className="text-gray-500">Your bag is empty</Text>
-            <TouchableOpacity
-              onPress={() => router.push("/(buyer)/browse")}
-              className="mt-4 px-6 py-3 bg-blue-900 rounded-xl"
-            >
-              <Text className="text-white font-semibold">Browse Menu</Text>
-            </TouchableOpacity>
+          <View>
+            <EmptyState title="Bag's empty" subtitle="Something hot is waiting for you." />
+            <View className="mt-4">
+              <AppButton title="Find food" variant={dark ? "white" : "ink"} onPress={() => router.push("/(buyer)/browse" as any)} />
+            </View>
           </View>
         ) : (
           <>
-            {/* Cart Items */}
-            <View className="py-2 px-5">
-              {items.map((item) => (
-                <View
-                  key={item.id}
-                  className="flex-row items-center py-4 border-b border-gray-100"
-                >
-                  <Image
-                    source={{
-                      uri: item.image_url || "https://via.placeholder.com/64",
-                    }}
-                    className="w-16 h-16 rounded-lg mr-4 bg-gray-100"
-                    resizeMode="cover"
-                  />
-                  <View className="flex-1 min-w-0">
-                    <Text className="text-[15px] font-bold leading-tight mb-1 truncate">
-                      {item.name}
-                    </Text>
-                    <Text className="text-gray-500 text-sm">
-                      ₦{item.price.toLocaleString()}
-                    </Text>
-                  </View>
-                  <View className="flex-row items-center bg-gray-100 rounded-full p-1 ml-2">
-                    {item.quantity === 1 ? (
-                      <TouchableOpacity
-                        onPress={() => removeItem(item.id)}
-                        className="w-8 h-8 items-center justify-center rounded-full bg-white shadow-sm"
-                      >
-                        <Trash2 color="#1C1B1B" size={16} />
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        onPress={() =>
-                          updateQuantity(item.id, item.quantity - 1)
-                        }
-                        className="w-8 h-8 items-center justify-center rounded-full bg-white shadow-sm"
-                      >
-                        <Minus color="#1C1B1B" size={16} />
-                      </TouchableOpacity>
-                    )}
-                    <Text className="w-8 text-center font-bold text-[15px]">
-                      {item.quantity}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() =>
-                        updateQuantity(item.id, item.quantity + 1)
-                      }
-                      className="w-8 h-8 items-center justify-center rounded-full bg-blue-900 shadow-sm"
-                    >
-                      <Plus color="#FFFFFF" size={20} />
-                    </TouchableOpacity>
-                  </View>
+            <Text className={`text-[12px] font-inter-medium mb-3 ${dark ? "text-white/50" : "text-ink/55"}`}>
+              {items.length} item{items.length > 1 ? "s" : ""} • 26–43 min
+            </Text>
+
+            {!freeDelivery ? (
+              <View className={`rounded-[20px] p-4 mb-4 ${dark ? "bg-white/[0.06]" : "bg-ink/[0.05]"}`}>
+                <Text className={`text-[13px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>
+                  ₦{(FREE_DELIVERY_AT - subtotal).toLocaleString()} away from free delivery
+                </Text>
+                <View className={`h-1.5 rounded-full overflow-hidden mt-2.5 ${dark ? "bg-white/10" : "bg-ink/10"}`}>
+                  <View className={`h-full rounded-full ${dark ? "bg-white" : "bg-ink"}`} style={{ width: `${progress * 100}%` }} />
                 </View>
+              </View>
+            ) : (
+              <View className="bg-success/15 border border-success/25 rounded-[20px] p-4 mb-4">
+                <Text className="text-[#0E9F6E] text-[13px] font-inter-bold">Free delivery unlocked</Text>
+              </View>
+            )}
+
+            <View className="gap-1">
+              {items.map((item, i) => (
+                <Enter key={item.id} delay={Math.min(i * 40, 120)}>
+                  <View className="flex-row items-center py-3">
+                    <Image source={{ uri: item.image_url || "" }} style={{ width: 68, height: 68, borderRadius: 18 }} contentFit="cover" transition={200} />
+                    <View className="flex-1 ml-3.5">
+                      <Text className={`font-inter-bold text-[15px] ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>{item.name}</Text>
+                      <Text className={`text-[13px] font-inter mt-0.5 ${dark ? "text-white/45" : "text-ink/50"}`}>₦{item.price.toLocaleString()}</Text>
+                    </View>
+                    <View className={`flex-row items-center rounded-full p-1 ${dark ? "bg-white/[0.07]" : "bg-ink/[0.05]"}`}>
+                      <TouchableOpacity onPress={() => step(item.id, item.quantity, -1)} accessibilityLabel={item.quantity === 1 ? `Remove ${item.name}` : `Decrease ${item.name}`} accessibilityRole="button" hitSlop={8} className="w-11 h-11 items-center justify-center">
+                        {item.quantity === 1
+                          ? <Icon icon={Delete02Icon} size={15} color={dark ? "rgba(255,255,255,0.7)" : "rgba(10,10,14,0.6)"} />
+                          : <Icon icon={MinusSignIcon} size={15} color={dark ? "#fff" : "#0A0A0E"} />}
+                      </TouchableOpacity>
+                      <Text accessibilityLabel={`Quantity ${item.quantity}`} className={`w-6 text-center font-inter-bold text-[14px] ${dark ? "text-white" : "text-ink"}`}>{item.quantity}</Text>
+                      <TouchableOpacity onPress={() => step(item.id, item.quantity, 1)} accessibilityLabel={`Increase ${item.name}`} accessibilityRole="button" hitSlop={8} className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
+                        <Icon icon={PlusSignIcon} size={15} color={dark ? "#0A0A0E" : "#fff"} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </Enter>
               ))}
             </View>
 
-            {/* Options */}
-            <View className="border-t border-gray-200 pt-2 px-5">
-              <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-200">
-                <View className="flex-row items-center">
-                  <Gift color="#1C1B1B" size={24} />
-                  <Text className="text-lg font-bold ml-3">
-                    Make this order a gift
-                  </Text>
-                </View>
-                <ChevronRight color="#9CA3AF" size={24} />
-              </TouchableOpacity>
-              <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-200 mb-6">
-                <View className="flex-row items-center">
-                  <Tag color="#1C1B1B" size={24} />
-                  <Text className="text-lg font-bold ml-3">
-                    Add promo code
-                  </Text>
-                </View>
-                <ChevronRight color="#9CA3AF" size={24} />
-              </TouchableOpacity>
+            <View className={`h-px my-5 ${dark ? "bg-white/10" : "bg-ink/10"}`} />
+            <View className="gap-2">
+              <View className="flex-row justify-between">
+                <Text className={`text-[14px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Subtotal</Text>
+                <Text className={`text-[14px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>₦{subtotal.toLocaleString()}</Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className={`text-[14px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Delivery</Text>
+                <Text className={`text-[14px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>
+                  {freeDelivery ? "Free" : `₦${FEE.toLocaleString()}`}
+                </Text>
+              </View>
+              <View className="flex-row justify-between mt-1.5">
+                <Text className={`text-[18px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Total</Text>
+                <Text className={`text-[18px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>₦{total.toLocaleString()}</Text>
+              </View>
             </View>
 
-            {/* Alerts & Savings */}
-            {subtotal < 5000 && (
-              <View className="px-5 mb-4">
-                <View className="bg-gray-100 rounded-2xl p-4 flex-row items-center justify-between">
-                  <Text className="text-[14px] leading-snug flex-1 mr-4">
-                    Add ₦{(5000 - subtotal).toLocaleString()} more to avoid the
-                    delivery fee.
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => router.push("/(buyer)/browse")}
-                    className="bg-blue-900 px-4 py-2.5 rounded-xl"
-                  >
-                    <Text className="text-white font-bold text-[14px]">
-                      Surprise Me!
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            {savings > 0 && (
-              <View className="px-5 mb-4">
-                <View className="bg-blue-50 rounded-2xl p-4 items-center">
-                  <Text className="text-[15px]">
-                    You're saving ₦{Math.round(savings).toLocaleString()} with{" "}
-                    <Text className="font-bold">Vento</Text>
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* Subtotal */}
-            <View className="flex-row justify-between items-center py-6 mt-2 border-b border-gray-200 px-5">
-              <Text className="text-xl font-bold">Order Subtotal</Text>
-              <Text className="text-xl font-bold">
-                ₦{total.toLocaleString()}
-              </Text>
-            </View>
-
-            {/* Buy It Again */}
-            <View className="pt-6 px-5">
-              <View className="flex-row justify-between items-center mb-4">
-                <Text className="text-xl font-bold">Buy It Again</Text>
-                <TouchableOpacity className="flex-row items-center bg-gray-100 px-3 py-1.5 rounded-full">
-                  <Text className="text-sm font-bold">More items</Text>
-                  <ChevronRight size={16} />
-                </TouchableOpacity>
-              </View>
+            <View className="mt-6">
+              <AppButton
+                title={`Checkout • ₦${total.toLocaleString()}`}
+                variant={dark ? "white" : "ink"}
+                onPress={() => {
+                  if (!user) {
+                    toast("Sign in to finish checkout");
+                    router.push("/auth/login");
+                    return;
+                  }
+                  router.push("/(buyer)/checkout" as any);
+                }}
+              />
             </View>
           </>
         )}
       </ScrollView>
-
-      {/* Footer Checkout */}
-      {items.length > 0 && (
-        <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 pt-4 px-5 pb-6">
-          <TouchableOpacity
-            onPress={() => router.push("/(buyer)/checkout")}
-            className="w-full bg-blue-900 h-10 rounded-lg items-center justify-center"
-          >
-            <Text className="text-white text-sm font-medium">Checkout</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+    </SafeAreaView>
   );
 }

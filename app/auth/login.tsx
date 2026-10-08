@@ -1,28 +1,18 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
-
-const mockUsers: Record<string, { id: string; role: string }> = {
-  "admin@campus.edu": { id: "mock-admin-001", role: "admin" },
-  "ada@campus.edu": { id: "mock-seller-001", role: "seller" },
-  "chidi@campus.edu": { id: "mock-buyer-001", role: "buyer" },
-  "emeka@campus.edu": { id: "mock-agent-001", role: "delivery_agent" },
-};
+import { useTheme } from "../../src/contexts/ThemeContext";
+import { AppButton } from "../../src/components/ui/AppButton";
+import { TextField } from "../../src/components/ui/TextField";
+import { Enter } from "../../src/components/motion";
+import { toast } from "sonner-native";
 
 export default function Login() {
   const router = useRouter();
   const { signIn } = useAuth();
+  const { dark } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -35,7 +25,7 @@ export default function Login() {
       return false;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      setEmailError("Please enter a valid email address");
+      setEmailError("Enter a valid email address");
       return false;
     }
     setEmailError("");
@@ -44,156 +34,115 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!validateEmail(email)) return;
+    if (!password) {
+      toast.error("Enter your password");
+      return;
+    }
     setLoading(true);
     try {
-      await signIn(email, password);
-      const mockUser = mockUsers[email.toLowerCase()];
-      const role = mockUser?.role || "buyer";
-      if (role === "admin") {
-        router.replace("/(admin)");
-      } else if (role === "seller") {
-        router.replace("/(seller)");
-      } else if (role === "delivery_agent") {
-        router.replace("/(delivery)");
-      } else {
-        router.replace("/(buyer)");
-      }
+      const role = await signIn(email, password);
+      if (role === "admin") router.replace("/(admin)" as any);
+      else if (role === "seller") router.replace("/(seller)/dashboard" as any);
+      else if (role === "delivery_agent") router.replace("/(delivery)/dashboard" as any);
+      else router.replace("/(buyer)/browse" as any);
     } catch (error: any) {
-      Alert.alert("Login failed", error.message);
+      toast.error(error.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const navigateToSignup = () => {
-    router.push("/auth/signup");
-  };
-
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-white"
-    >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View className="flex-1 items-center justify-center px-5 py-12">
-          <View className="w-full max-w-md">
-            <Text className="text-2xl font-bold mb-2 text-gray-900">
-              Welcome Back
-            </Text>
-            <Text className="text-sm text-gray-500 mb-8">
-              Sign in to your account to continue.
-            </Text>
-
-            <View className="space-y-4">
-              <View>
-                <Text className="text-sm font-medium mb-2 text-gray-700">
-                  Email
-                </Text>
-                <TextInput
-                  className={`w-full h-10 rounded-lg border px-3 py-2 text-sm bg-white text-gray-900 ${
-                    emailError ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="Enter your email"
-                  placeholderTextColor="#9CA3AF"
-                  value={email}
-                  onChangeText={(val) => {
-                    setEmail(val);
-                    if (emailError) validateEmail(val);
-                  }}
-                  onBlur={() => validateEmail(email)}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                />
-                {emailError ? (
-                  <Text className="text-red-500 text-xs mt-1">{emailError}</Text>
-                ) : null}
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
+      <SafeAreaView edges={["top"]} className="flex-1">
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+          <View className="flex-1 px-6 pt-10 pb-8">
+            <Enter>
+              <View className={`w-11 h-11 rounded-full items-center justify-center mb-8 ${dark ? "bg-white" : "bg-ink"}`}>
+                <Text className={`text-lg font-inter-bold ${dark ? "text-ink" : "text-white"}`}>V</Text>
               </View>
-
-              <View>
-                <Text className="text-sm font-medium mb-2 text-gray-700">
-                  Password
-                </Text>
-                <View className="relative">
-                  <TextInput
-                    className="w-full h-10 rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm bg-white text-gray-900"
-                    placeholder="Enter your password"
-                    placeholderTextColor="#9CA3AF"
-                    secureTextEntry={!showPassword}
-                    value={password}
-                    onChangeText={setPassword}
-                    autoComplete="current-password"
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
-                    <Text className="text-gray-500 text-sm">
-                      {showPassword ? "Hide" : "Show"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <View className="flex-row justify-end">
-                <TouchableOpacity>
-                  <Text className="text-sm text-blue-700">
-                    Forgot password?
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity
-                onPress={handleLogin}
-                disabled={loading}
-                className="w-full h-10 rounded-lg bg-blue-900 items-center justify-center flex-row"
-              >
-                {loading ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text className="text-white text-sm font-semibold">
-                    Sign in
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <View className="flex-row items-center my-6">
-              <View className="flex-1 h-px bg-gray-200" />
-              <Text className="px-3 text-xs text-gray-500 uppercase">
-                Or continue with
+            </Enter>
+            <Enter delay={60}>
+              <Text className={`text-[32px] font-display-bold tracking-tight leading-[34px] ${dark ? "text-white" : "text-ink"}`}>
+                Welcome back
               </Text>
-              <View className="flex-1 h-px bg-gray-200" />
+              <Text className={`text-[15px] font-inter mt-2 mb-8 ${dark ? "text-white/55" : "text-ink/55"}`}>
+                Dinner is 30 minutes away.
+              </Text>
+            </Enter>
+
+            <Enter delay={100}>
+              <TextField
+                label="Email"
+                value={email}
+                onChangeText={(v) => {
+                  setEmail(v);
+                  if (emailError) validateEmail(v);
+                }}
+                onBlur={() => validateEmail(email)}
+                placeholder="you@campus.edu"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                error={emailError}
+              />
+            </Enter>
+
+            <Enter delay={140}>
+              <View className="mt-4">
+                <TextField
+                  label="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="••••••••"
+                  secure
+                  showSecure={showPassword}
+                  onToggleSecure={() => setShowPassword(!showPassword)}
+                  autoComplete="current-password"
+                />
+              </View>
+            </Enter>
+
+            <View className="flex-row justify-end mt-3 mb-7">
+              <TouchableOpacity onPress={() => router.push("/auth/forgot")} className="active:opacity-60">
+                <Text className={`text-[14px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>Forgot password?</Text>
+              </TouchableOpacity>
             </View>
 
-            <View className="space-y-3">
-              <TouchableOpacity className="w-full h-10 rounded-lg border border-gray-300 bg-white items-center justify-center flex-row">
-                <Text className="text-sm font-medium text-gray-700">
-                  Google
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="w-full h-10 rounded-lg border border-gray-300 bg-white items-center justify-center flex-row">
-                <Text className="text-sm font-medium text-gray-700">
-                  Apple
-                </Text>
-              </TouchableOpacity>
+            <AppButton title="Sign in" variant={dark ? "white" : "ink"} loading={loading} onPress={handleLogin} />
+
+            <TouchableOpacity onPress={() => router.replace("/(buyer)/browse" as any)} className="items-center mt-5 active:opacity-60">
+              <Text className={`text-[14px] font-inter-semibold ${dark ? "text-white/70" : "text-ink/60"}`}>
+                Continue as guest →
+              </Text>
+            </TouchableOpacity>
+
+            <View className="flex-row items-center my-7">
+              <View className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-ink/10"}`} />
+              <Text className={`px-3 text-[11px] font-inter-bold tracking-[1px] ${dark ? "text-white/40" : "text-ink/40"}`}>OR</Text>
+              <View className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-ink/10"}`} />
             </View>
 
-            <TouchableOpacity
-              onPress={navigateToSignup}
-              className="w-full items-center mt-6"
-            >
-              <Text className="text-sm text-gray-500">
-                Need an account?{" "}
-                <Text className="font-semibold underline">Create one</Text>
+            <View className="flex-row gap-3">
+              {["Google", "Apple"].map((p) => (
+                <TouchableOpacity
+                  key={p}
+                  onPress={() => toast(`${p} sign-in comes with the full app build`)}
+                  className={`flex-1 h-[52px] rounded-full border items-center justify-center active:opacity-70 ${dark ? "bg-white/10 border-white/15" : "bg-ink/[0.04] border-ink/10"}`}
+                >
+                  <Text className={`text-[14px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{p}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity onPress={() => router.push("/auth/signup")} className="items-center mt-8 active:opacity-60">
+              <Text className={`text-[14px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
+                Need an account? <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Create one</Text>
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 }

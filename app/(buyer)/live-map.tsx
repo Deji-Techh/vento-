@@ -1,142 +1,110 @@
-import { View, Text, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, TouchableOpacity, Linking } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Heart, MessageCircle, Phone, ShoppingBag, Navigation } from "lucide-react-native";
-
-const { width, height } = Dimensions.get("window");
+import { useTheme } from "../../src/contexts/ThemeContext";
+import { toast } from "sonner-native";
+import { AppButton } from "../../src/components/ui/AppButton";
+import { Enter } from "../../src/components/motion";
+import { Icon } from "../../src/components/ui/Icon";
+import { LiveMapView } from "../../src/components/LiveMapView";
+import {
+  ArrowLeft01Icon,
+  FavouriteIcon,
+  BubbleChatIcon,
+  PhoneIcon,
+  ShoppingBag02Icon,
+  Navigation01Icon,
+} from "../../src/components/icons";
 
 export default function LiveMap() {
   const router = useRouter();
+  const { dark } = useTheme();
 
   return (
-    <View className="flex-1 bg-gray-50">
-      {/* Map Background - Grid Pattern */}
-      <View
-        className="absolute inset-0"
-        style={{
-          backgroundColor: "#f8f9fa",
-        }}
-      >
-        {/* Route SVG placeholder - using a View with border */}
-        <View
-          className="absolute border-l-4 border-blue-900 rounded-full"
-          style={{
-            top: 200,
-            left: 100,
-            width: 4,
-            height: 200,
-            transform: [{ rotate: "15deg" }],
-          }}
-        />
-
-        {/* Origin Marker (Restaurant) */}
-        <View
-          className="absolute flex-col items-center"
-          style={{ top: 180, left: 100 }}
-        >
-          <View className="w-10 h-10 bg-blue-900 rounded-full items-center justify-center shadow-lg">
-            <Text className="text-white text-sm font-bold">R</Text>
-          </View>
-        </View>
-
-        {/* Current Location Marker (Rider) */}
-        <View
-          className="absolute flex-row items-center"
-          style={{ top: 300, left: 130 }}
-        >
-          <View className="w-12 h-12 bg-blue-900 rounded-full items-center justify-center shadow-lg">
-            <Navigation color="#FFFFFF" size={20} />
-          </View>
-          <View className="ml-2 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-200 flex-row items-center gap-1">
-            <Navigation color="#000080" size={12} />
-            <Text className="text-blue-900 text-xs font-semibold">1 KM</Text>
-          </View>
-        </View>
-
-        {/* Destination Marker (Home) */}
-        <View
-          className="absolute flex-col items-center"
-          style={{ top: 380, left: 230 }}
-        >
-          <View className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-lg border border-gray-200">
-            <Text className="text-blue-900 text-sm font-bold">D</Text>
-          </View>
-        </View>
+    <View className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
+      <View className="absolute inset-0 px-5 pt-24">
+        <LiveMapView height={520} />
       </View>
 
-      {/* Top App Bar */}
-      <View className="w-full flex-row justify-between items-center px-5 h-14 z-50 bg-transparent mt-4">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white shadow-sm items-center justify-center"
-        >
-          <ArrowLeft color="#1C1B1B" size={20} />
-        </TouchableOpacity>
-        <Text className="text-base font-bold bg-white/80 px-4 py-1 rounded-full backdrop-blur-sm">
-          Food
-        </Text>
-        <TouchableOpacity className="w-10 h-10 rounded-full bg-white shadow-sm items-center justify-center">
-          <Heart color="#000080" size={20} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Spacer */}
-      <View className="flex-1" />
-
-      {/* Bottom Sheet */}
-      <View className="w-full bg-white rounded-t-[32px] shadow-[0_-8px_24px_rgba(0,0,128,0.08)] pb-8 z-50">
-        {/* Drag Handle */}
-        <View className="w-full items-center pt-4 pb-2">
-          <View className="w-12 h-1.5 bg-gray-200 rounded-full" />
-        </View>
-
-        <View className="px-5 pb-6 pt-2 items-center">
-          {/* Top Icon */}
-          <View className="w-14 h-14 bg-blue-900 rounded-2xl items-center justify-center shadow-sm mb-4">
-            <ShoppingBag color="#FFFFFF" size={28} />
-          </View>
-
-          {/* Header Info */}
-          <Text className="text-2xl font-bold mb-1 text-center">
-            Tracking Order
-          </Text>
-          <Text className="text-xs text-blue-900 uppercase tracking-[0.15em] font-semibold mb-6">
-            INVOICE : 12A394
-          </Text>
-
-          {/* ETA */}
-          <View className="flex-row items-baseline gap-2 mb-8">
-            <Text className="text-base text-gray-500">Arrived in</Text>
-            <Text className="text-3xl font-bold">10 : 32</Text>
-            <Text className="text-base text-gray-500">min</Text>
-          </View>
-
-          {/* Action Buttons */}
-          <View className="flex-row justify-center gap-12 mb-8 w-full">
-            <TouchableOpacity className="items-center gap-3">
-              <View className="w-14 h-14 rounded-full bg-blue-900 items-center justify-center shadow-sm">
-                <MessageCircle color="#FFFFFF" size={24} />
-              </View>
-              <Text className="text-xs text-gray-500">Message</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="items-center gap-3">
-              <View className="w-14 h-14 rounded-full bg-blue-900 items-center justify-center shadow-sm">
-                <Phone color="#FFFFFF" size={24} />
-              </View>
-              <Text className="text-xs text-gray-500">Call Driver</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Primary Action */}
+      <SafeAreaView edges={["top", "left", "right"]} className="z-50">
+        <View className="w-full flex-row justify-between items-center px-6 h-14 mt-2">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="w-full h-14 bg-blue-900 rounded-full items-center justify-center shadow-sm"
+            activeOpacity={0.85}
+            className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}
           >
-            <Text className="text-white font-bold text-sm uppercase tracking-widest">
-              Order Details
-            </Text>
+            <Icon icon={ArrowLeft01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+          </TouchableOpacity>
+          <View className={`border px-5 py-2 rounded-full ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}>
+            <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Food</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => toast("Saved kitchens live here once favourites ship")}
+            accessibilityLabel="Save kitchen"
+            activeOpacity={0.85}
+            className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}
+          >
+            <Icon icon={FavouriteIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
           </TouchableOpacity>
         </View>
+
+        <View className={`mx-6 mt-3 border rounded-[24px] p-4 flex-row items-center justify-between ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}>
+          <View className="flex-row items-center gap-3">
+            <View className={`w-11 h-11 rounded-2xl items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
+              <Icon icon={ShoppingBag02Icon} size={20} color={dark ? "#0A0A0E" : "#fff"} />
+            </View>
+            <View>
+              <Text className={`text-[15px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Demo preview</Text>
+              <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`}>Live rider appears here with orders</Text>
+            </View>
+          </View>
+          <View className={`border px-3 py-1.5 rounded-full ${dark ? "bg-white/10 border-white/10" : "bg-ink/[0.05] border-ink/10"}`}>
+            <Text className={`text-[11px] font-inter-bold tracking-[1px] ${dark ? "text-white" : "text-ink"}`}>LIVE</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+
+      <View className="flex-1" />
+
+      <Enter delay={80}>
+        <View className={`w-full rounded-t-[32px] border-t border-x pb-8 z-50 ${dark ? "bg-card-dark border-white/10" : "bg-white border-border"}`}>
+        <View className="w-full items-center pt-4 pb-2">
+          <View className={`w-12 h-1.5 rounded-full ${dark ? "bg-white/15" : "bg-ink/15"}`} />
+        </View>
+
+        <View className="px-6 pb-2 pt-2 items-center">
+          <Text className={`text-[11px] uppercase tracking-[2px] font-inter-bold mb-2 ${dark ? "text-white/50" : "text-ink/50"}`}>
+            Demo preview
+          </Text>
+          <Text className={`text-[22px] font-inter-bold mb-1 text-center tracking-tight ${dark ? "text-white" : "text-ink"}`}>
+            Tracking connects with live orders
+          </Text>
+
+          <View className="flex-row items-baseline gap-2 mb-7 mt-2">
+            <Text className={`text-[15px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Typical delivery</Text>
+            <Text className={`text-3xl font-inter-bold ${dark ? "text-white" : "text-ink"}`}>~30</Text>
+            <Text className={`text-[15px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>min</Text>
+          </View>
+
+          <View className="flex-row justify-center gap-10 mb-7 w-full">
+            <TouchableOpacity activeOpacity={0.85} className="items-center gap-2" onPress={() => router.push("/(buyer)/chat" as any)}>
+              <View className={`w-14 h-14 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-ink/[0.05] border-ink/10"}`}>
+                <Icon icon={BubbleChatIcon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
+              </View>
+              <Text className={`text-[12px] font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>Message</Text>
+            </TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.85} className="items-center gap-2" onPress={() => toast("Rider number appears with live orders")}>
+              <View className={`w-14 h-14 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-ink/[0.05] border-ink/10"}`}>
+                <Icon icon={PhoneIcon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
+              </View>
+              <Text className={`text-[12px] font-inter-semibold ${dark ? "text-white/55" : "text-ink/55"}`}>Call driver</Text>
+            </TouchableOpacity>
+          </View>
+
+          <AppButton title="View orders" variant={dark ? "white" : "ink"} onPress={() => router.push("/(buyer)/orders" as any)} />
+        </View>
       </View>
+      </Enter>
     </View>
   );
 }

@@ -5,3 +5,10 @@
 :root {
   --css-interop-darkMode: class;
 }
+
+html,
+body,
+#root {
+  background: #000000;
+  height: 100%;
+}

@@ -1,125 +1,105 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../../src/contexts/AuthContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
+import { supabase } from "../../src/lib/supabase";
+import { AppButton } from "../../src/components/ui/AppButton";
+import { Enter } from "../../src/components/motion";
+import { Icon } from "../../src/components/ui/Icon";
+import { ShoppingBag02Icon, Store01Icon, DeliveryBox01Icon } from "../../src/components/icons";
+import { toast } from "sonner-native";
 
 const roles = [
-  {
-    id: "buyer",
-    label: "Buyer",
-    description: "Shop and get groceries delivered.",
-    icon: "🛒",
-  },
-  {
-    id: "seller",
-    label: "Seller",
-    description: "List your store and reach more customers.",
-    icon: "🏪",
-  },
-  {
-    id: "rider",
-    label: "Rider",
-    description: "Deliver orders and earn on your schedule.",
-    icon: "🚴",
-  },
+  { id: "buyer", label: "Order food", description: "Hot meals, delivered fast.", icon: ShoppingBag02Icon },
+  { id: "seller", label: "Sell food", description: "Your kitchen, more orders.", icon: Store01Icon },
+  { id: "rider", label: "Deliver", description: "Earn on your schedule.", icon: DeliveryBox01Icon },
 ];
 
 export default function ChooseRole() {
   const router = useRouter();
+  const { user, refreshProfile } = useAuth();
+  const { dark } = useTheme();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const handleContinue = async () => {
-    if (!selectedRole) return;
-
-    const existingUser = await AsyncStorage.getItem("mock_user");
-    const parsed = existingUser ? JSON.parse(existingUser) : {};
-    const updatedUser = { ...parsed, role: selectedRole };
-    await AsyncStorage.setItem("mock_user", JSON.stringify(updatedUser));
-
-    if (selectedRole === "buyer") {
-      router.replace("/(buyer)");
-    } else if (selectedRole === "seller") {
-      router.replace("/(seller)");
-    } else if (selectedRole === "rider") {
-      router.replace("/(delivery)");
+    if (!selectedRole || saving) return;
+    // NEVER add admin here. Admin access is login-only via admin@vento.ng
+    // and is granted server-side (profiles.role='admin'). See src/components/AuthGuard.tsx.
+    const ALLOWED = ["buyer", "seller", "delivery_agent"] as const;
+    const role = selectedRole === "rider" ? "delivery_agent" : selectedRole;
+    if (!(ALLOWED as readonly string[]).includes(role)) {
+      toast.error("Invalid role");
+      return;
+    }
+    setSaving(true);
+    try {
+      if (user) {
+        const { error } = await supabase.from("profiles").update({ role }).eq("id", user.id);
+        if (error) throw error;
+        await refreshProfile();
+      }
+      if (role === "buyer") router.replace("/(buyer)/browse" as any);
+      else if (role === "seller") router.replace("/(seller)/dashboard" as any);
+      else router.replace("/(delivery)/dashboard" as any);
+    } catch {
+      toast.error("Couldn't save your role — try again");
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <View className="flex-1 bg-white pt-8 pb-5">
-      <View className="items-center mb-8 px-5">
-        <Image
-          source={require("../../assets/vento-logo.png")}
-          className="h-12 w-40 mb-12"
-          resizeMode="contain"
-        />
-        <Text className="text-[28px] font-bold text-blue-900 text-center mb-2">
-          How would you like to join Vento?
-        </Text>
-        <Text className="text-base text-gray-500 text-center">
-          Select a role to get started.
-        </Text>
-      </View>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top", "bottom"]}>
+      <View className="flex-1 px-6 pt-8">
+        <Enter>
+          <Text className={`text-[11px] font-inter-bold tracking-[2px] uppercase text-center ${dark ? "text-white/50" : "text-ink/50"}`}>Vento</Text>
+          <Text className={`text-[30px] font-display-bold tracking-tight text-center mt-2 ${dark ? "text-white" : "text-ink"}`}>What brings you?</Text>
+        </Enter>
 
-      <View className="flex-1 px-5 space-y-4">
-        {roles.map((role) => {
-          const isSelected = selectedRole === role.id;
-          return (
-            <TouchableOpacity
-              key={role.id}
-              onPress={() => setSelectedRole(role.id)}
-              className={`flex-row items-center p-4 rounded-xl border ${
-                isSelected
-                  ? "border-blue-900 bg-blue-50"
-                  : "border-gray-200 bg-white"
-              }`}
-            >
-              <View
-                className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${
-                  isSelected ? "bg-blue-900" : "bg-gray-100"
-                }`}
-              >
-                <Text className="text-2xl">{role.icon}</Text>
-              </View>
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-gray-900">
-                  {role.label}
-                </Text>
-                <Text className="text-sm text-gray-500">{role.description}</Text>
-              </View>
-              <View
-                className={`w-6 h-6 rounded-full border-2 items-center justify-center ml-2 ${
-                  isSelected ? "border-blue-900" : "border-gray-300"
-                }`}
-              >
-                {isSelected && (
-                  <View className="w-3 h-3 rounded-full bg-blue-900" />
-                )}
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+        <View className="gap-3 mt-9">
+          {roles.map((r, i) => {
+            const active = selectedRole === r.id;
+            return (
+              <Enter key={r.id} delay={60 + i * 50}>
+                <TouchableOpacity
+                  onPress={() => setSelectedRole(r.id)}
+                  activeOpacity={0.92}
+                  className={`flex-row items-center p-5 rounded-[24px] ${
+                    active
+                      ? dark
+                        ? "bg-white"
+                        : "bg-ink"
+                      : dark
+                        ? "bg-white/[0.06] border border-white/10"
+                        : "bg-white border border-border"
+                  }`}
+                >
+                  <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-4 ${active ? (dark ? "bg-ink" : "bg-white") : dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
+                    <Icon
+                      icon={r.icon}
+                      size={22}
+                      color={active ? (dark ? "#fff" : "#0A0A0E") : dark ? "rgba(255,255,255,0.6)" : "rgba(10,10,14,0.55)"}
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className={`text-[17px] font-inter-bold tracking-tight ${active ? (dark ? "text-ink" : "text-white") : dark ? "text-white" : "text-ink"}`}>{r.label}</Text>
+                    <Text className={`text-[13px] font-inter mt-0.5 ${active ? (dark ? "text-ink/60" : "text-white/60") : dark ? "text-white/50" : "text-ink/55"}`}>{r.description}</Text>
+                  </View>
+                  <View className={`w-6 h-6 rounded-full items-center justify-center ${active ? (dark ? "bg-ink" : "bg-white") : dark ? "border-2 border-white/20" : "border-2 border-ink/20"}`}>
+                    {active && <Text className={`text-[11px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>✓</Text>}
+                  </View>
+                </TouchableOpacity>
+              </Enter>
+            );
+          })}
+        </View>
       </View>
-
-      <View className="px-5 pb-5">
-        <TouchableOpacity
-          onPress={handleContinue}
-          disabled={!selectedRole}
-          className={`w-full h-14 rounded-full items-center justify-center ${
-            selectedRole
-              ? "bg-blue-900 shadow-md"
-              : "bg-gray-200"
-          }`}
-        >
-          <Text
-            className={`text-base font-semibold ${
-              selectedRole ? "text-white" : "text-gray-500"
-            }`}
-          >
-            Continue
-          </Text>
-        </TouchableOpacity>
+      <View className="px-6 pb-2">
+        <AppButton title="Continue" variant={dark ? "white" : "ink"} disabled={!selectedRole} loading={saving} onPress={handleContinue} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

@@ -1,435 +1,356 @@
-import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Platform, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useCart } from "../../src/stores/cartStore";
+import { useTheme } from "../../src/contexts/ThemeContext";
+import { fireFromEvent } from "../../src/stores/flyStore";
+import { supabase } from "../../src/lib/supabase";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
+import { Icon } from "../../src/components/ui/Icon";
 import {
-  Search,
-  Camera,
-  ChevronRight,
-  Truck,
-  RotateCcw,
-  ShieldCheck,
-  Zap,
-  Tag,
-  Clock,
-  Star,
-} from "lucide-react-native";
+  Search01Icon,
+  Notification01Icon,
+  BubbleChatIcon,
+  StarIcon,
+  PlusSignIcon,
+} from "../../src/components/icons";
+import { SectionHeader, Eyebrow } from "../../src/components/ui/SectionHeader";
+import { StoryRow } from "../../src/components/ui/Cards";
+import { EmptyState } from "../../src/components/ui/Cards";
+import { Skeleton } from "../../src/components/ui/Skeleton";
+import { Enter } from "../../src/components/motion";
 
-const categories = [
-  { id: "all", label: "All" },
-  { id: "grocery", label: "Grocery" },
-  { id: "restaurants", label: "Restaurants" },
-  { id: "convenience", label: "Convenience" },
-  { id: "alcohol", label: "Alcohol" },
-  { id: "pharmacy", label: "Pharmacy" },
-];
+const moods = ["All", "Spicy", "Comfort", "Fresh", "Fast"] as const;
 
-const flashDeals = [
-  {
-    id: "flash-1",
-    name: "Chicken & Chips",
-    image: "https://images.unsplash.com/photo-1562967914-608f82629710?w=400",
-    price: 2500,
-    seller_id: "seller-1",
-    seller_name: "Tasty Bites",
-  },
-  {
-    id: "flash-2",
-    name: "Jollof Rice Combo",
-    image: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=400",
-    price: 1800,
-    seller_id: "seller-2",
-    seller_name: "Mama Cass",
-  },
-];
+function greeting() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 9) return "Early bird";
+  if (h >= 9 && h < 12) return "Good morning";
+  if (h >= 12 && h < 15) return "Good afternoon";
+  if (h >= 15 && h < 17) return "Slow afternoon";
+  if (h >= 17 && h < 21) return "Good evening";
+  return "Night owl";
+}
 
-const clearanceDeals = [
-  {
-    id: "clear-1",
-    name: "Fresh Fruit Bowl",
-    image: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=400",
-    price: 1200,
-    seller_id: "seller-3",
-    seller_name: "Fresh Mart",
-  },
-  {
-    id: "clear-2",
-    name: "Smoothie Pack",
-    image: "https://images.unsplash.com/photo-1502741224143-90386d7f8c82?w=400",
-    price: 800,
-    seller_id: "seller-3",
-    seller_name: "Fresh Mart",
-  },
-];
-
-const popularItems = [
-  {
-    id: "pop-1",
-    name: "Pepperoni Pizza Slice",
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400",
-    price: 1500,
-    rating: 4.5,
-    delivery: "25 min",
-    seller_id: "seller-4",
-    seller_name: "Pizzeria Delfina",
-  },
-  {
-    id: "pop-2",
-    name: "Grilled Chicken Bowl",
-    image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400",
-    price: 2200,
-    rating: 4.7,
-    delivery: "30 min",
-    seller_id: "seller-5",
-    seller_name: "Grill House",
-  },
-  {
-    id: "pop-3",
-    name: "Suya Platter",
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400",
-    price: 3000,
-    rating: 4.8,
-    delivery: "20 min",
-    seller_id: "seller-6",
-    seller_name: "Suya Spot",
-  },
-  {
-    id: "pop-4",
-    name: "Fish & Chips",
-    image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=400",
-    price: 2800,
-    rating: 4.4,
-    delivery: "35 min",
-    seller_id: "seller-7",
-    seller_name: "Ocean Basket",
-  },
-  {
-    id: "pop-5",
-    name: "Burger Meal",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400",
-    price: 1800,
-    rating: 4.6,
-    delivery: "22 min",
-    seller_id: "seller-8",
-    seller_name: "Burger King",
-  },
-  {
-    id: "pop-6",
-    name: "Shawarma Wrap",
-    image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=400",
-    price: 1200,
-    rating: 4.3,
-    delivery: "18 min",
-    seller_id: "seller-9",
-    seller_name: "Shawarma Express",
-  },
-];
-
-const expressDelivery = [
-  {
-    id: "exp-1",
-    name: "Instant Noodles Pack",
-    image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400",
-    price: 500,
-    badge: "Under 15 min",
-    seller_id: "seller-10",
-    seller_name: "Quick Mart",
-  },
-  {
-    id: "exp-2",
-    name: "Cold Drink Combo",
-    image: "https://images.unsplash.com/photo-1581006852262-e4307cf6283a?w=400",
-    price: 800,
-    badge: "Under 15 min",
-    seller_id: "seller-10",
-    seller_name: "Quick Mart",
-  },
-];
+type Item = { id: string; name: string; price: number; image_url: string | null; seller_id: string; seller_name: string; category: string };
+type Kitchen = { id: string; label: string; image: string };
 
 export default function Browse() {
   const router = useRouter();
   const { addItem } = useCart();
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const { dark } = useTheme();
+  const [mood, setMood] = useState<(typeof moods)[number]>("All");
+  const [query, setQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [items, setItems] = useState<Item[]>([]);
+  const [kitchens, setKitchens] = useState<Kitchen[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
-  const handleAddToCart = (item: { id: string; name: string; price: number; image: string; seller_id: string; seller_name: string }) => {
-    addItem(
-      {
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        image_url: item.image,
-        seller_id: item.seller_id,
-        seller_name: item.seller_name,
-      },
-      1
-    );
-    Alert.alert("Added to cart", `${item.name} added to your cart`);
+  const load = useCallback(async () => {
+    setError("");
+    try {
+      const { data: sellers, error: se } = await supabase
+        .from("sellers")
+        .select("id, store_name, description")
+        .eq("approved", true)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (se) throw se;
+      const sellerName = new Map((sellers || []).map((s: any) => [s.id, s.store_name]));
+      setKitchens((sellers || []).map((s: any) => ({ id: s.id, label: s.store_name, image: "" })));
+      const { data: menu, error: me } = await supabase
+        .from("menu_items")
+        .select("id, name, price, image_url, seller_id, category")
+        .eq("available", true)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (me) throw me;
+      setItems(
+        (menu || []).map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          price: m.price,
+          image_url: m.image_url,
+          seller_id: m.seller_id,
+          seller_name: sellerName.get(m.seller_id) || "Kitchen",
+          category: m.category || "mains",
+        }))
+      );
+    } catch (e: any) {
+      setError(e.message || "Couldn't load listings");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
+    load();
   };
 
+  const buzz = () => {
+    if (Platform.OS !== "web") Haptics.selectionAsync().catch(() => {});
+  };
+
+  const handleAdd = (item: Item, e?: any) => {
+    addItem({ id: item.id, name: item.name, price: item.price, image_url: item.image_url || "", seller_id: item.seller_id, seller_name: item.seller_name }, 1);
+    if (e) fireFromEvent(e);
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
+    toast.success(`${item.name} added to bag`, { action: { label: "View bag", onClick: () => router.push("/(buyer)/cart" as any) } });
+  };
+
+  const q = query.trim().toLowerCase();
+  const suggestions = q ? items.filter((i) => `${i.name} ${i.seller_name}`.toLowerCase().includes(q)).slice(0, 3) : [];
+  const kitchenHits = q ? kitchens.filter((s) => s.label.toLowerCase().includes(q)).slice(0, 2) : [];
+  const showSuggest = focused && q.length > 0;
+
+  const visible = items.filter((i) => {
+    if (q && !`${i.name} ${i.seller_name}`.toLowerCase().includes(q)) return false;
+    if (mood !== "All" && !`${i.category} ${i.name}`.toLowerCase().includes(mood.toLowerCase())) return false;
+    return true;
+  });
+
+  const hero = visible[0] || items[0];
+
   return (
-    <ScrollView className="flex-1 bg-white pb-4">
-      {/* Search Bar */}
-      <View className="px-4 pt-10 pb-3">
-        <View className="flex-row items-center gap-2">
-          <View className="flex-1 flex-row items-center bg-gray-100 rounded-full border border-gray-200 px-4 py-2.5">
-            <Search color="#9CA3AF" size={20} />
-            <TextInput
-              placeholder="What are you craving?"
-              placeholderTextColor="#9CA3AF"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              className="flex-1 bg-transparent text-sm ml-2"
-            />
-            <TouchableOpacity className="ml-2 p-1">
-              <Camera color="#9CA3AF" size={20} />
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity className="w-11 h-11 bg-blue-900 rounded-full items-center justify-center">
-            <Search color="#FFFFFF" size={20} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Category Tabs */}
-      <View className="border-b border-gray-200">
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="px-4 py-3"
-        >
-          {categories.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              onPress={() => setActiveCategory(cat.id)}
-              className="mr-6"
-            >
-              <Text
-                className={`text-sm font-semibold pb-1 ${
-                  activeCategory === cat.id
-                    ? "text-gray-900 border-b-2 border-blue-900"
-                    : "text-gray-500"
-                }`}
-              >
-                {cat.label}
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 130 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={dark ? "#fff" : "#0A0A0E"}
+            title="Hunting cravings…"
+          />
+        }
+      >
+        <Enter>
+          <View className="px-5 mt-2">
+            <View className="flex-row items-center justify-between gap-3">
+              <Text className={`text-[30px] font-display-bold tracking-tight leading-[32px] flex-1 ${dark ? "text-white" : "text-ink"}`}>
+                {greeting()}
               </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+              <View className="flex-row items-center gap-1 shrink-0">
+                <TouchableOpacity
+                  onPress={() => router.push("/(buyer)/chat" as any)}
+                  accessibilityLabel="Open chat"
+                  accessibilityRole="button"
+                  className="w-11 h-11 items-center justify-center"
+                >
+                  <Icon icon={BubbleChatIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.push("/(buyer)/notifications" as any)}
+                  accessibilityLabel="Open notifications"
+                  accessibilityRole="button"
+                  className="w-11 h-11 items-center justify-center"
+                >
+                  <Icon icon={Notification01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View className={`flex-row items-center rounded-full pl-4 pr-4 py-3.5 mt-4 ${dark ? "bg-white/[0.07]" : "bg-ink/[0.05]"}`}>
+              <Icon icon={Search01Icon} size={17} color={dark ? "rgba(255,255,255,0.45)" : "rgba(10,10,14,0.4)"} />
+              <TextInput
+                placeholder="Jollof, suya, shawarma…"
+                placeholderTextColor={dark ? "rgba(255,255,255,0.38)" : "rgba(10,10,14,0.35)"}
+                value={query}
+                onChangeText={setQuery}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setTimeout(() => setFocused(false), 150)}
+                onSubmitEditing={() => setFocused(false)}
+                returnKeyType="search"
+                accessibilityLabel="Search food and kitchens"
+                className={`flex-1 text-[15px] font-inter ml-2 ${dark ? "text-white" : "text-ink"}`}
+              />
+              {q ? (
+                <TouchableOpacity onPress={() => setQuery("")} hitSlop={8} accessibilityLabel="Clear search">
+                  <Text className={`text-[13px] font-inter-medium ${dark ? "text-white/50" : "text-ink/40"}`}>Clear</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
 
-      <View className="gap-4">
-        {/* Free Shipping / Returns Banner */}
-        <View className="mx-4 mt-4 bg-gray-50 rounded-lg border border-gray-200 p-3 flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <Truck color="#000080" size={20} />
-            <View>
-              <Text className="text-sm font-semibold">Free delivery</Text>
-              <Text className="text-xs text-gray-500">
-                on orders above ₦3,000
-              </Text>
-            </View>
-          </View>
-          <View className="w-px h-8 bg-gray-200" />
-          <View className="flex-row items-center gap-2">
-            <RotateCcw color="#000080" size={20} />
-            <View>
-              <Text className="text-sm font-semibold">Easy returns</Text>
-              <Text className="text-xs text-gray-500">for EVERY order</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Price Match Banner */}
-        <TouchableOpacity className="mx-4 bg-blue-900 rounded-lg p-3 flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <ShieldCheck color="#FFFFFF" size={20} />
-            <Text className="text-sm font-bold text-white">
-              Vento Price Guarantee — Never overpay
-            </Text>
-          </View>
-          <ChevronRight color="#FFFFFF" size={20} />
-        </TouchableOpacity>
-
-        {/* Flash & Clearance Deals */}
-        <View className="px-4 flex-row gap-3">
-          {/* Flash Deals */}
-          <View className="flex-1 bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
-            <View className="p-3 flex-row items-center gap-1">
-              <Zap color="#000080" size={16} />
-              <Text className="text-sm font-bold">Flash Deals</Text>
-              <ChevronRight color="#9CA3AF" size={16} style={{ marginLeft: "auto" }} />
-            </View>
-            <View className="px-3 pb-3 flex-row flex-wrap gap-2">
-              {flashDeals.map((item) => (
-                <View key={item.id} className="w-[48%]">
-                  <Image
-                    source={{ uri: item.image }}
-                    className="w-full aspect-square rounded-lg mb-1"
-                    resizeMode="cover"
-                  />
-                  <Text className="text-xs font-semibold truncate">
-                    {item.name}
-                  </Text>
-                  <View className="flex-row items-center justify-between mt-1">
-                    <Text className="text-xs font-bold text-blue-900">
-                      ₦{item.price.toLocaleString()}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => handleAddToCart(item)}
-                      className="w-7 h-7 bg-blue-900 rounded-full items-center justify-center"
-                    >
-                      <Text className="text-white text-sm font-bold">+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          {/* Clearance */}
-          <View className="flex-1 bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
-            <View className="p-3 flex-row items-center gap-1">
-              <Tag color="#000080" size={16} />
-              <Text className="text-sm font-bold">Clearance</Text>
-              <ChevronRight color="#9CA3AF" size={16} style={{ marginLeft: "auto" }} />
-            </View>
-            <View className="px-3 pb-3 flex-row flex-wrap gap-2">
-              {clearanceDeals.map((item) => (
-                <View key={item.id} className="w-[48%]">
-                  <Image
-                    source={{ uri: item.image }}
-                    className="w-full aspect-square rounded-lg mb-1"
-                    resizeMode="cover"
-                  />
-                  <Text className="text-xs font-semibold truncate">
-                    {item.name}
-                  </Text>
-                  <View className="flex-row items-center justify-between mt-1">
-                    <Text className="text-xs font-bold text-blue-900">
-                      ₦{item.price.toLocaleString()}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => handleAddToCart(item)}
-                      className="w-7 h-7 bg-blue-900 rounded-full items-center justify-center"
-                    >
-                      <Text className="text-white text-sm font-bold">+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        </View>
-
-        {/* Popular Items Grid */}
-        <View className="px-4">
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-lg font-bold">Popular Near You</Text>
-            <TouchableOpacity className="flex-row items-center gap-1">
-              <Text className="text-sm text-blue-900 font-medium">See all</Text>
-              <ChevronRight color="#000080" size={16} />
-            </TouchableOpacity>
-          </View>
-          <View className="flex-row flex-wrap gap-3">
-            {popularItems.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                onPress={() =>
-                  router.push(`/(buyer)/food-details?id=${item.id}`)
-                }
-                className="w-[48%] bg-gray-50 rounded-xl border border-gray-200 overflow-hidden"
-              >
-                <View className="relative">
-                  <Image
-                    source={{ uri: item.image }}
-                    className="w-full aspect-square"
-                    resizeMode="cover"
-                  />
+            {showSuggest && (
+              <View className={`mt-2 rounded-[20px] border overflow-hidden ${dark ? "bg-surface-dark border-white/10" : "bg-white border-border"}`}>
+                {suggestions.map((s) => (
                   <TouchableOpacity
-                    onPress={(e) => {
-                      e.stopPropagation?.();
-                      handleAddToCart(item);
+                    key={s.id}
+                    onPress={() => {
+                      setFocused(false);
+                      router.push(`/(buyer)/food-details?id=${s.id}` as any);
                     }}
-                    className="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full shadow-md items-center justify-center border border-gray-200"
+                    className={`flex-row items-center gap-3 px-4 py-3 border-b ${dark ? "border-white/[0.07]" : "border-ink/[0.06]"}`}
                   >
-                    <Text className="text-lg text-gray-900 leading-none">+</Text>
+                    <Icon icon={Search01Icon} size={15} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.35)"} />
+                    <Text className={`text-[14px] font-inter-medium flex-1 ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>{s.name}</Text>
+                    <Text className={`text-[12px] font-inter-bold ${dark ? "text-white/50" : "text-ink/50"}`}>₦{s.price.toLocaleString()}</Text>
                   </TouchableOpacity>
-                </View>
-                <View className="p-2.5">
-                  <Text className="text-sm font-semibold truncate">
-                    {item.name}
-                  </Text>
-                  <View className="flex-row items-center gap-1 mt-0.5">
-                    <Clock color="#9CA3AF" size={12} />
-                    <Text className="text-xs text-gray-500">{item.delivery}</Text>
-                    <Text className="text-xs text-gray-500">•</Text>
-                    <Star color="#000080" size={12} />
-                    <Text className="text-xs text-gray-500">{item.rating}</Text>
-                  </View>
-                  <Text className="text-sm font-bold text-gray-900 mt-1">
-                    ₦{item.price.toLocaleString()}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Express Delivery */}
-        <View className="px-4">
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-lg font-bold">Express Delivery</Text>
-            <TouchableOpacity className="flex-row items-center gap-1">
-              <Text className="text-sm text-blue-900 font-medium">See all</Text>
-              <ChevronRight color="#000080" size={16} />
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pb-2">
-            {expressDelivery.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                className="w-[160px] mr-3 bg-gray-50 rounded-xl border border-gray-200 overflow-hidden"
-              >
-                <View className="relative">
-                  <Image
-                    source={{ uri: item.image }}
-                    className="w-full aspect-square"
-                    resizeMode="cover"
-                  />
-                  <View className="absolute top-2 left-2 bg-blue-900 px-2 py-0.5 rounded-full">
-                    <Text className="text-white text-[10px] font-bold">
-                      {item.badge}
-                    </Text>
-                  </View>
+                ))}
+                {kitchenHits.map((k) => (
                   <TouchableOpacity
-                    onPress={() => handleAddToCart(item)}
-                    className="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full shadow-md items-center justify-center border border-gray-200"
+                    key={k.id}
+                    onPress={() => {
+                      setFocused(false);
+                      router.push(`/(buyer)/kitchen?id=${k.id}` as any);
+                    }}
+                    className={`flex-row items-center gap-3 px-4 py-3 border-b ${dark ? "border-white/[0.07]" : "border-ink/[0.06]"}`}
                   >
-                    <Text className="text-lg text-gray-900 leading-none">+</Text>
+                    <Text className={`text-[14px] font-inter-medium flex-1 ${dark ? "text-white" : "text-ink"}`}>{k.label}</Text>
+                    <Text className={`text-[11px] font-inter-bold uppercase tracking-[1px] ${dark ? "text-white/40" : "text-ink/40"}`}>Kitchen</Text>
+                  </TouchableOpacity>
+                ))}
+                {q && suggestions.length === 0 && kitchenHits.length === 0 && (
+                  <View className="px-4 py-3.5 items-center">
+                    <Text className={`text-[13px] font-inter ${dark ? "text-white/50" : "text-ink/50"}`}>No matches in live catalogue</Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        </Enter>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3 pl-5" contentContainerStyle={{ paddingRight: 20 }}>
+          {moods.map((m) => {
+            const active = mood === m;
+            return (
+              <TouchableOpacity
+                key={m}
+                onPress={() => { buzz(); setMood(m); }}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={`Filter ${m}`}
+                className="mr-5 items-center"
+              >
+                <Text className={`text-[15px] ${active ? "font-inter-bold" : "font-inter"} ${dark ? (active ? "text-white" : "text-white/45") : active ? "text-ink" : "text-ink/40"}`}>{m}</Text>
+                <View className={`h-[2px] rounded-full mt-1 self-stretch ${active ? (dark ? "bg-white" : "bg-ink") : "bg-transparent"}`} />
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {loading ? (
+          <View className="px-5 mt-4 gap-3">
+            <Skeleton width="100%" height={200} radius={20} />
+            <Skeleton width="100%" height={76} radius={20} />
+            <Skeleton width="100%" height={76} radius={20} />
+            <Skeleton width="100%" height={76} radius={20} />
+          </View>
+        ) : error ? (
+          <View className="px-5 mt-4">
+            <EmptyState title="Couldn't load listings" subtitle={error} actionLabel="Retry" onAction={load} />
+          </View>
+        ) : items.length === 0 ? (
+          <View className="px-5 mt-4 py-10 items-center">
+            <Text className={`text-[15px] font-inter-medium ${dark ? "text-white/60" : "text-ink/60"}`}>No listings yet</Text>
+          </View>
+        ) : (
+          <>
+            {hero ? (
+              <Enter delay={80}>
+                <View className="px-5 mt-4">
+                  <TouchableOpacity
+                    activeOpacity={0.92}
+                    onPress={() => router.push(`/(buyer)/food-details?id=${hero.id}` as any)}
+                    accessibilityLabel={`Featured ${hero.name}`}
+                    className="rounded-[20px] overflow-hidden"
+                    style={{ height: 200 }}
+                  >
+                    {hero.image_url ? (
+                      <Image source={{ uri: hero.image_url }} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={200} cachePolicy="memory-disk" priority="high" />
+                    ) : (
+                      <View className={`w-full h-full ${dark ? "bg-white/10" : "bg-ink/10"}`} />
+                    )}
+                    <LinearGradient colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.6)"]} locations={[0.45, 1]} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
+                    <View className="absolute top-3 left-3">
+                      <Eyebrow dark>Featured</Eyebrow>
+                    </View>
+                    <View className="absolute bottom-0 left-0 right-0 p-4 flex-row items-end justify-between">
+                      <View>
+                        <Text className="text-white text-[20px] font-display-bold tracking-tight">{hero.name}</Text>
+                        <Text className="text-white/75 text-[13px] font-inter-bold mt-0.5">₦{hero.price.toLocaleString()} · {hero.seller_name}</Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={(e) => handleAdd(hero, e)}
+                        accessibilityLabel={`Add ${hero.name} to bag`}
+                        className="w-11 h-11 rounded-full bg-white items-center justify-center"
+                      >
+                        <Icon icon={PlusSignIcon} size={17} color="#0A0A0E" />
+                      </TouchableOpacity>
+                    </View>
                   </TouchableOpacity>
                 </View>
-                <View className="p-2">
-                  <Text className="text-xs font-semibold truncate">
-                    {item.name}
-                  </Text>
-                  <Text className="text-xs font-bold text-gray-900 mt-0.5">
-                    ₦{item.price.toLocaleString()}
-                  </Text>
+              </Enter>
+            ) : null}
+
+            {kitchens.length > 0 ? (
+              <View className="mt-5 pl-5">
+                <View className="pr-5">
+                  <SectionHeader title="Kitchens" />
                 </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      </View>
-    </ScrollView>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
+                  <StoryRow items={kitchens} onPress={(id) => router.push(`/(buyer)/kitchen?id=${id}` as any)} />
+                </ScrollView>
+              </View>
+            ) : null}
+
+            <View className="px-5 mt-5">
+              <SectionHeader title={q || mood !== "All" ? `${visible.length} craving${visible.length === 1 ? "" : "s"}` : "Nearby"} />
+              <View className="gap-2.5">
+                {visible.map((item, i) => (
+                  <Enter key={item.id} delay={Math.min(i * 40, 160)}>
+                    <TouchableOpacity
+                      onPress={() => router.push(`/(buyer)/food-details?id=${item.id}` as any)}
+                      activeOpacity={0.9}
+                      accessibilityLabel={`${item.name}, ₦${item.price.toLocaleString()}`}
+                      className="flex-row items-center py-2"
+                    >
+                      {item.image_url ? (
+                        <Image source={{ uri: item.image_url }} style={{ width: 76, height: 76, borderRadius: 20, backgroundColor: dark ? "rgba(255,255,255,0.06)" : "rgba(10,10,14,0.05)" }} contentFit="cover" transition={200} cachePolicy="memory-disk" />
+                      ) : (
+                        <View style={{ width: 76, height: 76, borderRadius: 20 }} className={dark ? "bg-white/10" : "bg-ink/10"} />
+                      )}
+                      <View className="flex-1 ml-3.5">
+                        <Text className={`font-inter-bold text-[15px] tracking-tight ${dark ? "text-white" : "text-ink"}`} numberOfLines={1}>{item.name}</Text>
+                        <View className="flex-row items-center gap-1 mt-1">
+                          <Icon icon={StarIcon} size={12} color={dark ? "rgba(255,255,255,0.55)" : "rgba(10,10,14,0.5)"} />
+                          <Text className={`text-[12px] font-inter ${dark ? "text-white/45" : "text-ink/50"}`}>{item.seller_name}</Text>
+                        </View>
+                        <Text className={`font-inter-bold text-[14px] mt-1 ${dark ? "text-white" : "text-ink"}`}>₦{item.price.toLocaleString()}</Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={(e) => handleAdd(item, e)}
+                        accessibilityLabel={`Add ${item.name}`}
+                        className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}
+                      >
+                        <Icon icon={PlusSignIcon} size={18} color={dark ? "#0A0A0E" : "#fff"} />
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  </Enter>
+                ))}
+                {visible.length === 0 && (
+                  <EmptyState title="Nothing matches" subtitle="Try a different search or mood." actionLabel="Clear filters" onAction={() => { setQuery(""); setMood("All"); }} />
+                )}
+              </View>
+            </View>
+          </>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }

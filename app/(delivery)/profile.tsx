@@ -2,230 +2,216 @@ import { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
+import { supabase } from "../../src/lib/supabase";
+import { toast } from "sonner-native";
+import { AppButton } from "../../src/components/ui/AppButton";
+import { TextField } from "../../src/components/ui/TextField";
+import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
+import { Icon } from "../../src/components/ui/Icon";
 import {
-  User,
-  Mail,
-  Phone,
-  Edit2,
-  Package,
-  TrendingUp,
-  DollarSign,
-} from "lucide-react-native";
-
-const mockProfile = {
-  id: "mock-agent-001",
-  name: "Emeka Rider",
-  email: "emeka@campus.edu",
-  phone: "+2348000000004",
-  avatar_url: null,
-  role: "delivery_agent",
-};
-
-const mockStats = {
-  totalDeliveries: 23,
-  completedDeliveries: 21,
-  totalEarnings: 45000,
-};
+  UserIcon,
+  PhoneIcon,
+  Edit02Icon,
+  Logout01Icon,
+  Settings01Icon,
+} from "../../src/components/icons";
 
 export default function DeliveryProfile() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
-  const [profile, setProfile] = useState<any>(null);
+  const { user, signOut, loading: authLoading, profile: authProfile, refreshProfile } = useAuth();
+  const { dark } = useTheme();
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ name: "", phone: "" });
 
   useEffect(() => {
-    setTimeout(() => {
-      setProfile(mockProfile);
-      setFormData({ name: mockProfile.name, phone: mockProfile.phone });
-      setLoading(false);
-    }, 800);
-  }, [user]);
+    if (!authLoading && !user) router.replace("/onboarding" as any);
+  }, [authLoading, user]);
+
+  useEffect(() => {
+    if (authProfile) {
+      setFormData({ name: authProfile.name || "", phone: authProfile.phone || "" });
+    }
+  }, [authProfile]);
 
   const handleUpdateProfile = async () => {
+    if (!user) return;
+    if (!formData.name.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
     try {
-      setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setProfile((prev: any) => ({
-        ...prev,
-        name: formData.name,
-        phone: formData.phone,
-      }));
-      Alert.alert("Success", "Profile updated successfully");
+      setSaving(true);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ name: formData.name.trim(), phone: formData.phone.trim() || null })
+        .eq("id", user.id);
+      if (error) throw error;
+      await refreshProfile();
+      toast.success("Profile updated");
       setEditing(false);
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to update profile");
+      toast.error(error.message || "Failed to update profile");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
   const handleSignOut = async () => {
     await signOut();
-    router.replace("/onboarding");
+    router.replace("/onboarding" as any);
   };
 
-  if (loading) {
+  if (authLoading || (user && !authProfile)) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#000080" />
+      <View className={`flex-1 items-center justify-center ${dark ? "bg-ink" : "bg-cream"}`}>
+        <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
       </View>
     );
   }
 
-  if (!profile) return null;
+  if (!user) return null;
+
+  const profile = authProfile!;
 
   return (
-    <ScrollView className="flex-1 bg-white px-4 py-8">
-      {/* Profile Header */}
-      <View className="bg-gray-50 rounded-xl p-6 border border-gray-200 mb-6">
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
+      <ScrollView className="flex-1 px-5 pt-2" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      <View className="flex-row items-center justify-between">
+        <Eyebrow>Account</Eyebrow>
+        <TouchableOpacity
+          onPress={() => router.push("/(delivery)/settings" as any)}
+          className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}
+        >
+          <Icon icon={Settings01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Profile header */}
+      <View className={`rounded-[28px] p-6 border mt-4 mb-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
         <View className="items-center">
-          <View className="w-24 h-24 rounded-full bg-blue-900 items-center justify-center mb-4 border-4 border-blue-100">
-            <Text className="text-2xl text-white font-bold">
+          <View className={`w-24 h-24 rounded-full border items-center justify-center mb-4 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Text className={`text-[28px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
               {profile.name?.charAt(0) || "U"}
             </Text>
           </View>
           <View className="flex-row items-center gap-2 mb-2">
-            <Text className="text-xl font-bold">{profile.name}</Text>
-            <View className="bg-blue-50 px-3 py-1 rounded-full">
-              <Text className="text-xs text-blue-900 font-medium capitalize">
-                Rider
-              </Text>
-            </View>
+            <Text className={`text-[20px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>{profile.name}</Text>
+            <StatusChip label="Rider" tone="info" />
           </View>
-          <View className="flex-row items-center gap-2">
-            <Mail color="#9CA3AF" size={16} />
-            <Text className="text-sm text-gray-500">
-              {user?.email || profile.email}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Stats Cards */}
-      <View className="flex-row gap-3 mb-6">
-        <View className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-200">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-sm text-gray-500">Deliveries</Text>
-            <Package color="#000080" size={20} />
-          </View>
-          <Text className="text-3xl font-bold">
-            {mockStats.totalDeliveries}
-          </Text>
-        </View>
-        <View className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-200">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-sm text-gray-500">Completed</Text>
-            <TrendingUp color="#16A34A" size={20} />
-          </View>
-          <Text className="text-3xl font-bold">
-            {mockStats.completedDeliveries}
-          </Text>
-        </View>
-        <View className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-200">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-sm text-gray-500">Earnings</Text>
-            <DollarSign color="#EAB308" size={20} />
-          </View>
-          <Text className="text-xl font-bold">
-            ₦{mockStats.totalEarnings.toLocaleString()}
+          <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
+            {user?.email || profile.email}
           </Text>
         </View>
       </View>
 
-      {/* Profile Details */}
-      <View className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-        <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-lg font-bold">Profile Details</Text>
+      {/* Profile details */}
+      <View className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+        <View className="flex-row items-center justify-between mb-5">
+          <Text className={`text-[18px] font-inter-bold tracking-tight ${dark ? "text-white" : "text-ink"}`}>Profile details</Text>
           {!editing && (
             <TouchableOpacity
               onPress={() => setEditing(true)}
-              className="flex-row items-center gap-1"
+              activeOpacity={0.85}
+              className={`flex-row items-center gap-1.5 border px-4 h-10 rounded-full ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}
             >
-              <Edit2 color="#000080" size={16} />
-              <Text className="text-sm text-blue-900 font-medium">Edit</Text>
+              <Icon icon={Edit02Icon} size={14} color={dark ? "#FFFFFF" : "#0A0A0E"} />
+              <Text className={`text-[13px] font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Edit</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        <View className="gap-4">
+        <View className="gap-5">
           <View>
-            <View className="flex-row items-center gap-2 mb-1">
-              <User color="#9CA3AF" size={16} />
-              <Text className="text-sm text-gray-500">Name</Text>
+            <View className="flex-row items-center gap-2 mb-2">
+              <Icon icon={UserIcon} size={16} color={dark ? "rgba(255,255,255,0.45)" : "rgba(10,10,14,0.45)"} />
+              <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/55" : "text-ink/55"}`}>Name</Text>
             </View>
-            <TextInput
-              value={formData.name}
-              onChangeText={(val) => setFormData({ ...formData, name: val })}
-              editable={editing}
-              className={`bg-white border rounded-lg px-3 py-2 text-sm ${
-                editing ? "border-blue-900" : "border-gray-300"
-              }`}
-            />
+            {editing ? (
+              <TextField
+                value={formData.name}
+                onChangeText={(val) => setFormData({ ...formData, name: val })}
+                placeholder="Enter your name"
+              />
+            ) : (
+              <View className={`rounded-[20px] px-4 h-14 justify-center border ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                <Text className={`text-[15px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>{formData.name}</Text>
+              </View>
+            )}
           </View>
 
           <View>
-            <View className="flex-row items-center gap-2 mb-1">
-              <Phone color="#9CA3AF" size={16} />
-              <Text className="text-sm text-gray-500">Phone Number</Text>
+            <View className="flex-row items-center gap-2 mb-2">
+              <Icon icon={PhoneIcon} size={16} color={dark ? "rgba(255,255,255,0.45)" : "rgba(10,10,14,0.45)"} />
+              <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/55" : "text-ink/55"}`}>Phone number</Text>
             </View>
-            <TextInput
-              value={formData.phone}
-              onChangeText={(val) => setFormData({ ...formData, phone: val })}
-              editable={editing}
-              placeholder="Enter phone number"
-              placeholderTextColor="#9CA3AF"
-              className={`bg-white border rounded-lg px-3 py-2 text-sm ${
-                editing ? "border-blue-900" : "border-gray-300"
-              }`}
-            />
+            {editing ? (
+              <TextField
+                value={formData.phone}
+                onChangeText={(val) => setFormData({ ...formData, phone: val })}
+                placeholder="Enter phone number"
+                keyboardType="phone-pad"
+              />
+            ) : (
+              <View className={`rounded-[20px] px-4 h-14 justify-center border ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                <Text className={`text-[15px] font-inter-semibold ${dark ? "text-white" : "text-ink"}`}>{formData.phone}</Text>
+              </View>
+            )}
           </View>
 
           {editing && (
-            <View className="flex-row gap-2 pt-4">
-              <TouchableOpacity
-                onPress={handleUpdateProfile}
-                disabled={loading}
-                className="flex-1 bg-blue-900 h-10 rounded-lg items-center justify-center"
-              >
-                {loading ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text className="text-white font-semibold">
-                    Save Changes
-                  </Text>
-                )}
-              </TouchableOpacity>
+            <View className="gap-3 pt-2">
+              <AppButton title="Save Changes" variant={dark ? "white" : "ink"} loading={saving} onPress={handleUpdateProfile} />
               <TouchableOpacity
                 onPress={() => {
                   setEditing(false);
-                  setFormData({ name: profile.name, phone: profile.phone });
+                  setFormData({ name: profile.name, phone: profile.phone || "" });
                 }}
-                className="flex-1 border border-gray-300 h-10 rounded-lg items-center justify-center"
+                activeOpacity={0.85}
+                className={`w-full border h-14 rounded-full items-center justify-center ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
               >
-                <Text className="text-gray-700 font-semibold">Cancel</Text>
+                <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Cancel</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
       </View>
 
-      {/* Sign Out */}
+      {/* Verify rider */}
+      <TouchableOpacity
+        onPress={() => router.push("/(delivery)/verification" as any)}
+        accessibilityLabel="Verify rider account"
+        activeOpacity={0.85}
+        className={`mt-4 rounded-[24px] p-4 border items-center flex-row gap-3 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
+      >
+        <View className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-cream"}`}>
+          <Icon icon={UserIcon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+        </View>
+        <View className="flex-1">
+          <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Verify account</Text>
+          <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Uni ID + bank · Igbinedion only</Text>
+        </View>
+        <Text className={`text-lg font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>›</Text>
+      </TouchableOpacity>
+
+      {/* Sign out */}
       <TouchableOpacity
         onPress={handleSignOut}
-        className="mt-6 bg-gray-50 rounded-xl p-4 border border-gray-200 items-center"
+        activeOpacity={0.85}
+        className={`mt-4 rounded-[24px] p-4 border items-center flex-row justify-center gap-2 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
       >
-        <Text className="text-red-500 font-semibold">Sign Out</Text>
+        <Icon icon={Logout01Icon} size={16} color="#D92D20" />
+        <Text className="text-destructive font-inter-bold">Sign Out</Text>
       </TouchableOpacity>
     </ScrollView>
+    </SafeAreaView>
   );
 }

@@ -5,18 +5,23 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
-  Alert,
   ActivityIndicator,
+  Platform,
 } from "react-native";
-import { useAuth } from "../../src/contexts/AuthContext";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
+import { Eyebrow, StatusChip } from "../../src/components/ui/SectionHeader";
+import { Icon } from "../../src/components/ui/Icon";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import {
-  Package,
-  Wallet,
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  Navigation,
-} from "lucide-react-native";
+  Navigation01Icon,
+  Wallet01Icon,
+  Package01Icon,
+  Clock01Icon,
+  ChartLineIcon,
+  CheckmarkCircle01Icon,
+  DeliveryBox01Icon,
+} from "../../src/components/icons";
 
 const mockAgent = {
   id: "agent-001",
@@ -42,14 +47,26 @@ const mockActiveDeliveries = [
   },
 ];
 
-const statusColors: Record<string, string> = {
-  assigned: "bg-gray-100 text-gray-700",
-  heading_to_seller: "bg-blue-100 text-blue-700",
-  picked_up: "bg-amber-100 text-amber-700",
-  on_the_way: "bg-blue-100 text-blue-700",
-  delivered: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
+type ChipTone = "neutral" | "success" | "warning" | "info" | "danger";
+
+const statusTone = (status: string): ChipTone => {
+  switch (status) {
+    case "delivered":
+      return "success";
+    case "picked_up":
+      return "warning";
+    case "heading_to_seller":
+    case "on_the_way":
+    case "assigned":
+      return "info";
+    case "cancelled":
+      return "danger";
+    default:
+      return "neutral";
+  }
 };
+
+const statusLabel = (status: string) => status.replaceAll("_", " ");
 
 const getTimeAgo = (date: string) => {
   const minutes = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
@@ -59,8 +76,14 @@ const getTimeAgo = (date: string) => {
   return `${Math.floor(hours / 24)}d ago`;
 };
 
+const buzz = () => {
+  if (Platform.OS !== "web") {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+  }
+};
+
 export default function DeliveryDashboard() {
-  const { user } = useAuth();
+  const { dark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [agent, setAgent] = useState<any>(null);
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([]);
@@ -79,12 +102,16 @@ export default function DeliveryDashboard() {
     const newStatus = !isOnline;
     setIsOnline(newStatus);
     if (agent) setAgent({ ...agent, is_online: newStatus });
-    Alert.alert(
-      newStatus ? "You are now online" : "You are now offline",
-      newStatus
-        ? "You can receive new delivery assignments"
-        : "You won't receive new assignments"
-    );
+    buzz();
+    if (newStatus) {
+      toast.success("You are now online", {
+        description: "You can receive new delivery assignments",
+      });
+    } else {
+      toast.success("You are now offline", {
+        description: "You won't receive new assignments",
+      });
+    }
   };
 
   const updateDeliveryStatus = (deliveryId: string, newStatus: string) => {
@@ -93,106 +120,113 @@ export default function DeliveryDashboard() {
         d.id === deliveryId ? { ...d, status: newStatus } : d
       )
     );
-    Alert.alert("Status updated", `Delivery marked as ${newStatus.replace("_", " ")}`);
+    buzz();
+    toast.success(`Delivery marked as ${statusLabel(newStatus)}`);
   };
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#000080" />
+      <View className={`flex-1 items-center justify-center ${dark ? "bg-ink" : "bg-cream"}`}>
+        <ActivityIndicator size="large" color={dark ? "#FFFFFF" : "#0A0A0E"} />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-white p-6 gap-6">
-      {/* Header with Online Toggle */}
-      <View className="flex-row items-center justify-between">
-        <View>
-          <Text className="text-2xl font-bold text-gray-900">Dashboard</Text>
-          <Text className="text-gray-500">Manage your deliveries</Text>
-        </View>
-        <View className="flex-row items-center gap-3">
-          <Text className="text-sm text-gray-500">
-            {isOnline ? "Online" : "Offline"}
-          </Text>
-          <Switch
-            value={isOnline}
-            onValueChange={toggleOnlineStatus}
-            trackColor={{ true: "#16A34A", false: "#D1D5DB" }}
-          />
-        </View>
-      </View>
-
-      {/* Stats Cards */}
-      <View className="flex-row flex-wrap gap-3">
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center">
-              <Wallet color="#000080" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Total Earnings</Text>
-              <Text className="text-lg font-bold text-gray-900">
-                ₦{(agent?.total_earnings || 0).toLocaleString()}
+    <ScrollView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      {/* Availability hero */}
+      <View className="px-5 pt-14">
+        <Eyebrow>Rider dashboard</Eyebrow>
+        <Text className={`text-[28px] font-inter-bold tracking-tight mt-1 ${dark ? "text-white" : "text-ink"}`}>
+          Deliveries
+        </Text>
+        <View className={`rounded-[28px] p-6 border mt-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] ${dark ? "text-white/55" : "text-ink/55"}`}>
+                Availability
               </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-green-50 items-center justify-center">
-              <Package color="#16A34A" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Completed</Text>
-              <Text className="text-lg font-bold text-gray-900">
-                {agent?.completed_deliveries || 0}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-yellow-50 items-center justify-center">
-              <Clock color="#EAB308" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Active</Text>
-              <Text className="text-lg font-bold text-gray-900">
-                {activeDeliveries.length}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-xl p-4 border border-gray-200 flex-1 min-w-[45%]">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center">
-              <TrendingUp color="#3B82F6" size={20} />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500">Status</Text>
-              <View className={`px-2 py-0.5 rounded-full ${agent?.is_active ? "bg-green-100" : "bg-gray-100"}`}>
-                <Text className={`text-xs font-semibold ${agent?.is_active ? "text-green-700" : "text-gray-700"}`}>
-                  {agent?.is_active ? "Active" : "Inactive"}
-                </Text>
+              <View className="flex-row items-center mt-3">
+                <View className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full ${dark ? "bg-white/10" : "bg-ink/5"}`}>
+                  <View className={`w-2 h-2 rounded-full ${isOnline ? "bg-success" : dark ? "bg-white/30" : "bg-ink/30"}`} />
+                  <Text className={`text-[11px] font-inter-bold tracking-[1px] ${dark ? "text-white" : "text-ink"}`}>
+                    {isOnline ? "ONLINE" : "OFFLINE"}
+                  </Text>
+                </View>
               </View>
+              <Text className={`text-[13px] font-inter mt-2 ${dark ? "text-white/55" : "text-ink/55"}`}>
+                {isOnline ? "You can receive new assignments" : "Go online to receive assignments"}
+              </Text>
+            </View>
+            <View className="items-center gap-2">
+              <View className={`w-14 h-14 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                <Icon icon={Navigation01Icon} size={22} color={dark ? "#FFFFFF" : "#0A0A0E"} />
+              </View>
+              <Switch
+                value={isOnline}
+                onValueChange={toggleOnlineStatus}
+                trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#E7E0D2" }}
+                thumbColor={dark ? (isOnline ? "#0A0A0E" : "#FFFFFF") : "#FFFFFF"}
+              />
             </View>
           </View>
         </View>
       </View>
 
-      {/* Active Deliveries */}
-      <View>
-        <Text className="text-lg font-semibold mb-4">Active Deliveries</Text>
+      {/* 2x2 stat cards */}
+      <View className="px-5 mt-4 flex-row gap-3">
+        <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-11 h-11 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={Wallet01Icon} size={20} color={dark ? "#FFFFFF" : "#0A0A0E"} />
+          </View>
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Total earnings</Text>
+          <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
+            ₦{(agent?.total_earnings || 0).toLocaleString()}
+          </Text>
+        </View>
+        <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-11 h-11 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={Package01Icon} size={20} color="#12805C" />
+          </View>
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Completed</Text>
+          <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
+            {agent?.completed_deliveries || 0}
+          </Text>
+        </View>
+      </View>
+      <View className="px-5 mt-3 flex-row gap-3">
+        <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-11 h-11 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={Clock01Icon} size={20} color={dark ? "#FFFFFF" : "#0A0A0E"} />
+          </View>
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Active</Text>
+          <Text className={`text-[18px] font-inter-bold mt-0.5 ${dark ? "text-white" : "text-ink"}`}>
+            {activeDeliveries.length}
+          </Text>
+        </View>
+        <View className={`flex-1 rounded-[24px] p-5 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`w-11 h-11 rounded-full border items-center justify-center mb-2 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={ChartLineIcon} size={20} color={dark ? "#FFFFFF" : "#0A0A0E"} />
+          </View>
+          <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Status</Text>
+          <View className="mt-1.5 self-start">
+            <StatusChip label={agent?.is_active ? "Active" : "Inactive"} tone={agent?.is_active ? "success" : "neutral"} />
+          </View>
+        </View>
+      </View>
+
+      {/* Active deliveries */}
+      <View className="px-5 mt-8">
+        <Text className={`text-[11px] font-inter-bold uppercase tracking-[2px] mb-4 ${dark ? "text-white/55" : "text-ink/55"}`}>
+          Active deliveries
+        </Text>
         {activeDeliveries.length === 0 ? (
-          <View className="bg-white rounded-xl p-8 items-center border border-gray-200">
-            <Package color="#9CA3AF" size={48} />
-            <Text className="text-gray-500 mt-3">No active deliveries</Text>
-            <Text className="text-sm text-gray-500 mt-1">
+          <View className={`rounded-[24px] p-8 items-center border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+            <View className={`w-16 h-16 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+              <Icon icon={DeliveryBox01Icon} size={22} color={dark ? "rgba(255,255,255,0.4)" : "rgba(10,10,14,0.4)"} />
+            </View>
+            <Text className={`font-inter-bold mt-3 ${dark ? "text-white" : "text-ink"}`}>No active deliveries</Text>
+            <Text className={`text-[13px] font-inter mt-1 text-center ${dark ? "text-white/55" : "text-ink/55"}`}>
               {isOnline
                 ? "New deliveries will appear here when assigned"
                 : "Go online to receive delivery assignments"}
@@ -210,44 +244,36 @@ export default function DeliveryDashboard() {
               return (
                 <View
                   key={delivery.id}
-                  className="bg-white rounded-xl p-4 border border-gray-200"
+                  className={`rounded-[24px] p-6 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
                 >
-                  <View className="flex-row items-start justify-between mb-3">
-                    <View className="flex-1">
-                      <View className="flex-row items-center gap-2 mb-1">
-                        <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center">
-                          <Text className="text-lg">📦</Text>
-                        </View>
-                        <View className="flex-1">
-                          <Text className="font-semibold text-gray-900">
-                            #{delivery.order_id.slice(0, 8)}
-                          </Text>
-                          <Text className="text-xs text-gray-500">
-                            {itemNames.join(", ")}
-                          </Text>
-                        </View>
+                  <View className="flex-row items-start justify-between mb-3 gap-2">
+                    <View className="flex-1 flex-row items-center gap-2.5">
+                      <View className={`w-12 h-12 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                        <Icon icon={Package01Icon} size={20} color={dark ? "#FFFFFF" : "#0A0A0E"} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>
+                          #{delivery.order_id.slice(0, 8)}
+                        </Text>
+                        <Text className={`text-[12px] font-inter mt-0.5 ${dark ? "text-white/55" : "text-ink/55"}`} numberOfLines={1}>
+                          {itemNames.join(", ")}
+                        </Text>
                       </View>
                     </View>
-                    <View
-                      className={`px-2 py-1 rounded-full ${statusColors[delivery.status] || statusColors.assigned}`}
-                    >
-                      <Text className="text-xs font-semibold capitalize">
-                        {delivery.status.replace("_", " ")}
-                      </Text>
-                    </View>
+                    <StatusChip label={statusLabel(delivery.status)} tone={statusTone(delivery.status)} />
                   </View>
 
-                  <View className="flex-row items-center justify-between mb-3">
-                    <Text className="text-sm text-gray-500">
+                  <View className={`flex-row items-center justify-between border rounded-[20px] px-4 py-3 mb-3 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                    <Text className={`text-[13px] font-inter flex-1 ${dark ? "text-white/55" : "text-ink/55"}`} numberOfLines={1}>
                       {order?.delivery_address}
                     </Text>
-                    <Text className="text-sm font-bold text-blue-900">
+                    <Text className={`text-[16px] font-inter-bold ml-2 ${dark ? "text-white" : "text-ink"}`}>
                       ₦{delivery.delivery_fee}
                     </Text>
                   </View>
 
                   <View className="flex-row items-center justify-between">
-                    <Text className="text-xs text-gray-500">
+                    <Text className={`text-[12px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>
                       {getTimeAgo(delivery.created_at)}
                     </Text>
                     <View className="flex-row gap-2">
@@ -256,10 +282,11 @@ export default function DeliveryDashboard() {
                           onPress={() =>
                             updateDeliveryStatus(delivery.id, "picked_up")
                           }
-                          className="bg-blue-900 px-3 py-1.5 rounded-full flex-row items-center gap-1"
+                          activeOpacity={0.85}
+                          className={`px-4 h-11 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
                         >
-                          <CheckCircle color="#FFFFFF" size={14} />
-                          <Text className="text-white text-xs font-semibold">
+                          <Icon icon={CheckmarkCircle01Icon} size={14} color={dark ? "#0A0A0E" : "#fff"} />
+                          <Text className={`text-[12px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>
                             Picked Up
                           </Text>
                         </TouchableOpacity>
@@ -269,10 +296,11 @@ export default function DeliveryDashboard() {
                           onPress={() =>
                             updateDeliveryStatus(delivery.id, "delivered")
                           }
-                          className="bg-green-500 px-3 py-1.5 rounded-full flex-row items-center gap-1"
+                          activeOpacity={0.85}
+                          className={`px-4 h-11 rounded-full flex-row items-center gap-1.5 ${dark ? "bg-white" : "bg-ink"}`}
                         >
-                          <CheckCircle color="#FFFFFF" size={14} />
-                          <Text className="text-white text-xs font-semibold">
+                          <Icon icon={CheckmarkCircle01Icon} size={14} color={dark ? "#0A0A0E" : "#fff"} />
+                          <Text className={`text-[12px] font-inter-bold ${dark ? "text-ink" : "text-white"}`}>
                             Delivered
                           </Text>
                         </TouchableOpacity>

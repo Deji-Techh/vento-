@@ -1,291 +1,175 @@
-import { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-} from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useCart } from "../../src/stores/cartStore";
-import { X, Heart, Minus, Plus } from "lucide-react-native";
+import { useTheme } from "../../src/contexts/ThemeContext";
+import { fireFromEvent } from "../../src/stores/flyStore";
+import { supabase } from "../../src/lib/supabase";
+import { buzz } from "../../src/lib/haptics";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
+import { AppButton } from "../../src/components/ui/AppButton";
+import { Enter } from "../../src/components/motion";
+import { EmptyState } from "../../src/components/ui/Cards";
+import { Skeleton } from "../../src/components/ui/Skeleton";
+import { Icon } from "../../src/components/ui/Icon";
+import {
+  ArrowLeft01Icon,
+  FavouriteIcon,
+  StarIcon,
+  MinusSignIcon,
+  PlusSignIcon,
+  MapPinIcon,
+} from "../../src/components/icons";
 
-const products: Record<string, any> = {
-  "pop-1": {
-    id: "pop-1",
-    name: "Pepperoni Pizza Slice",
-    description:
-      "Classic pepperoni pizza with melted mozzarella cheese, rich tomato sauce, and crispy crust. Baked to perfection in our stone oven.",
-    price: 1500,
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800",
-    seller_id: "seller-4",
-    seller_name: "Pizzeria Delfina",
-    sizes: [
-      { label: "Regular", price: 0 },
-      { label: "Large", price: 800 },
-    ],
-  },
-  "pop-2": {
-    id: "pop-2",
-    name: "Grilled Chicken Bowl",
-    description:
-      "Tender grilled chicken breast served over a bed of fluffy rice with sautéed vegetables, fresh salad, and our signature pepper sauce.",
-    price: 2200,
-    image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=800",
-    seller_id: "seller-5",
-    seller_name: "Grill House",
-    sizes: [
-      { label: "Regular", price: 0 },
-      { label: "Large", price: 1000 },
-    ],
-  },
-  "pop-3": {
-    id: "pop-3",
-    name: "Suya Platter",
-    description:
-      "Authentic Nigerian suya skewers spiced with our special yaji seasoning, served with sliced onions, tomatoes, and fresh pepper.",
-    price: 3000,
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800",
-    seller_id: "seller-6",
-    seller_name: "Suya Spot",
-    sizes: [
-      { label: "Small (6 sticks)", price: 0 },
-      { label: "Large (12 sticks)", price: 1500 },
-    ],
-  },
-  "pop-4": {
-    id: "pop-4",
-    name: "Fish & Chips",
-    description:
-      "Golden battered haddock fillet served with thick-cut chips, mushy peas, and tartar sauce. Fresh from the fryer to your table.",
-    price: 2800,
-    image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=800",
-    seller_id: "seller-7",
-    seller_name: "Ocean Basket",
-    sizes: [
-      { label: "Regular", price: 0 },
-      { label: "Large", price: 1200 },
-    ],
-  },
-  "pop-5": {
-    id: "pop-5",
-    name: "Burger Meal",
-    description:
-      "Juicy beef patty with fresh lettuce, tomatoes, pickles, and our special sauce in a toasted brioche bun. Served with golden fries.",
-    price: 1800,
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800",
-    seller_id: "seller-8",
-    seller_name: "Burger King",
-    sizes: [
-      { label: "Single", price: 0 },
-      { label: "Double", price: 800 },
-    ],
-  },
-  "pop-6": {
-    id: "pop-6",
-    name: "Shawarma Wrap",
-    description:
-      "Tender spiced chicken shawarma wrapped in warm pita bread with garlic sauce, pickled vegetables, and fresh herbs.",
-    price: 1200,
-    image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800",
-    seller_id: "seller-9",
-    seller_name: "Shawarma Express",
-    sizes: [
-      { label: "Regular", price: 0 },
-      { label: "Large", price: 500 },
-    ],
-  },
-  "flash-1": {
-    id: "flash-1",
-    name: "Chicken & Chips",
-    description:
-      "Crispy fried chicken pieces with seasoned golden chips, coleslaw, and our signature dipping sauce.",
-    price: 2500,
-    image: "https://images.unsplash.com/photo-1562967914-608f82629710?w=800",
-    seller_id: "seller-1",
-    seller_name: "Tasty Bites",
-    sizes: [
-      { label: "Regular", price: 0 },
-      { label: "Large", price: 1000 },
-    ],
-  },
-  "flash-2": {
-    id: "flash-2",
-    name: "Jollof Rice Combo",
-    description:
-      "Smoky party jollof rice served with fried chicken, fried plantain, and coleslaw. A true Nigerian classic.",
-    price: 1800,
-    image: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=800",
-    seller_id: "seller-2",
-    seller_name: "Mama Cass",
-    sizes: [
-      { label: "Regular", price: 0 },
-      { label: "Family", price: 2000 },
-    ],
-  },
-};
-
-const defaultProduct = {
-  id: "default",
-  name: "Product",
-  description: "A delicious item from our menu.",
-  price: 1000,
-  image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
-  seller_id: "seller-default",
-  seller_name: "Vento Kitchen",
-  sizes: [{ label: "Regular", price: 0 }],
-};
+type Product = { id: string; name: string; description: string; price: number; image_url: string | null; seller_id: string; seller_name: string; prep_time: number; category: string };
 
 export default function FoodDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { addItem } = useCart();
+  const { dark } = useTheme();
+  const insets = useSafeAreaInsets();
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [fav, setFav] = useState(false);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const product = products[id || ""] || {
-    ...defaultProduct,
-    id: id || "default",
-  };
-  const sizePrice = product.sizes[selectedSize]?.price || 0;
-  const unitPrice = product.price + sizePrice;
-  const totalPrice = (unitPrice * quantity).toLocaleString();
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!id) { setLoading(false); return; }
+      try {
+        const { data, error } = await supabase
+          .from("menu_items")
+          .select("id, name, description, price, image_url, seller_id, prep_time, category, available, sellers(store_name)")
+          .eq("id", id)
+          .maybeSingle();
+        if (error) throw error;
+        if (!data || !(data as any).available) { if (alive) setProduct(null); return; }
+        if (alive) setProduct({ id: (data as any).id, name: (data as any).name, description: (data as any).description || "", price: (data as any).price, image_url: (data as any).image_url, seller_id: (data as any).seller_id, seller_name: (data as any).sellers?.store_name || "Kitchen", prep_time: (data as any).prep_time ?? 25, category: (data as any).category || "mains" });
+      } catch (e: any) {
+        if (alive) setError(e.message || "Couldn't load this item");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [id]);
 
-  const handleAddToCart = () => {
-    addItem(
-      {
-        id: product.id,
-        name: product.name,
-        price: unitPrice,
-        image_url: product.image,
-        seller_id: product.seller_id,
-        seller_name: product.seller_name,
-      },
-      quantity
-    );
-    Alert.alert(
-      "Added to cart",
-      `${quantity}x ${product.name} added to your cart`
-    );
+  const step = (d: number) => {
+    setQuantity(Math.max(1, Math.min(20, quantity + d)));
+    buzz();
   };
+
+  const handleAdd = (e?: any) => {
+    if (!product) return;
+    addItem({ id: product.id, name: product.name, price: product.price, image_url: product.image_url || "", seller_id: product.seller_id, seller_name: product.seller_name }, quantity);
+    if (e) fireFromEvent(e);
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
+    toast.success(`${quantity} × ${product.name} added to bag`, { action: { label: "View bag", onClick: () => router.push("/(buyer)/cart" as any) } });
+  };
+
+  if (loading) {
+    return (
+      <View className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
+        <Skeleton width="100%" height={400} radius={0} />
+        <View className="px-6 pt-5 gap-3"><Skeleton width="60%" height={20} radius={8} /><Skeleton width="90%" height={30} radius={10} /><Skeleton width="100%" height={80} radius={16} /></View>
+      </View>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
+        <View className="flex-row px-5 pt-1">
+          <TouchableOpacity onPress={() => router.back()} accessibilityLabel="Go back" className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white/10" : "bg-ink/[0.05]"}`}>
+            <Icon icon={ArrowLeft01Icon} size={22} color={dark ? "#fff" : "#0A0A0E"} />
+          </TouchableOpacity>
+        </View>
+        <View className="flex-1 px-6 pt-10">
+          <EmptyState title="Item unavailable" subtitle={error || "This item was removed or hidden by admin."} actionLabel="Back to browse" onAction={() => router.replace("/(buyer)/browse" as any)} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const total = (product.price * quantity).toLocaleString();
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Image Section */}
-      <View className="relative w-full h-[240px] bg-white overflow-hidden">
-        <Image
-          source={{ uri: product.image }}
-          className="w-full h-full rounded-b-[2rem]"
-          resizeMode="cover"
-        />
-        {/* Floating Actions */}
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="absolute top-4 left-4 bg-white w-10 h-10 rounded-full items-center justify-center shadow-md"
-        >
-          <X color="#1C1B1B" size={20} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setIsFavorite(!isFavorite)}
-          className="absolute top-4 right-4 bg-white w-10 h-10 rounded-full items-center justify-center shadow-md"
-        >
-          <Heart
-            color={isFavorite ? "#000080" : "#000080"}
-            size={20}
-            fill={isFavorite ? "#000080" : "none"}
+    <View className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 210 }}>
+        <View>
+          {product.image_url ? (
+            <Image source={{ uri: product.image_url }} style={{ width: "100%", height: 400 }} contentFit="cover" transition={200} cachePolicy="memory-disk" priority="high" />
+          ) : (
+            <View style={{ width: "100%", height: 400 }} className={dark ? "bg-white/10" : "bg-ink/10"} />
+          )}
+          <LinearGradient
+            colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0)", dark ? "rgba(0,0,0,0.9)" : "rgba(255,255,255,0.95)"]}
+            locations={[0, 0.45, 1]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
           />
-        </TouchableOpacity>
-      </View>
-
-      {/* Product Details */}
-      <ScrollView
-        className="flex-1 px-5 pt-8"
-        contentContainerStyle={{ paddingBottom: 180 }}
-      >
-        {/* Title & Description */}
-        <View className="mb-12">
-          <Text className="text-2xl font-bold mb-3">{product.name}</Text>
-          <Text className="text-gray-500 leading-relaxed">
-            {product.description}
-          </Text>
+          <SafeAreaView edges={["top"]} className="absolute top-0 left-0 right-0">
+            <View className="flex-row justify-between px-5 pt-1">
+              <TouchableOpacity onPress={() => router.back()} accessibilityLabel="Go back" className="w-11 h-11 rounded-full items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                <Icon icon={ArrowLeft01Icon} size={22} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => { setFav(!fav); buzz(); }}
+                accessibilityLabel={fav ? "Remove from favourites" : "Save to favourites"}
+                className="w-11 h-11 rounded-full items-center justify-center"
+                style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+              >
+                <Icon icon={FavouriteIcon} size={20} color={fav ? "#fff" : "rgba(255,255,255,0.55)"} />
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
         </View>
 
-        <View className="border-t border-gray-200 mb-8" />
-
-        {/* Size Selection */}
-        <View className="mb-12">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-base font-bold">Please Choose Size</Text>
-            <Text className="text-sm text-gray-500">Required</Text>
-          </View>
-          <View className="gap-3">
-            {product.sizes.map((size: any, index: number) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => setSelectedSize(index)}
-                className={`flex-row items-center justify-between p-4 border rounded-xl ${
-                  selectedSize === index
-                    ? "border-blue-900 bg-blue-50"
-                    : "border-gray-200 bg-white"
-                }`}
-              >
-                <Text className="text-base">{size.label}</Text>
-                <View className="flex-row items-center gap-3">
-                  {size.price > 0 && (
-                    <Text className="text-base text-gray-500">
-                      +₦{size.price.toLocaleString()}
-                    </Text>
-                  )}
-                  <View
-                    className={`w-5 h-5 rounded-full border-2 items-center justify-center ${
-                      selectedSize === index
-                        ? "border-blue-900"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {selectedSize === index && (
-                      <View className="w-2.5 h-2.5 rounded-full bg-blue-900" />
-                    )}
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
+        <View className="px-6 pt-5">
+          <Enter>
+            <View className="flex-row items-center gap-1.5">
+              <Icon icon={MapPinIcon} size={13} color={dark ? "rgba(255,255,255,0.5)" : "rgba(10,10,14,0.5)"} />
+              <Text className={`text-[11px] font-inter-bold tracking-[2px] uppercase ${dark ? "text-white/50" : "text-ink/50"}`}>
+                {product.seller_name} • ~{product.prep_time} min
+              </Text>
+            </View>
+            <Text className={`text-[30px] font-display-bold tracking-tight mt-2 ${dark ? "text-white" : "text-ink"}`}>{product.name}</Text>
+            <View className="flex-row items-center gap-1.5 mt-2.5">
+              <Icon icon={StarIcon} size={14} color={dark ? "#fff" : "#0A0A0E"} />
+              <Text className={`text-[13px] font-inter ${dark ? "text-white/45" : "text-ink/50"}`}>{product.category} · ₦{product.price.toLocaleString()}</Text>
+            </View>
+            {product.description ? (
+              <Text className={`text-[15px] font-inter leading-[23px] mt-3 ${dark ? "text-white/55" : "text-ink/60"}`}>{product.description}</Text>
+            ) : null}
+          </Enter>
         </View>
       </ScrollView>
 
-      {/* Bottom Action Bar */}
-      <View className="absolute bottom-0 w-full bg-white border-t border-gray-200 px-5 py-4">
-        {/* Quantity Selector */}
-        <View className="flex-row items-center justify-center gap-6 mb-2">
-          <TouchableOpacity
-            onPress={() => setQuantity(Math.max(1, quantity - 1))}
-            className="w-8 h-8 rounded-full border border-gray-300 items-center justify-center"
-          >
-            <Minus color="#9CA3AF" size={16} />
-          </TouchableOpacity>
-          <Text className="text-base font-bold min-w-[24px] text-center">
-            {quantity}
-          </Text>
-          <TouchableOpacity
-            onPress={() => setQuantity(quantity + 1)}
-            className="w-8 h-8 rounded-full border border-blue-900 items-center justify-center"
-          >
-            <Plus color="#000080" size={16} />
-          </TouchableOpacity>
+      <View className={`absolute bottom-0 w-full px-5 pt-4 border-t ${dark ? "bg-ink border-white/10" : "bg-cream border-border"}`} style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
+        <View className="flex-row items-center gap-3 mb-3.5">
+          <View className={`flex-row items-center rounded-full p-1 ${dark ? "bg-white/[0.07]" : "bg-ink/[0.05]"}`}>
+            <TouchableOpacity onPress={() => step(-1)} accessibilityLabel="Decrease quantity" hitSlop={8} className="w-11 h-11 rounded-full items-center justify-center">
+              <Icon icon={MinusSignIcon} size={17} color={dark ? "#fff" : "#0A0A0E"} />
+            </TouchableOpacity>
+            <Text accessibilityLabel={`Quantity ${quantity}`} className={`w-9 text-center font-inter-bold text-[16px] ${dark ? "text-white" : "text-ink"}`}>{quantity}</Text>
+            <TouchableOpacity onPress={() => step(1)} accessibilityLabel="Increase quantity" hitSlop={8} className={`w-11 h-11 rounded-full items-center justify-center ${dark ? "bg-white" : "bg-ink"}`}>
+              <Icon icon={PlusSignIcon} size={18} color={dark ? "#0A0A0E" : "#fff"} />
+            </TouchableOpacity>
+          </View>
+          <View className="flex-1">
+            <AppButton title={`Add to bag · ₦${total}`} variant={dark ? "white" : "ink"} onPress={(e) => handleAdd(e)} />
+          </View>
         </View>
-
-        {/* Add to Cart Button */}
-        <TouchableOpacity
-          onPress={handleAddToCart}
-          className="w-full bg-blue-900 h-14 rounded-full items-center justify-center shadow-md"
-        >
-          <Text className="text-white font-bold text-base">
-            Add for ₦{totalPrice}
-          </Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

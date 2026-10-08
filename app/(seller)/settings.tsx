@@ -1,118 +1,144 @@
-import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Switch,
-  Alert,
-} from "react-native";
-import {
-  Store,
-  Bell,
-  Clock,
-  MapPin,
-  CreditCard,
-  ChevronRight,
-  LogOut,
-} from "lucide-react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, ScrollView, Switch, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import { useRouter } from "expo-router";
+import { Eyebrow } from "../../src/components/ui/SectionHeader";
+import { AppearanceCard } from "../../src/components/ui/Settings";
+import { Icon } from "../../src/components/ui/Icon";
+import {
+  Store01Icon,
+  Notification01Icon,
+  Clock01Icon,
+  MapPinIcon,
+  CreditCardIcon,
+  Logout01Icon,
+} from "../../src/components/icons";
 
 const settingsItems = [
-  { icon: Store, label: "Store Information", subtitle: "Name, description, hours" },
-  { icon: Bell, label: "Notifications", subtitle: "Order alerts, promotions" },
-  { icon: Clock, label: "Operating Hours", subtitle: "Set your open/close times" },
-  { icon: MapPin, label: "Delivery Radius", subtitle: "Maximum delivery distance" },
-  { icon: CreditCard, label: "Payment Settings", subtitle: "Payout preferences" },
+  { icon: Store01Icon, label: "Store information", subtitle: "Name, description, hours" },
+  { icon: Notification01Icon, label: "Notifications", subtitle: "Order alerts, promotions" },
+  { icon: Clock01Icon, label: "Operating hours", subtitle: "Set your open/close times" },
+  { icon: MapPinIcon, label: "Delivery radius", subtitle: "Maximum delivery distance" },
+  { icon: CreditCardIcon, label: "Payment settings", subtitle: "Payout preferences" },
 ];
 
 export default function SellerSettings() {
   const router = useRouter();
   const { signOut } = useAuth();
+  const { dark } = useTheme();
   const [notifications, setNotifications] = useState(true);
   const [autoAccept, setAutoAccept] = useState(false);
 
+  useEffect(() => {
+    AsyncStorage.multiGet(["vento-seller-notifs", "vento-seller-autoaccept"]).then((pairs) => {
+      const get = (k: string) => pairs.find(([key]) => key === k)?.[1];
+      if (get("vento-seller-notifs") != null) setNotifications(get("vento-seller-notifs") === "1");
+      if (get("vento-seller-autoaccept") != null) setAutoAccept(get("vento-seller-autoaccept") === "1");
+    }).catch(() => {});
+  }, []);
+
   const handleSignOut = async () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: async () => {
-          await signOut();
-          router.replace("/onboarding");
-        },
-      },
-    ]);
+    await signOut();
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    toast.success("Signed out");
+    router.replace("/onboarding" as any);
   };
 
+  const pressRow = (label: string) => toast.success(`${label} coming soon`);
+
   return (
-    <ScrollView className="flex-1 bg-[#f8f6f5] px-4 pt-8 pb-6">
-      <Text className="text-2xl font-bold mb-6">Settings</Text>
+    <SafeAreaView className={`flex-1 ${dark ? "bg-ink" : "bg-cream"}`} edges={["top"]}>
+      <ScrollView className="flex-1 px-5 pt-4" contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+        <Eyebrow>Preferences</Eyebrow>
+        <Text className={`text-[28px] font-inter-bold mt-1 tracking-tight ${dark ? "text-white" : "text-ink"}`}>Settings</Text>
+        <Text className={`text-[13px] font-inter mt-1 mb-6 ${dark ? "text-white/55" : "text-ink/55"}`}>Store preferences</Text>
 
-      {/* Toggle Settings */}
-      <View className="bg-white rounded-2xl p-4 mb-4">
-        <View className="flex-row items-center justify-between py-3 border-b border-gray-100">
-          <View>
-            <Text className="font-semibold text-gray-900">
-              Push Notifications
-            </Text>
-            <Text className="text-sm text-gray-500">Order alerts & updates</Text>
-          </View>
-          <Switch
-            value={notifications}
-            onValueChange={setNotifications}
-            trackColor={{ true: "#000080", false: "#D1D5DB" }}
-          />
-        </View>
-        <View className="flex-row items-center justify-between py-3">
-          <View>
-            <Text className="font-semibold text-gray-900">
-              Auto-Accept Orders
-            </Text>
-            <Text className="text-sm text-gray-500">
-              Automatically accept incoming orders
-            </Text>
-          </View>
-          <Switch
-            value={autoAccept}
-            onValueChange={setAutoAccept}
-            trackColor={{ true: "#000080", false: "#D1D5DB" }}
-          />
-        </View>
-      </View>
+        <AppearanceCard />
 
-      {/* Settings Items */}
-      <View className="bg-white rounded-2xl overflow-hidden mb-4">
-        {settingsItems.map((item, index) => (
-          <TouchableOpacity
-            key={item.label}
-            className={`flex-row items-center p-4 ${
-              index < settingsItems.length - 1 ? "border-b border-gray-100" : ""
-            }`}
-          >
-            <View className="w-10 h-10 rounded-xl bg-gray-100 items-center justify-center mr-3">
-              <item.icon color="#000080" size={20} />
+        <View className={`rounded-[24px] p-6 mb-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          <View className={`flex-row items-center justify-between py-3 border-b ${dark ? "border-white/10" : "border-border"}`}>
+            <View className="flex-1 pr-3">
+              <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Push notifications</Text>
+              <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Order alerts and updates</Text>
             </View>
-            <View className="flex-1">
-              <Text className="font-semibold text-gray-900">{item.label}</Text>
-              <Text className="text-sm text-gray-500">{item.subtitle}</Text>
+            <Switch
+              value={notifications}
+              onValueChange={(v) => {
+                setNotifications(v);
+                AsyncStorage.setItem("vento-seller-notifs", v ? "1" : "0").catch(() => {});
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              }}
+              trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D1D1D1" }}
+            />
+          </View>
+          <View className="flex-row items-center justify-between py-3">
+            <View className="flex-1 pr-3">
+              <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Auto-accept orders</Text>
+              <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>Automatically accept incoming orders</Text>
             </View>
-            <ChevronRight color="#9CA3AF" size={20} />
-          </TouchableOpacity>
-        ))}
-      </View>
+            <Switch
+              value={autoAccept}
+              onValueChange={(v) => {
+                setAutoAccept(v);
+                AsyncStorage.setItem("vento-seller-autoaccept", v ? "1" : "0").catch(() => {});
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                toast.success(v ? "Auto-accept on" : "Auto-accept off");
+              }}
+              trackColor={{ true: dark ? "#FFFFFF" : "#0A0A0E", false: dark ? "rgba(255,255,255,0.2)" : "#D1D1D1" }}
+            />
+          </View>
+        </View>
 
-      {/* Sign Out */}
-      <TouchableOpacity
-        onPress={handleSignOut}
-        className="bg-white rounded-2xl p-4 flex-row items-center gap-3"
-      >
-        <LogOut color="#EF4444" size={20} />
-        <Text className="text-red-500 font-semibold">Sign Out</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <View className={`rounded-[24px] overflow-hidden mb-4 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}>
+          {settingsItems.map((item, index) => (
+            <TouchableOpacity
+              key={item.label}
+              onPress={() => pressRow(item.label)}
+              activeOpacity={0.85}
+              className={`flex-row items-center p-4 ${index < settingsItems.length - 1 ? (dark ? "border-b border-white/10" : "border-b border-border") : ""}`}
+            >
+              <View className={`w-11 h-11 rounded-full border items-center justify-center mr-3 ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+                <Icon icon={item.icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+              </View>
+              <View className="flex-1">
+                <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>{item.label}</Text>
+                <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>{item.subtitle}</Text>
+              </View>
+              <Text className={`text-lg font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>›</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          onPress={() => router.push("/legal/terms" as any)}
+          activeOpacity={0.85}
+          className={`rounded-[24px] p-5 flex-row items-center gap-3 border mb-4 ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
+        >
+          <View className={`w-11 h-11 rounded-full border items-center justify-center ${dark ? "bg-white/10 border-white/10" : "bg-cream border-border"}`}>
+            <Icon icon={Clock01Icon} size={20} color={dark ? "#fff" : "#0A0A0E"} />
+          </View>
+          <View className="flex-1">
+            <Text className={`font-inter-bold ${dark ? "text-white" : "text-ink"}`}>Terms & privacy</Text>
+            <Text className={`text-[13px] font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>The fine print</Text>
+          </View>
+          <Text className={`text-lg font-inter ${dark ? "text-white/55" : "text-ink/55"}`}>›</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleSignOut}          activeOpacity={0.85}
+          className={`rounded-[24px] p-5 flex-row items-center gap-3 border ${dark ? "bg-white/[0.06] border-white/10" : "bg-white border-border"}`}
+        >
+          <View className="w-11 h-11 rounded-full bg-destructive/10 items-center justify-center">
+            <Icon icon={Logout01Icon} size={20} color="#D92D20" />
+          </View>
+          <Text className="text-destructive font-inter-bold">Sign out</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
